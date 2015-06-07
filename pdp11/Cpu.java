@@ -57,7 +57,7 @@ public class Cpu extends Thread {
 		for(;Register.get(7)<Memory.textSize;){
 			
 			exeCnt++;
-			if(exeCnt > 2500000) System.exit(0);
+			//if(exeCnt > 2500000) System.exit(0);
 			
 			if(Pdp11.flgDebugMode>1) printDebug(); //レジスタ・フラグ出力
 			if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力

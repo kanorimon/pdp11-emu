@@ -8,6 +8,7 @@ package pdp11;
  */
 public class Register{
 	static int[] reg; //汎用レジスタ
+	static int reg6_u; //ユーザモードR6
 	
 	static boolean n; //負の場合
 	static boolean z; //ゼロの場合
@@ -41,6 +42,8 @@ public class Register{
 		reg[5] = 0;
 		reg[6] = 65536; //spは最後尾のアドレスを指す
 		reg[7] = 0;
+
+		reg6_u = 65536;
 		
 		n = false;
 		z = false;
@@ -58,26 +61,33 @@ public class Register{
 		
 		CLOCK1 = 0;
 
-
 	}
 
 	//レジスタを上書き
 	static void set(int regNo,int val){
-		reg[regNo] = val;
+		if(regNo == 6 && getNowMode() != 0){
+			reg6_u = val;
+		}else{
+			reg[regNo] = val;
+		}
 	}
 
 	//レジスタに加算
 	static void add(int regNo,int val){
-		if(reg[regNo]+val > 0xffff){
-			reg[regNo] = (reg[regNo]+val) << 16 >>> 16;
+		if(get(regNo)+val > 0xffff){
+			set(regNo, (get(regNo)+val) << 16 >>> 16);
 		}else{
-			reg[regNo] = reg[regNo] + val;
+			set(regNo, get(regNo) + val);
 		}
 	}
 
 	//レジスタを取得
 	static int get(int regNo){
-		return reg[regNo];
+		if(regNo == 6 && getNowMode() != 0){
+			return reg6_u;
+		}else{
+			return reg[regNo];
+		}
 	}
 	
 	//PAR設定
