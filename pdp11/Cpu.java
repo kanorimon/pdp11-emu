@@ -15,14 +15,14 @@ public class Cpu extends Thread {
 	ArrayList<Integer> dbgList; //スタックトレース出力用 
 	ArrayList<Integer> rtnList; //スタックトレース出力用
 	
-	int waitPc;
+	boolean waitFlg;
 	
 	Cpu(){
 
 		dbgList = new ArrayList<Integer>();
 		rtnList = new ArrayList<Integer>();
 		
-		waitPc = 0;
+		waitFlg = false;
 	}
 	
 	void load(String[] args,int argsNo){
@@ -57,7 +57,7 @@ public class Cpu extends Thread {
 		for(;Register.get(7)<Memory.textSize;){
 			
 			exeCnt++;
-			//if(exeCnt > 2500000) System.exit(0);
+			//if(exeCnt > 1000000) System.exit(0);
 			
 			if(Pdp11.flgDebugMode>1) printDebug(); //レジスタ・フラグ出力
 			if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力
@@ -70,6 +70,7 @@ public class Cpu extends Thread {
 					pushStack(Register.get(7));
 					Register.set(7, getMemory2(Rk11.BR_VEC));
 					Rk11.BR_PRI = 0;
+					waitFlg = false;
 				}
 			}else{
 				if(Kl11.BR_PRI > Register.getPriority()){
@@ -78,9 +79,11 @@ public class Cpu extends Thread {
 					pushStack(Register.get(7));
 					Register.set(7, getMemory2(Kl11.BR_VEC));
 					Kl11.BR_PRI = 0;
+					waitFlg = false;
 				}
 			}
 
+			if(!waitFlg){
 			//ワーク
 			int tmp = 0;
 			
@@ -828,8 +831,7 @@ public class Cpu extends Thread {
 				Register.setCC((tmp << 16 >>> 31)>0, (tmp << 16 >>> 16)==0, false, Register.getC());
 				break;
 			case WAIT:
-				waitPc = Register.get(7);
-				Register.set(7, Register.get(7) - 2);
+				waitFlg = true; 
 				break;
 			case WORD:
 				System.out.print("\n");
@@ -839,6 +841,7 @@ public class Cpu extends Thread {
 				printMemory();
 				System.exit(0);
 				break;
+			}
 			}
 		}
 	}

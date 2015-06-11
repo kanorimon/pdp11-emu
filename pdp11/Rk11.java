@@ -33,15 +33,15 @@ public class Rk11 extends Thread {
 		RKCS = 128;
 		for(;;){
 			try{
-				  Thread.sleep(100);
+				  Thread.sleep(1000);
 			}catch (InterruptedException e){
 			}
 			
 			if((RKCS & 1) != 0){
 				RKCS = RKCS - 1;
-				//System.out.println("RK11OUT");
+				System.out.println("RK11OUT");
 				if((RKCS & 64) != 0){
-					//System.out.println("RK11INTER");
+					System.out.println("RK11INTER");
 					BR_PRI = 5;
 					BR_VEC = 0220;
 				}
