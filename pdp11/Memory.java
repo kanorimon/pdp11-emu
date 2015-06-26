@@ -89,6 +89,7 @@ public class Memory {
 	
 	static void load(byte[] bf){
 
+		
 		//マジックナンバーを取得
 		magicNo = ((int)bf[0] & 0xFF)|(((int)bf[1] & 0xFF) << 8);
 
@@ -96,7 +97,7 @@ public class Memory {
 		textSize = ((int)bf[2] & 0xFF)|(((int)bf[3] & 0xFF) << 8);
 		dataSize = ((int)bf[4] & 0xFF)|(((int)bf[5] & 0xFF) << 8);
 		bssSize = ((int)bf[6] & 0xFF)|(((int)bf[7] & 0xFF) << 8);
-
+		
 		//メモリ初期化
 		mem = new byte[MEMORY_SIZE];
 		int i;

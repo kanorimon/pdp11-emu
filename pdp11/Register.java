@@ -40,10 +40,10 @@ public class Register{
 		reg[3] = 0;
 		reg[4] = 0;
 		reg[5] = 0;
-		reg[6] = 65536; //spは最後尾のアドレスを指す
+		reg[6] = 0; //spは最後尾のアドレスを指す
 		reg[7] = 0;
 
-		reg6_u = 65536;
+		reg6_u = 0;
 		
 		n = false;
 		z = false;
@@ -189,13 +189,25 @@ public class Register{
 			System.out.print("-");
 		}
 
-		/*
 		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getMemory2(Mmu.analyzeMemoryKernel(0xf4ec))));
+		System.out.print(String.format("%04x",Memory.getMemory2(Memory.UISA0)));
+
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(Memory.UISA1)));
+
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(0x9ec0)));
+
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(0xa2c0)));
 		
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Memory.getMemory2(Mmu.analyzeMemoryKernel(Register.get(6)))));
 
+		/*
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(Mmu.analyzeMemoryKernel(Register.get(6)))));
+		
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Mmu.analyzeMemoryKernel(0xc000)));
 

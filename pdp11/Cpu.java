@@ -557,7 +557,9 @@ public class Cpu extends Thread {
 				srcObj = getField(srcObj,(opnum >> 3) & 7,opnum  & 7);
 
 				try{
-					tmp = getMemory2(srcObj.operand, Register.getPreMode());
+					//tmp = getMemory2(srcObj.operand, Register.getPreMode());
+					tmp = getMemory2(srcObj.address, Register.getPreMode());
+					//System.out.printf("\nmfpi=%04x,%04x,%04x\n",srcObj.address,Register.getPreMode(),tmp);
 					pushStack(tmp);
 				}catch(ArrayIndexOutOfBoundsException e){
 					pushStack(Register.PSW);
