@@ -562,12 +562,17 @@ public class Cpu extends Thread {
 					//System.out.printf("\nmfpi=%04x,%04x,%04x\n",srcObj.address,Register.getPreMode(),tmp);
 					pushStack(tmp);
 				}catch(ArrayIndexOutOfBoundsException e){
-					pushStack(Register.PSW);
-					pushStack(Register.get(7));
-					Register.PSW = Register.PSW & 4095;
-					Register.PSW = Register.PSW | 224;
-					Register.PSW = Register.PSW | 16;
-					Register.set(7, 208);
+					int oldPSW = Register.PSW;
+					int oldPC = Register.get(7);
+					//pushStack(Register.PSW);
+					//pushStack(Register.get(7));
+
+					//Register.PSW = Register.PSW & 4095;
+					//Register.PSW = Register.PSW | Memory.getMemory2(06);
+					Register.PSW = Memory.getMemory2(06);
+					Register.set(7, Memory.getMemory2(04));
+					pushStack(oldPSW);
+					pushStack(oldPC);
 				}
 				
 				Register.setCC((srcObj.operand << 1 >>> 16)>0, srcObj.operand==0, false, Register.getC());
@@ -647,7 +652,15 @@ public class Cpu extends Thread {
 					setMemory2(dstObj.address, tmp, Register.getPreMode());
 				}catch(ArrayIndexOutOfBoundsException e){
 					System.out.println("catch mtpi");
-					Register.PSW = Register.PSW | 0x10;
+					//Register.PSW = Register.PSW | 0x10;
+					/*
+					pushStack(Register.PSW);
+					pushStack(Register.get(7));
+					Register.PSW = Register.PSW & 4095;
+					Register.PSW = Register.PSW | Memory.getMemory2(04);
+					Register.set(7, Memory.getMemory2(04));
+					*/
+					
 				}
 				
 				Register.setCC((dstObj.operand << 1 >>> 16)>0, dstObj.operand==0, false, Register.getC());
@@ -738,9 +751,11 @@ public class Cpu extends Thread {
 				break;
 			case RTI:
 			case RTT:
+				//Register.PSW = Register.PSW & 4095;
+
 				Register.set(7, popStack());
 				Register.PSW = popStack();
-
+				
 				break;
 			case SETD:
 				break;
@@ -810,6 +825,19 @@ public class Cpu extends Thread {
 
 				break;
 			case SYS:
+				int oldPSW = Register.PSW;
+				int oldPC = Register.get(7);
+				//pushStack(Register.PSW);
+				//pushStack(Register.get(7));
+
+				//Register.PSW = Register.PSW & 4095;
+				//Register.PSW = Register.PSW | Memory.getMemory2(036);
+				Register.PSW = Memory.getMemory2(036);
+				Register.set(7, Memory.getMemory2(034));
+
+				pushStack(oldPSW);
+				pushStack(oldPC);
+				
 				break;
 			case TST:
 				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
@@ -897,6 +925,7 @@ public class Cpu extends Thread {
 				//レジスタ
 				//registerにオペランドがある。
 				field.setOperand(Register.get(regNo));
+				field.setAddress(Register.get(regNo));
 				field.setReg(regNo);
 				break;
 			case 1:
@@ -1462,6 +1491,14 @@ public class Cpu extends Thread {
 		
 		return opcode;
 	}
+
+	/*
+	//カーネルスタックプッシュ
+	void pushKernelStack(int n){
+		Register.addKernelStack(-2);
+		setMemory2(Register.reg[6],n,0);
+	}
+	*/
 	
 	//スタックプッシュ
 	void pushStack(int n){

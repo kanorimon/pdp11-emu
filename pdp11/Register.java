@@ -72,6 +72,15 @@ public class Register{
 		}
 	}
 
+	//カーネルスタックに加算
+	static void addKernelStack(int val){
+		if(reg[6]+val > 0xffff){
+			reg[6] = (reg[6]+val) << 16 >>> 16;
+		}else{
+			reg[6] = reg[6]+val;
+		}
+	}
+	
 	//レジスタに加算
 	static void add(int regNo,int val){
 		if(get(regNo)+val > 0xffff){

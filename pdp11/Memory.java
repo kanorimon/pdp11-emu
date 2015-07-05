@@ -40,6 +40,7 @@ public class Memory {
 	final static int UISD1 = 0777602;
 	final static int UISD0 = 0777600;
 	
+	final static int SSR2 = 0777576;
 	final static int SSR0 = 0777572;
 	
 	final static int DISPLAY_REG = 0777570;
@@ -167,6 +168,8 @@ public class Memory {
 				return Register.kernelPAR[6];
 			case KISA7:
 				return Register.kernelPAR[7];
+			case SSR2:
+				return Mmu.SR2;
 			case SSR0:
 				return Mmu.SR0;
 			case UISD0:
@@ -304,6 +307,9 @@ public class Memory {
 				break;
 			case KISA7:
 				Register.kernelPAR[7] = src;
+				break;
+			case SSR2:
+				Mmu.SR2 = src;
 				break;
 			case SSR0:
 				Mmu.SR0 = src;

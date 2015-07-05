@@ -4,10 +4,12 @@ public class Mmu {
 
 	static int SR0;
 	static int SR1;
+	static int SR2;
 	
 	static void reset(){
 		SR0 = 0;
 		SR1 = 0;
+		SR2 = 0;
 	}
 	
 	static int analyzeMemory(int addr, int mode){
