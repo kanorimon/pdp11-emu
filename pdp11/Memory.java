@@ -88,8 +88,17 @@ public class Memory {
 		bssSize = 0;
 	}
 	
-	static void load(byte[] bf){
 
+	static void load(int[] rom){
+		
+		System.out.print("RK11_BOOT_ROM : ");
+		for(int i=0;i<rom.length;i++){
+			setMemory2(i*2,rom[i]);
+			System.out.printf("%04x ",getMemory2(i*2));
+		}
+	}
+	
+	static void load(byte[] bf){
 		
 		//マジックナンバーを取得
 		magicNo = ((int)bf[0] & 0xFF)|(((int)bf[1] & 0xFF) << 8);
@@ -248,8 +257,7 @@ public class Memory {
 	//1バイト単位で指定箇所のメモリを取得
 	static int getMemory1(int addr){
 		if(addr >= IOADDRP){
-			System.out.printf("\n#####get addr=%d#####\n",addr);
-			return Integer.MAX_VALUE;
+			return getMemory2(addr) & 0xff;
 		}else{
 			return mem[addr];
 		}
@@ -390,7 +398,7 @@ public class Memory {
 				Rk11.RKER = src;
 				break;
 			case RKCS:
-				Rk11.RKCS = src;
+				Rk11.setRKCS(src);
 				break;
 			case RKWC:
 				Rk11.RKWC = src;

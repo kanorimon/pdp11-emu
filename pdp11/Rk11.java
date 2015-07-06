@@ -17,7 +17,7 @@ public class Rk11 extends Thread {
 	static void reset(){
 		RKDS = 0;
 		RKER = 0;
-		RKCS = 0;
+		RKCS = 128;
 		RKWC = 0;
 		RKBA = 0;
 		RKDA = 0;
@@ -30,7 +30,7 @@ public class Rk11 extends Thread {
 	
 	public void run(){
 		System.out.println("RK11 run");
-		RKCS = 128;
+		//RKCS = 128;
 		for(;;){
 			try{
 				  Thread.sleep(1000);
@@ -50,6 +50,24 @@ public class Rk11 extends Thread {
 		}
 		
 	}
+	
+	
+	static void setRKCS(int no){
+		RKCS = no;
+		RKCS = RKCS | 128;
+	}
+	
+	static int boot_rom[] = {
+		0012700, //mov #rkda, r0
+		0177412, //
+		0005040, //clr -(r0)
+		0010040, //mov r0, -(r0)
+		0012740, //mov #5, -(r0)
+		0000005, //
+		0105710, //1: tstb (r0)
+		0002376, //bge 1b
+		0005007  //clr pc
+	    };
 
 
 }

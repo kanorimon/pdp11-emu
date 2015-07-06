@@ -54,7 +54,8 @@ public class Cpu extends Thread {
 
 		boolean aprPrintFlg = false;
 		
-		for(;Register.get(7)<Memory.textSize;){
+		//for(;Register.get(7)<Memory.textSize;){
+		for(;;){
 			
 			exeCnt++;
 			//if(exeCnt > 1000000) System.exit(0);
@@ -845,7 +846,7 @@ public class Cpu extends Thread {
 				break;
 			case TSTB:
 				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7, true);
-				Register.setCC((dstObj.operand << 1 >>> 15)>0, (dstObj.operand << 24 >>> 24)==0, false, false);
+				Register.setCC((dstObj.operand << 24 >>> 31)>0, (dstObj.operand << 24 >>> 24)==0, false, false);
 				break;
 			case XOR:
 				int srcreg = Register.get((opnum >> 6) & 7);

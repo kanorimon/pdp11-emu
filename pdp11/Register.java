@@ -198,6 +198,10 @@ public class Register{
 			System.out.print("-");
 		}
 
+		/*
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(Memory.RKCS)));
+		
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Memory.getMemory2(Memory.UISA0)));
 
@@ -213,7 +217,6 @@ public class Register{
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Memory.getMemory2(Mmu.analyzeMemoryKernel(Register.get(6)))));
 
-		/*
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Memory.getMemory2(Mmu.analyzeMemoryKernel(Register.get(6)))));
 		

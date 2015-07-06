@@ -42,7 +42,19 @@ public class Pdp11{
 		Memory.reset();
 		Kl11.reset();
 		Rk11.reset();
-		
+
+		if(flgExeMode){
+			Kl11 kl11 = new Kl11();
+			kl11.start();
+			Rk11 rk11 = new Rk11();
+			rk11.start();
+
+			Memory.load(Rk11.boot_rom);
+			
+			cpu.start();
+		}
+
+		/*
 		//実行
 		cpu.load(args, i);
 		cpu.start();
@@ -54,6 +66,7 @@ public class Pdp11{
 			Rk11 rk11 = new Rk11();
 			rk11.start();
 		}
+		*/
 		
 	}
 
