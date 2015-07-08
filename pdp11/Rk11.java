@@ -1,5 +1,9 @@
 package pdp11;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+
 public class Rk11 extends Thread {
 
 	static int RKDS; //RK11 Drive Status Register
@@ -13,6 +17,8 @@ public class Rk11 extends Thread {
 	
 	static int BR_PRI; //割り込み優先度
 	static int BR_VEC; //割り込みベクタ
+	
+	static final int BOOT_START = 1024; //BOOT_ROMの読込先アドレス
 	
 	static void reset(){
 		RKDS = 0;
@@ -40,6 +46,36 @@ public class Rk11 extends Thread {
 			if((RKCS & 1) != 0){
 				RKCS = RKCS - 1;
 				System.out.println("RK11OUT");
+				
+				if(RKCS << 28 >>> 29 == 2){
+					//バイナリ取得
+					String dir = System.getProperty("user.dir");
+					File file = new File(dir + "\\v6root");
+					Path fileName = file.toPath();
+					byte[] bf = null;
+					try {
+				        bf = java.nio.file.Files.readAllBytes(fileName);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					
+					//System.out.printf("RKWC=%d ", RKWC);
+					int cnt = ~(RKWC - 1 - 65535);
+					//System.out.printf("cnt=%d ", cnt);
+					for(int i=0;i<cnt*2;i++){
+						Memory.mem[RKBA + i] = bf[RKDA + i];
+					}
+					
+					/*
+					for(int i=0;i<256;i++){
+						if(i%16 == 0) System.out.print("\n");
+						System.out.printf("%02x ",Memory.mem[i]);
+					}
+					*/
+					
+					RKCS = 128;
+				}
+				
 				if((RKCS & 64) != 0){
 					System.out.println("RK11INTER");
 					BR_PRI = 5;
@@ -50,13 +86,34 @@ public class Rk11 extends Thread {
 		}
 		
 	}
-	
-	
-	static void setRKCS(int no){
-		RKCS = no;
-		RKCS = RKCS | 128;
-	}
-	
+
+	static int boot_rom[] = {
+	    0042113,                        /* "KD" */
+	    0012706, BOOT_START,            /* MOV #boot_start, SP */
+	    0012700, 0000000,               /* MOV #unit, R0        ; unit number */
+	    0010003,                        /* MOV R0, R3 */
+	    0000303,                        /* SWAB R3 */
+	    0006303,                        /* ASL R3 */
+	    0006303,                        /* ASL R3 */
+	    0006303,                        /* ASL R3 */
+	    0006303,                        /* ASL R3 */
+	    0006303,                        /* ASL R3 */
+	    0012701, 0177412,               /* MOV #RKDA, R1        ; csr */
+	    0010311,                        /* MOV R3, (R1)         ; load da */
+	    0005041,                        /* CLR -(R1)            ; clear ba */
+	    0012741, 0177000,               /* MOV #-256.*2, -(R1)  ; load wc */
+	    0012741, 0000005,               /* MOV #READ+GO, -(R1)  ; read & go */
+	    0005002,                        /* CLR R2 */
+	    0005003,                        /* CLR R3 */
+	    0012704, BOOT_START+020,        /* MOV #START+20, R4 */
+	    0005005,                        /* CLR R5 */
+	    0105711,                        /* TSTB (R1) */
+	    0100376,                        /* BPL .-2 */
+	    0105011,                        /* CLRB (R1) */
+	    0005007                         /* CLR PC */
+	};
+
+	/*
 	static int boot_rom[] = {
 		0012700, //mov #rkda, r0
 		0177412, //
@@ -68,6 +125,7 @@ public class Rk11 extends Thread {
 		0002376, //bge 1b
 		0005007  //clr pc
 	    };
+    */
 
 
 }

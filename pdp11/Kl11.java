@@ -59,6 +59,8 @@ public class Kl11 extends Thread {
 					BR_VEC = 064;
 				}
 			}
+			
+			
 		}
 	}
 

@@ -25,6 +25,7 @@ public class Cpu extends Thread {
 		waitFlg = false;
 	}
 	
+	/*
 	void load(String[] args,int argsNo){
 		//バイナリ取得
 		File file = new File(args[argsNo]);
@@ -39,6 +40,7 @@ public class Cpu extends Thread {
 		//メモリにロード
 		Memory.load(bf);
 	}
+	*/
 	
 	public void run(){
 		if(Pdp11.flgDismMode) dissAssemble(); //逆アセンブル
@@ -47,7 +49,7 @@ public class Cpu extends Thread {
 
 	//インタプリタ
 	public void execute(){
-		Register.set(7,0); //PCを初期化
+		//Register.set(7,0); //PCを初期化
 
 		FieldDto srcObj = new FieldDto();
 		FieldDto dstObj = new FieldDto();
@@ -869,7 +871,7 @@ public class Cpu extends Thread {
 				System.out.println("not case");
 				System.out.println(getMemory2(Register.get(7)-2));
 				
-				printMemory();
+				//printMemory();
 				System.exit(0);
 				break;
 			}
@@ -1654,7 +1656,7 @@ public class Cpu extends Thread {
 		Pdp11.flgExeMode = false; //実行モードオフ
 		
 		//逆アセンブル
-		for(Register.set(7, 0);Register.get(7)<Memory.textSize;){
+		for(Register.set(7, 0);Register.get(7)<Memory.MEMORY_SIZE;){
 
 			//プログラムカウンタを出力
 			System.out.print(String.format("%4x", Register.get(7)));

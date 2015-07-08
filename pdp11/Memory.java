@@ -5,10 +5,10 @@ import java.util.Arrays;
 public class Memory {
 
 	static byte[] mem; //物理メモリ本体
-	static int magicNo;
-	static int textSize;
-	static int dataSize;
-	static int bssSize;
+	//static int magicNo;
+	//static int textSize;
+	//static int dataSize;
+	//static int bssSize;
 	
 	final static int MEMORY_SIZE = 253366;
 	final static int HEADER_SIZE = 16;
@@ -82,22 +82,23 @@ public class Memory {
 		mem = new byte[MEMORY_SIZE];
 		Arrays.fill(mem, (byte)0);
 		
-		magicNo = 0;
-		textSize = 0;
-		dataSize = 0;
-		bssSize = 0;
+		//magicNo = 0;
+		//textSize = 0;
+		//dataSize = 0;
+		//bssSize = 0;
 	}
 	
 
-	static void load(int[] rom){
+	static void load(int[] rom,int startNo){
 		
-		System.out.print("RK11_BOOT_ROM : ");
+		//System.out.print("RK11_BOOT_ROM : ");
 		for(int i=0;i<rom.length;i++){
-			setMemory2(i*2,rom[i]);
-			System.out.printf("%04x ",getMemory2(i*2));
+			setMemory2(startNo + i*2,rom[i]);
+			//System.out.printf("%04x ",getMemory2(startNo + i*2));
 		}
 	}
 	
+	/*
 	static void load(byte[] bf){
 		
 		//マジックナンバーを取得
@@ -139,6 +140,7 @@ public class Memory {
 			mem[cnt] = 0;
 		}
 	}
+	*/
 	
 	//2バイト単位でリトルエンディアンを反転して10進数で取得
 	static int getMemory2(int addr){
@@ -398,7 +400,7 @@ public class Memory {
 				Rk11.RKER = src;
 				break;
 			case RKCS:
-				Rk11.setRKCS(src);
+				Rk11.RKCS = src;
 				break;
 			case RKWC:
 				Rk11.RKWC = src;
@@ -428,8 +430,7 @@ public class Memory {
 	//1バイト単位で指定箇所のメモリを更新
 	static void setMemory1(int addr,int src){
 		if(addr >= IOADDRP){
-			System.out.printf("\n#####set addr=%d#####\n",addr);
-			System.exit(0);
+			setMemory2(addr, (int)(src & 0xFF)|(int)(getMemory2(addr) & 0xFF00));
 		}else{
 			mem[addr] = (byte)src;
 		}
