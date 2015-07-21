@@ -1,5 +1,9 @@
 package pdp11;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+
 public class Pdp11{
 	/*
 	 * モード設定
@@ -28,8 +32,25 @@ public class Pdp11{
 		}
 
 		//オプション指定がなければ逆アセンブルモード
-		if(flgDebugMode==0 && !flgDismMode && !flgExeMode && !flgMemoryDump){
-			flgDismMode = true;
+		if((flgDebugMode==0 && !flgDismMode && !flgExeMode && !flgMemoryDump) || flgDismMode){
+			//バイナリ取得
+			File file = new File(args[i]);
+			Path fileName = file.toPath();
+			byte[] bf = null;
+			try {
+		        bf = java.nio.file.Files.readAllBytes(fileName);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			Register.reset();
+
+			Memory.reset();
+			Memory.load(bf, 0);
+
+			Cpu cpu = new Cpu();
+			cpu.dissAssemble();
+			return;
 		}
 
 		//CPUを生成

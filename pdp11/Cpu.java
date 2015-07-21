@@ -1,8 +1,5 @@
 package pdp11;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class Cpu extends Thread {
@@ -43,7 +40,7 @@ public class Cpu extends Thread {
 	*/
 	
 	public void run(){
-		if(Pdp11.flgDismMode) dissAssemble(); //逆アセンブル
+		//if(Pdp11.flgDismMode) dissAssemble(); //逆アセンブル
 		if(Pdp11.flgExeMode) execute(); //実行
 	}
 
@@ -549,7 +546,16 @@ public class Cpu extends Thread {
 				pushStack(Register.get((opnum >> 6) & 7));
 				Register.set((opnum >> 6) & 7,Register.get(7));
 				Register.set(7, dstObj.address);
-
+				/*
+				if(dstObj.flgRegister){
+					Register.set(7,Register.get(dstObj.register));
+				}else if(dstObj.flgAddress){
+					Register.set(7,dstObj.address);
+				}else{
+					Register.set(7,dstObj.operand);
+				}
+				*/
+				
 				Register.setCC(Register.getN(), Register.getZ(), Register.getV(), Register.getC());
 				
 				pushCall(Register.get(7),tmp);

@@ -11,6 +11,7 @@ public class Memory {
 	//static int bssSize;
 	
 	final static int MEMORY_SIZE = 253366;
+	//final static int MEMORY_SIZE = 253366000;
 	final static int HEADER_SIZE = 16;
 
 	final static int IOADDRV = 0160000;
@@ -97,10 +98,14 @@ public class Memory {
 			//System.out.printf("%04x ",getMemory2(startNo + i*2));
 		}
 	}
+
+	static void load(byte[] rom,int startNo){
+		for(int i=0;i<rom.length;i++){
+			setMemory1(startNo + i,rom[i]);
+		}
+	}
 	
-	/*
-	static void load(byte[] bf){
-		
+/*	static void load(byte[] bf){
 		//マジックナンバーを取得
 		magicNo = ((int)bf[0] & 0xFF)|(((int)bf[1] & 0xFF) << 8);
 
