@@ -45,7 +45,7 @@ public class Kl11 extends Thread {
         
 		for(;;){
 			try{
-				  Thread.sleep(100);
+				  Thread.sleep(1);
 			}catch (InterruptedException e){
 			}
 			if(XBUF != 0){

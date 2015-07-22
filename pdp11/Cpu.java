@@ -917,7 +917,7 @@ public class Cpu extends Thread {
 		field.reset();
 		
 		//ワーク
-		short opcodeShort;
+		//short opcodeShort;
 		int opcodeInt;
 		int tmp;
 
@@ -999,6 +999,17 @@ public class Cpu extends Thread {
 			case 6:
 				//インデックス
 				//register+Xがオペランドのアドレス。Xはこの命令に続くワード。
+				
+				opcodeInt = getMem() << 16 >>> 16;
+				if(byteFlg){
+					field.setOperand(getMemory1(Register.get(regNo) + opcodeInt));
+					field.setAddress(Register.get(regNo) + opcodeInt);
+				}else{
+					field.setOperand(getMemory2(Register.get(regNo) + opcodeInt));
+					field.setAddress(Register.get(regNo) + opcodeInt);
+				}
+				break;
+				/*
 				opcodeShort = (short)getMem();
 				if(byteFlg){
 					field.setOperand(getMemory1(Register.get(regNo) + opcodeShort));
@@ -1008,13 +1019,20 @@ public class Cpu extends Thread {
 					field.setAddress(Register.get(regNo) + opcodeShort);
 				}
 				break;
+				*/
 			case 7:
 				//インデックス間接
 				//register+Xがオペランドへのポインタのアドレス。Xはこの命令に続くワード。
+				opcodeInt = getMem() << 16 >>> 16;
+				field.setOperand(getMemory2(getMemory2(Register.get(regNo) + opcodeInt)));
+				field.setAddress(getMemory2(Register.get(regNo) + opcodeInt));
+				break;
+				/*
 				opcodeShort = (short)getMem();
 				field.setOperand(getMemory2(getMemory2(Register.get(regNo) + opcodeShort)));
 				field.setAddress(getMemory2(Register.get(regNo) + opcodeShort));
 				break;
+				*/
 			}
 			break;
 
@@ -1040,16 +1058,27 @@ public class Cpu extends Thread {
 			case 2:
 				//イミディエート
 				//オペランドは命令内にある。
+				opcodeInt = getMem() << 16 >>> 16;
+				field.setOperand(opcodeInt);
+				break;
+				/*
 				opcodeShort = (short)getMem();
 				field.setOperand((int)opcodeShort);
 				break;
+				*/
 			case 3:
 				//絶対
 				//オペランドの絶対アドレスが命令内にある。
+				opcodeInt = getMem() << 16 >>> 16;
+				field.setAddress(opcodeInt);
+				field.setOperand(getMemory2(field.address)); //TODO
+				break;
+				/*
 				opcodeShort = (short)getMem();
 				field.setAddress((int)opcodeShort);
 				field.setOperand(getMemory2(field.address)); //TODO
 				break;
+				*/
 			case 4:
 				//自動デクリメント
 				//命令実行前にregisterをデクリメントし、それをオペランドのアドレスとして使用する。
@@ -1073,7 +1102,7 @@ public class Cpu extends Thread {
 			case 6:
 				//相対
 				//命令に続くワードの内容 a を PC+2 に加算したものをアドレスとして使用する。
-				opcodeInt = (int)getMem() << 16 >>> 16;
+				opcodeInt = getMem() << 16 >>> 16;
 				tmp = (opcodeInt + Register.get(7)) << 16 >>> 16;
 				field.setOperand(getMemory2(tmp));
 				field.setAddress(tmp);
@@ -1081,7 +1110,7 @@ public class Cpu extends Thread {
 			case 7:
 				//相対間接
 				//命令に続くワードの内容 a を PC+2 に加算したものをアドレスのアドレスとして使用する。
-				opcodeInt = (int)getMem() << 16 >>> 16;
+				opcodeInt = getMem() << 16 >>> 16;
 				tmp = opcodeInt + Register.get(7);
 				field.setOperand(getMemory2(getMemory2(tmp))); //TODO
 				field.setAddress(getMemory2(tmp));
