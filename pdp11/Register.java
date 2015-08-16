@@ -66,9 +66,9 @@ public class Register{
 	//レジスタを上書き
 	static void set(int regNo,int val){
 		if(regNo == 6 && getNowMode() != 0){
-			reg6_u = val;
+			reg6_u = val << 16 >>> 16;
 		}else{
-			reg[regNo] = val;
+			reg[regNo] = val << 16 >>> 16;
 		}
 	}
 

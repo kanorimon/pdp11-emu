@@ -223,7 +223,8 @@ public class Memory {
 			case RCSR:
 				return Kl11.RCSR;
 			case RBUF:
-				return Kl11.RBUF;
+				if(Cpu.opGetFlg) return RBUF;
+				return Kl11.getRBUF();
 			case XCSR:
 				return Kl11.XCSR;
 			case XBUF:
@@ -387,7 +388,7 @@ public class Memory {
 				Kl11.XCSR = src;
 				break;
 			case XBUF:
-				Kl11.XBUF = src;
+				Kl11.setXBUF(src);
 				break;
 			case DISPLAY_REG:
 				Kl11.consoleSwitchRegister = src;

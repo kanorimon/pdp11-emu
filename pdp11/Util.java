@@ -1,6 +1,18 @@
 package pdp11;
 
 public class Util {
+	
+	static int checkBit(int bits,int setNo){
+		return (bits & (1 << setNo));
+	}
+	
+	static int setBit(int bits,int setNo){
+		return (bits | (1 << setNo));
+	}
+
+	static int clearBit(int bits,int setNo){
+		return (bits & (~(1 << setNo)));
+	}
 
 	static boolean isPush(int pc){
 

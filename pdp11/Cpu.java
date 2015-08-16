@@ -12,6 +12,8 @@ public class Cpu extends Thread {
 	ArrayList<Integer> dbgList; //スタックトレース出力用 
 	ArrayList<Integer> rtnList; //スタックトレース出力用
 	
+	static boolean opGetFlg;
+	
 	boolean waitFlg;
 	
 	Cpu(){
@@ -20,6 +22,8 @@ public class Cpu extends Thread {
 		rtnList = new ArrayList<Integer>();
 		
 		waitFlg = false;
+		opGetFlg = false;
+
 	}
 	
 	/*
@@ -83,6 +87,7 @@ public class Cpu extends Thread {
 				}
 			}
 
+
 			if(!waitFlg){
 			//ワーク
 			int tmp = 0;
@@ -140,11 +145,10 @@ public class Cpu extends Thread {
 			case ASH: 
                 int ashReg = Register.get((opnum >> 6) & 7);
                 srcObj = getField(srcObj,(opnum >> 3) & 7,opnum  & 7);
-                int ashInt = srcObj.operand << 26;
-                ashInt = ashInt >> 26;
+                int ashInt = srcObj.operand << 26 >> 26;
+                ashReg = ashReg << 16 >> 16;
+                //System.out.printf("\nashint=%d ashreg=%d\n",ashInt,ashReg);
                 if(ashInt < 0){
-                        ashReg = ashReg << 16;
-                        ashReg = ashReg >> 16;
                         Register.set((opnum >> 6) & 7, ashReg >> Math.abs(ashInt));
                         Register.set((opnum >> 6) & 7, (Register.get((opnum >> 6) & 7) << 16) >>> 16);
                 }else{
@@ -914,6 +918,7 @@ public class Cpu extends Thread {
 
 	//フィールド取得（dst,src）
 	FieldDto getField(FieldDto field,int mode, int regNo, boolean byteFlg){
+		opGetFlg = true;
 		field.reset();
 		
 		//ワーク
@@ -1005,6 +1010,10 @@ public class Cpu extends Thread {
 					field.setOperand(getMemory1(Register.get(regNo) + opcodeInt));
 					field.setAddress(Register.get(regNo) + opcodeInt);
 				}else{
+					//System.out.printf("\ncase6_opcode=%d,case6_register=%d", opcodeInt, Register.get(regNo));
+					//System.out.printf("\ncase6_address=%d", Register.get(regNo) + opcodeInt);
+					//System.out.printf("\ncase6_address=%d", (Register.get(regNo) + opcodeInt) << 16 >>> 16);
+					//System.out.printf("\ncase6_memory=%d", getMemory2((Register.get(regNo) + opcodeInt)) << 16 >>> 16);
 					field.setOperand(getMemory2(Register.get(regNo) + opcodeInt));
 					field.setAddress(Register.get(regNo) + opcodeInt);
 				}
@@ -1117,7 +1126,8 @@ public class Cpu extends Thread {
 				break;
 			}
 			break;
-		}	
+		}
+		opGetFlg = false;
 		return field;
 	}
 
@@ -1481,6 +1491,7 @@ public class Cpu extends Thread {
 		return getMemory2(addr, Register.getNowMode());
 	}
 	static int getMemory2(int addr, int mode){
+		addr = addr << 16 >>> 16;
 		int tmp = Memory.getMemory2(Mmu.analyzeMemory(addr, mode));
 		if(tmp == Integer.MAX_VALUE){
 			System.out.println("max value");
@@ -1494,6 +1505,7 @@ public class Cpu extends Thread {
 		return getMemory1(addr, Register.getNowMode());
 	}
 	int getMemory1(int addr,int mode){
+		addr = addr << 16 >>> 16;
 		return Memory.getMemory1(Mmu.analyzeMemory(addr, mode));
 	}
 
@@ -1502,6 +1514,7 @@ public class Cpu extends Thread {
 		setMemory2(addr, src, Register.getNowMode());
 	}
 	void setMemory2(int addr,int src,int mode){
+		addr = addr << 16 >>> 16;
 		Memory.setMemory2(Mmu.analyzeMemory(addr, mode),src);
 	}
 
@@ -1510,6 +1523,7 @@ public class Cpu extends Thread {
 		setMemory1(addr, src, Register.getNowMode());
 	}
 	void setMemory1(int addr,int src,int mode){
+		addr = addr << 16 >>> 16;
 		Memory.setMemory1(Mmu.analyzeMemory(addr, mode),src);
 	}
 	
@@ -1969,12 +1983,12 @@ public class Cpu extends Thread {
 			case 6:
 				//インデックス
 				//register+Xがオペランドのアドレス。Xはこの命令に続くワード。
-				opcodeInt =  (short)getMem() << 16 >>> 16;
+				opcodeInt =  getMem() << 16 >>> 16;
 				return String.format("%o",opcodeInt) + "(" + getRegisterName(regNo) + ")";
 			case 7:
 				//インデックス間接
 				//register+Xがオペランドへのポインタのアドレス。Xはこの命令に続くワード。
-				opcodeInt =  (short)getMem() << 16 >>> 16;
+				opcodeInt =  getMem() << 16 >>> 16;
 				return "*-" + String.format("%o",opcodeInt) + "(" + getRegisterName(regNo) + ")";
 			}
 			break;
@@ -1991,12 +2005,12 @@ public class Cpu extends Thread {
 			case 2:
 				//イミディエート
 				//オペランドは命令内にある。
-				opcodeInt =  (short)getMem() << 16 >>> 16;
+				opcodeInt =  getMem() << 16 >>> 16;
 				return "$" + String.format("%o",opcodeInt);
 			case 3:
 				//絶対
 				//オペランドの絶対アドレスが命令内にある。
-				opcodeInt =  (short)getMem() << 16 >>> 16;
+				opcodeInt =  getMem() << 16 >>> 16;
 				return "*$" + String.format("%o",opcodeInt);
 			case 4:
 				//自動デクリメント
@@ -2009,14 +2023,14 @@ public class Cpu extends Thread {
 			case 6:
 				//相対
 				//命令に続くワードの内容 a を PC+2 に加算したものをアドレスとして使用する。
-				opcodeInt = (int)getMem() << 16 >>> 16;
+				opcodeInt = getMem() << 16 >>> 16;
 				tmp = opcodeInt + Register.get(7);
 				tmp = tmp << 16 >>> 16;
 				return "0x" + String.format("%02x",tmp);
 			case 7:
 				//相対間接
 				//命令に続くワードの内容 a を PC+2 に加算したものをアドレスのアドレスとして使用する。
-				opcodeInt = (int)getMem() << 16 >>> 16;
+				opcodeInt = getMem() << 16 >>> 16;
 				tmp = opcodeInt + Register.get(7);
 				return "*$0x" + String.format("%02x",(tmp));
 			}

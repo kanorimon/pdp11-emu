@@ -23,7 +23,7 @@ public class Rk11 extends Thread {
 	static void reset(){
 		RKDS = 0;
 		RKER = 0;
-		RKCS = 128;
+		RKCS = 0;
 		RKWC = 0;
 		RKBA = 0;
 		RKDA = 0;
@@ -36,16 +36,15 @@ public class Rk11 extends Thread {
 	
 	public void run(){
 		System.out.println("RK11 run");
-		//RKCS = 128;
 		for(;;){
 			try{
-				  Thread.sleep(1000);
+				  Thread.sleep(1);
 			}catch (InterruptedException e){
 			}
 			
-			if((RKCS & 1) != 0){
-				RKCS = RKCS - 1;
-				System.out.println("RK11OUT");
+			if((RKCS & 1) == 1){
+				RKCS = Util.clearBit(RKCS, 1);
+				//System.out.println("RK11OUT");
 				
 				if(RKCS << 28 >>> 29 == 2){
 					//バイナリ取得
@@ -59,11 +58,16 @@ public class Rk11 extends Thread {
 						e.printStackTrace();
 					}
 					
-					//System.out.printf("RKWC=%d ", RKWC);
+					System.out.printf("RKCS=%x ", RKCS);
+					System.out.printf("RKWC=%x ", RKWC);
 					int cnt = ~(RKWC - 1 - 65535);
-					//System.out.printf("cnt=%d ", cnt);
-					for(int i=0;i<cnt*2;i++){
-						Memory.mem[RKBA + i] = bf[RKDA + i];
+					System.out.printf("cnt=%x ", cnt);
+					System.out.printf("RKBA=%x ", RKBA);
+					System.out.printf("RKDA=%x ", RKDA);
+					int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) | (RKDA << 28 >>> 28);
+					System.out.printf("blockNo=%x\n", tmpRKDA*512);
+					for(int i=0;i<cnt;i++){
+						Memory.mem[RKBA + i] = bf[tmpRKDA*512 + i];
 					}
 					
 					/*
@@ -76,8 +80,8 @@ public class Rk11 extends Thread {
 					RKCS = 128;
 				}
 				
-				if((RKCS & 64) != 0){
-					System.out.println("RK11INTER");
+				if((RKCS & 64) == 1){
+					//System.out.println("RK11INTER");
 					BR_PRI = 5;
 					BR_VEC = 0220;
 				}

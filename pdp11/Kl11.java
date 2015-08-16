@@ -16,13 +16,20 @@ public class Kl11 extends Thread {
 	static int BR_PRI; //割り込み優先度
 	static int BR_VEC; //割り込みベクタ
 	
+	static final int XCSR_READY = 7;
+
+	static final int RCSR_BUSY = 11;
+	static final int RCSR_DONE = 7;
+	static final int RCSR_ID = 6;
+	static final int RCSR_ENB = 0;
+	
 	static String inputStr;
 	static byte[] inputByte;
 	
 	static void reset(){
 		consoleSwitchRegister = 0;
 		XBUF = 0;
-		XCSR = 0;
+		XCSR = 128;
 		RBUF = 0;
 		RCSR = 0;
 		
@@ -30,68 +37,91 @@ public class Kl11 extends Thread {
 		BR_VEC = 0;
 		
 		inputStr = "";
-		inputByte = new byte[10];
+		inputByte = new byte[14];
 		Arrays.fill(inputByte, (byte)0);
+	}
+	
+	static int getRBUF(){
+		if(inputByte[0] != 0){
+			RBUF = inputByte[0];
+
+			if(RBUF == 0xd){
+				RCSR = Util.clearBit(RCSR,RCSR_DONE);
+				RCSR = Util.setBit(RCSR,RCSR_ENB);
+			}
+
+			for(int i=0;i<13;i++){
+				inputByte[i] = inputByte[i+1];
+			}
+		}
+		return RBUF;
+	}
+	
+	static void setXBUF(int xbuf){
+		XBUF = xbuf;
+		switch(xbuf){
+		case 010:
+			System.out.print("");
+			break;
+		case 011:
+			System.out.print(" ");
+			break;
+		case 012:
+			System.out.print("\n");
+			break;
+		case 015:
+			System.out.print("\r");
+			break;
+		default:
+			System.out.printf("%c",xbuf);
+		}
+		XBUF = 0;
+		XCSR = Util.setBit(XCSR,7);
 	}
 	
 	public void run(){
 		System.out.println("KL11 run");
 
 		consoleSwitchRegister = 1; //電源ON
-		XCSR = 128; //レディフラグON
 		
 		CommandReceiver commandReceiver = new CommandReceiver();
         commandReceiver.start();
         
 		for(;;){
+			
 			try{
 				  Thread.sleep(1);
 			}catch (InterruptedException e){
 			}
-			if(XBUF != 0){
-				switch(XBUF){
-				case 010:
-					System.out.print("");
-					break;
-				case 011:
-					System.out.print(" ");
-					break;
-				case 012:
-					System.out.print("\n");
-					break;
-				case 015:
-					System.out.print("\r");
-					break;
-				default:
-					//System.out.print("KL11OUT");
-					System.out.printf("%c",XBUF);
-				}
-				XBUF = 0;
-				XCSR = XCSR | 128;
-				
-				//割り込み
-				if((XCSR & 64) != 0){
-					BR_PRI = 4;
-					BR_VEC = 064;
-				}
+			
+			//X割り込み
+			if(Util.checkBit(XCSR,6) == 1){
+				BR_PRI = 4;
+				BR_VEC = 064;
 			}
 			
-			if(inputStr.length() != 0 && RCSR == 0){
-				RCSR = 128;
+			if(inputStr.length() > 0){
+				RCSR = Util.setBit(RCSR,RCSR_BUSY);
+				
 				for(int i=0;i<inputStr.length();i++){
 					inputByte[i] = (byte)inputStr.charAt(i); 
 				}
 				inputByte[inputStr.length()] = 0xd;
 				inputStr = "";
+				
+				RCSR = Util.setBit(RCSR,RCSR_DONE);
+				RCSR = Util.clearBit(RCSR,RCSR_ENB);
+				RCSR = Util.clearBit(RCSR,RCSR_BUSY);
 			}
 			
-			if(inputByte[0] != 0){
-				RBUF = inputByte[0];
-				for(int i=0;i<9;i++){
-					inputByte[i] = inputByte[i+1];
-				}
-			}else{
-				RCSR = 0;
+			if(Util.checkBit(RCSR,RCSR_ENB) == 1){
+				RCSR = Util.clearBit(RCSR,RCSR_DONE);
+			}
+			
+			//R割り込み
+			if(Util.checkBit(RCSR,RCSR_ID) == 1 && Util.checkBit(RCSR,RCSR_DONE) == 1){
+				BR_PRI = 4;
+				BR_VEC = 060;
 			}
 			
 		}
