@@ -786,6 +786,24 @@ public class Cpu extends Thread {
 				Register.PSW = popStack();
 				
 				break;
+			case SBC:
+				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
+				
+				tmp = dstObj.operand;
+				if(Register.getC())	tmp = tmp - 1;
+				
+				if(dstObj.flgRegister){
+					Register.set(dstObj.register, tmp);
+				}else{
+					setMemory2(dstObj.address, tmp);
+				}
+				
+				Register.setCC((tmp << 16 >>> 31)<0, 
+						tmp==0, 
+						dstObj.operand==0100000 && Register.getC(), 
+						!(dstObj.operand==0 && Register.getC()));
+				
+				break;
 			case SETD:
 				break;
 			case SEV:
@@ -808,7 +826,6 @@ public class Cpu extends Thread {
 				}else{
 					setMemory2(dstObj.address, tmp);
 				}
-
 
 				Register.setCC((tmp << 16 >>> 31)>0, 
 						tmp==0, 
@@ -1164,7 +1181,7 @@ public class Cpu extends Thread {
 	    ROR, ROL, RTT, RTS, RTI,
 		MOV, MOVB, MUL,
 		NEG,
-		SETD, SEV, SOB, SUB, SWAB, SXT, SYS,
+		SBC, SETD, SEV, SOB, SUB, SWAB, SXT, SYS,
 		TST, TSTB,
 		XOR,
 		RESET,
@@ -1301,6 +1318,9 @@ public class Cpu extends Thread {
 						break;
 					case 5:
 						opcode = Opcode.ADC;
+						break;
+					case 6:
+						opcode = Opcode.SBC;
 						break;
 					case 7:
 						opcode = Opcode.TST;
@@ -1882,6 +1902,9 @@ public class Cpu extends Thread {
  				break;
  			case RTT:
  				printDisasm("rtt", "", "");
+ 				break;
+ 			case SBC:
+ 				printDisasm("sbc", "", getOperandStr((opnum >> 3) & 7,opnum  & 7));
  				break;
  			case SETD:
  				printDisasm("setd", "", "");

@@ -21,8 +21,9 @@ public class Memory {
 	 * メモリマップドIO定義
 	 */
 	final static int PSW = 0777776;
-
 	final static int STACK_LIMIT = 0777774;
+	final static int PIRQ = 0777772;
+	final static int PB = 0777770;
 
 	final static int UISA7 = 0777656;
 	final static int UISA6 = 0777654;
@@ -231,8 +232,12 @@ public class Memory {
 				return Kl11.XBUF;
 			case DISPLAY_REG:
 				return Kl11.consoleSwitchRegister;
+			case PB:
+				return Register.PB;
+			case PIRQ:
+				return Register.PIRQ;
 			case STACK_LIMIT:
-				return 0;
+				return Register.STACK_LIMIT;
 			case PSW:
 				return Register.PSW;
 			case CLOCK1:
@@ -392,6 +397,15 @@ public class Memory {
 				break;
 			case DISPLAY_REG:
 				Kl11.consoleSwitchRegister = src;
+				break;
+			case PB:
+				Register.PB = src;
+				break;
+			case PIRQ:
+				Register.PIRQ = src;
+				break;
+			case STACK_LIMIT:
+				Register.STACK_LIMIT = src;
 				break;
 			case PSW:
 				Register.PSW = src;

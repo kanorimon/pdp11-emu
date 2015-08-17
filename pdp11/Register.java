@@ -17,6 +17,10 @@ public class Register{
 
 	static int PSW; //PSW モード 0:カーネル,3:ユーザー
 
+	static int STACK_LIMIT; //STACK_LIMIT
+	static int PIRQ; //PIRQ
+	static int PB; //PB
+	
 	static int[] kernelPAR; //カーネルPAR
 	static int[] userPAR; //ユーザーPAR
 	
@@ -51,6 +55,9 @@ public class Register{
 		c = false;
 		
 		PSW = 0;
+		STACK_LIMIT = 0;
+		PIRQ = 0;
+		PB = 0;
 		
 		for(int i=0;i<8;i++){
 			kernelPAR[i] = 0;

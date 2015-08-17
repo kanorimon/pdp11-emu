@@ -78,14 +78,15 @@ public class Rk11 extends Thread {
 					}
 					*/
 					RKCS = Util.setBit(RKCS, 7);
+					if(Util.checkBit(RKCS, 6) == 1){
+						System.out.println("RK11INTER");
+						BR_PRI = 5;
+						BR_VEC = 0220;
+					}					
 				}
 				
 				
-				if(Util.checkBit(RKCS, 6) == 1){
-					System.out.println("RK11INTER");
-					BR_PRI = 5;
-					BR_VEC = 0220;
-				}
+
 				
 			}
 			
