@@ -60,13 +60,14 @@ public class Rk11 extends Thread {
 					
 					System.out.printf("RKCS=%x ", RKCS);
 					System.out.printf("RKWC=%x ", RKWC);
-					int cnt = ~(RKWC - 1 - 65535);
-					System.out.printf("cnt=%x ", cnt);
+					int datasizeWord = ~(RKWC - 1 - 65535);
+					//System.out.printf("cnt=%x ", datasizeWord);
 					System.out.printf("RKBA=%x ", RKBA);
 					System.out.printf("RKDA=%x ", RKDA);
-					int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) | (RKDA << 28 >>> 28);
+					int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
+					//System.out.printf("tmpRKDA=%x ", tmpRKDA);
 					System.out.printf("blockNo=%x\n", tmpRKDA*512);
-					for(int i=0;i<cnt;i++){
+					for(int i=0;i<datasizeWord*2;i++){
 						Memory.mem[RKBA + i] = bf[tmpRKDA*512 + i];
 					}
 					

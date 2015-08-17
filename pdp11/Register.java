@@ -200,10 +200,22 @@ public class Register{
 
 		/*
 		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getMemory2(Memory.RKCS)));
+		System.out.print(String.format("%04x",Memory.getMemory2(0xbb1c)));
 		
 		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getMemory2(Memory.UISA0)));
+		System.out.print(String.format("%04x",Memory.getMemory2(0xbb20)));
+		
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(0x6fc)));
+		
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(0x700)));
+		
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(0x6ec)));
+		
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(0x6f0)));
 
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Memory.getMemory2(Memory.UISA1)));
