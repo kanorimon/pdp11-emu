@@ -3,7 +3,11 @@ package pdp11;
 public class Util {
 	
 	static int checkBit(int bits,int setNo){
-		return (bits & (1 << setNo));
+		if((bits & (1 << setNo)) == 0){
+			return 0;
+		}else{
+			return 1;
+		}
 	}
 	
 	static int setBit(int bits,int setNo){

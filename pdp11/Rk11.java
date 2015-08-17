@@ -42,8 +42,8 @@ public class Rk11 extends Thread {
 			}catch (InterruptedException e){
 			}
 			
-			if((RKCS & 1) == 1){
-				RKCS = Util.clearBit(RKCS, 1);
+			if(Util.checkBit(RKCS, 0) == 1){
+				RKCS = Util.clearBit(RKCS, 0);
 				//System.out.println("RK11OUT");
 				
 				if(RKCS << 28 >>> 29 == 2){
@@ -77,17 +77,19 @@ public class Rk11 extends Thread {
 						System.out.printf("%02x ",Memory.mem[i]);
 					}
 					*/
-					
-					RKCS = 128;
+					RKCS = Util.setBit(RKCS, 7);
 				}
 				
-				if((RKCS & 64) == 1){
-					//System.out.println("RK11INTER");
+				
+				if(Util.checkBit(RKCS, 6) == 1){
+					System.out.println("RK11INTER");
 					BR_PRI = 5;
 					BR_VEC = 0220;
 				}
 				
 			}
+			
+
 		}
 		
 	}

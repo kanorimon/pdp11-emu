@@ -67,26 +67,27 @@ public class Cpu extends Thread {
 			if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力
 			if(Pdp11.flgMemoryDump) printMemory(); //メモリダンプ出力
 
-			if(Kl11.BR_PRI < Rk11.BR_PRI){
-				if(Rk11.BR_PRI > Register.getPriority()){
-					//if(Register.get(6) < 50110) System.exit(0);
-					pushStack(Register.PSW);
-					pushStack(Register.get(7));
-					Register.set(7, getMemory2(Rk11.BR_VEC));
-					Rk11.BR_PRI = 0;
-					waitFlg = false;
-				}
-			}else{
-				if(Kl11.BR_PRI > Register.getPriority()){
-					//if(Register.get(6) < 50110) System.exit(0);
-					pushStack(Register.PSW);
-					pushStack(Register.get(7));
-					Register.set(7, getMemory2(Kl11.BR_VEC));
-					Kl11.BR_PRI = 0;
-					waitFlg = false;
+			if(waitFlg){
+				if(Kl11.BR_PRI < Rk11.BR_PRI){
+					if(Rk11.BR_PRI > Register.getPriority()){
+						//if(Register.get(6) < 50110) System.exit(0);
+						pushStack(Register.PSW);
+						pushStack(Register.get(7));
+						Register.set(7, getMemory2(Rk11.BR_VEC));
+						Rk11.BR_PRI = 0;
+						waitFlg = false;
+					}
+				}else{
+					if(Kl11.BR_PRI > Register.getPriority()){
+						//if(Register.get(6) < 50110) System.exit(0);
+						pushStack(Register.PSW);
+						pushStack(Register.get(7));
+						Register.set(7, getMemory2(Kl11.BR_VEC));
+						Kl11.BR_PRI = 0;
+						waitFlg = false;
+					}
 				}
 			}
-
 
 			if(!waitFlg){
 			//ワーク
@@ -665,6 +666,21 @@ public class Cpu extends Thread {
 					setMemory2(dstObj.address, tmp, Register.getPreMode());
 				}catch(ArrayIndexOutOfBoundsException e){
 					System.out.println("catch mtpi");
+					
+					/*
+					int oldPSW = Register.PSW;
+					int oldPC = Register.get(7);
+					//pushStack(Register.PSW);
+					//pushStack(Register.get(7));
+
+					//Register.PSW = Register.PSW & 4095;
+					//Register.PSW = Register.PSW | Memory.getMemory2(06);
+					Register.PSW = Memory.getMemory2(06);
+					Register.set(7, Memory.getMemory2(04));
+					pushStack(oldPSW);
+					pushStack(oldPC);
+					*/
+					
 					//Register.PSW = Register.PSW | 0x10;
 					/*
 					pushStack(Register.PSW);
