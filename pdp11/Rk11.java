@@ -67,7 +67,7 @@ public class Rk11 extends Thread {
 					int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
 					//System.out.printf("tmpRKDA=%x ", tmpRKDA);
 					System.out.printf("blockNo=%x\n", tmpRKDA*512);
-					for(int i=0;i<datasizeWord*2;i++){
+					for(int i=0;i<(datasizeWord+1)*2;i++){
 						Memory.mem[RKBA + i] = bf[tmpRKDA*512 + i];
 					}
 					
