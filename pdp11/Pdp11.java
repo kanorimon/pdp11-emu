@@ -76,18 +76,33 @@ public class Pdp11{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		Register.reset();
-		Memory.reset();
 
 		Cpu cpu = new Cpu();
 		
 		if(flgDismMode){
+			
+			//周辺装置リセット
+			Register.reset();
+			Memory.reset();
+			
 			Memory.load(bf, 0);
 			cpu.dissAssemble();
 		}
 
 		if(flgExeMode){
+			
+			//周辺装置リセット
+			Register.reset();
+			Mmu.reset();
+			Memory.reset();
+			Kl11.reset();
+			Rk11.reset();
+			
+			Kl11 kl11 = new Kl11();
+			kl11.start();
+			Rk11 rk11 = new Rk11();
+			rk11.start();
+			
 			Memory.fileload(bf);
 			cpu.start();
 		}
