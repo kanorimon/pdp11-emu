@@ -65,7 +65,7 @@ public class Cpu extends Thread {
 			
 			if(Pdp11.flgDebugMode>1) printDebug(); //レジスタ・フラグ出力
 			if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力
-			if(Pdp11.flgMemoryDump) printMemory(); //メモリダンプ出力
+			//if(Pdp11.flgMemoryDump) printMemory(); //メモリダンプ出力
 
 			if(waitFlg){
 				if(Kl11.BR_PRI < Rk11.BR_PRI){

@@ -106,17 +106,16 @@ public class Memory {
 		}
 	}
 	
-/*	static void load(byte[] bf){
+	static void fileload(byte[] bf){
 		//マジックナンバーを取得
-		magicNo = ((int)bf[0] & 0xFF)|(((int)bf[1] & 0xFF) << 8);
+		int magicNo = ((int)bf[0] & 0xFF)|(((int)bf[1] & 0xFF) << 8);
 
 		//サイズを取得
-		textSize = ((int)bf[2] & 0xFF)|(((int)bf[3] & 0xFF) << 8);
-		dataSize = ((int)bf[4] & 0xFF)|(((int)bf[5] & 0xFF) << 8);
-		bssSize = ((int)bf[6] & 0xFF)|(((int)bf[7] & 0xFF) << 8);
+		int textSize = ((int)bf[2] & 0xFF)|(((int)bf[3] & 0xFF) << 8);
+		int dataSize = ((int)bf[4] & 0xFF)|(((int)bf[5] & 0xFF) << 8);
+		//int bssSize = ((int)bf[6] & 0xFF)|(((int)bf[7] & 0xFF) << 8);
 		
 		//メモリ初期化
-		mem = new byte[MEMORY_SIZE];
 		int i;
 		int cnt = 0;
 		
@@ -140,13 +139,8 @@ public class Memory {
 			mem[cnt] = bf[i];
 			cnt++;
 		}
-
-		//その他のメモリ初期化
-		for(;cnt<MEMORY_SIZE;cnt++){
-			mem[cnt] = 0;
-		}
 	}
-	*/
+	
 	
 	//2バイト単位でリトルエンディアンを反転して10進数で取得
 	static int getMemory2(int addr){

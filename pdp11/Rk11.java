@@ -84,15 +84,8 @@ public class Rk11 extends Thread {
 						BR_VEC = 0220;
 					}					
 				}
-				
-				
-
-				
 			}
-			
-
 		}
-		
 	}
 
 	static int boot_rom[] = {
