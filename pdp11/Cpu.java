@@ -63,8 +63,9 @@ public class Cpu extends Thread {
 			exeCnt++;
 			//if(exeCnt > 1000000) System.exit(0);
 			
+			if(Pdp11.flgDebugMode>=1) popCall(Register.get(7)); //シンボルPOP
 			if(Pdp11.flgDebugMode>1) printDebug(); //レジスタ・フラグ出力
-			if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力
+			//if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力
 			//if(Pdp11.flgMemoryDump) printMemory(); //メモリダンプ出力
 
 			if(waitFlg){
@@ -1632,7 +1633,7 @@ public class Cpu extends Thread {
 
 	//レジスタ・フラグの出力
 	void printDebug(){
-		popCall(Register.get(7));
+		//popCall(Register.get(7));
 		Register.printDebug();
 	}
 	
@@ -1655,7 +1656,7 @@ public class Cpu extends Thread {
 	
 	//関数呼び出しをprint
 	void printCall(){
-		if(Pdp11.flgDebugMode>1 && dbgList.size() != 0){
+		if(Pdp11.flgDebugMode>=1 && dbgList.size() != 0){
 			System.out.print("\n***StackTrace***\n");
 			
 			for(int i=0;i<dbgList.size(); i++){

@@ -23,8 +23,8 @@ public class Pdp11{
 	 */
 	public static void main(String[] args){
 		//モード設定
-		if(args.length < 2 || !(args[0].substring(0,1).equals("-"))){
-			System.out.println("オプションを指定してください。\n-e:実行 -v:デバッグモードで実行 -d:逆アセンブル");
+		if(args.length < 1 || !(args[0].substring(0,1).equals("-"))){
+			System.out.println("オプションを指定してください。\n-e:実行 -v:デバッグモードで実行 -s:シンボルを出力して実行 -d:逆アセンブル");
 			return;
 		}
 
