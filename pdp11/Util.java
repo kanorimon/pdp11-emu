@@ -25,7 +25,7 @@ public class Util {
 		if(Pdp11.argsFileName.length()!=0){
 			switch(pc){
 			case 0320:
-			case 0412:
+			//case 0412:
 			case 0524:
 			case 0526:
 			case 0634:
@@ -312,7 +312,7 @@ public class Util {
 		}else{
 			switch(pc){
 			case 0320:
-			case 0412:
+			//case 0412:
 			case 0524:
 			case 0526:
 			case 0634:

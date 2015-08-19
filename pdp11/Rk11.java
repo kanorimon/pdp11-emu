@@ -80,11 +80,20 @@ public class Rk11 extends Thread {
 					RKCS = Util.setBit(RKCS, 7);
 					if(Util.checkBit(RKCS, 6) == 1){
 						System.out.println("RK11INTER");
+						//System.out.printf("NowMode=%d\n",Register.getNowMode());
 						BR_PRI = 5;
 						BR_VEC = 0220;
 					}					
 				}
 			}
+			
+			if(RKER != 0){
+				RKCS = Util.setBit(RKCS, 15);
+				if((RKER << 16 >>> 21) != 0){
+					RKCS = Util.setBit(RKCS, 14);
+				}
+			}
+			
 		}
 	}
 

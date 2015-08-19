@@ -68,18 +68,25 @@ public class Cpu extends Thread {
 			//if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力
 			//if(Pdp11.flgMemoryDump) printMemory(); //メモリダンプ出力
 
-			if(waitFlg){
+			
+			//if(waitFlg){
 				if(Kl11.BR_PRI < Rk11.BR_PRI){
+					//System.out.println("RK11トラップ");
 					if(Rk11.BR_PRI > Register.getPriority()){
 						//if(Register.get(6) < 50110) System.exit(0);
+						//System.out.println("RK11トラップ2");
+						System.out.printf("prePC=%x ",Register.get(7));
 						pushStack(Register.PSW);
 						pushStack(Register.get(7));
 						Register.set(7, getMemory2(Rk11.BR_VEC));
+						System.out.printf("BR_VEC=%x ",Rk11.BR_VEC);
+						System.out.printf("BR_VEC_mem=%x\n",getMemory2(Rk11.BR_VEC));
 						Rk11.BR_PRI = 0;
 						waitFlg = false;
 					}
 				}else{
 					if(Kl11.BR_PRI > Register.getPriority()){
+						//System.out.println("KL11トラップ");
 						//if(Register.get(6) < 50110) System.exit(0);
 						pushStack(Register.PSW);
 						pushStack(Register.get(7));
@@ -88,7 +95,8 @@ public class Cpu extends Thread {
 						waitFlg = false;
 					}
 				}
-			}
+			//}
+			
 
 			if(!waitFlg){
 			//ワーク
