@@ -18,6 +18,7 @@ public class Util {
 		return (bits & (~(1 << setNo)));
 	}
 
+	/*
 	static boolean isPush(int pc){
 
 		boolean ret = false;
@@ -599,12 +600,13 @@ public class Util {
 		}
 		return ret;
 	}
+	*/
 	
 	static void printSub(int pc){
 
 		if(Pdp11.argsFileName.length()!=0){
 			if(pc==0320) System.out.print("trap");
-			if(pc==0412) System.out.print("call");
+			//if(pc==0412) System.out.print("call");
 			if(pc==0524) System.out.print("_display");
 			if(pc==0524) System.out.print("_savfp");
 			if(pc==0526) System.out.print("_incupc");
@@ -640,8 +642,8 @@ public class Util {
 			if(pc==03514) System.out.print("_ldiv");
 			if(pc==03530) System.out.print("_lrem");
 			if(pc==03546) System.out.print("_lshift");
-			if(pc==03566) System.out.print("csv");
-			if(pc==03602) System.out.print("cret");
+			//if(pc==03566) System.out.print("csv");
+			//if(pc==03602) System.out.print("cret");
 			if(pc==03620) System.out.print("_main");
 			if(pc==04424) System.out.print("_sureg");
 			if(pc==04604) System.out.print("_estabur");
@@ -894,7 +896,7 @@ public class Util {
 			if(pc==0140000) System.out.print("_u");
 		}else{
 			if(pc==0320) System.out.print("trap");
-			if(pc==0412) System.out.print("call");
+			//if(pc==0412) System.out.print("call");
 			if(pc==0524) System.out.print("_display");
 			if(pc==0524) System.out.print("_savfp");
 			if(pc==0526) System.out.print("_incupc");
@@ -930,8 +932,8 @@ public class Util {
 			if(pc==03514) System.out.print("_ldiv");
 			if(pc==03530) System.out.print("_lrem");
 			if(pc==03546) System.out.print("_lshift");
-			if(pc==03566) System.out.print("csv");
-			if(pc==03602) System.out.print("cret");
+			//if(pc==03566) System.out.print("csv");
+			//if(pc==03602) System.out.print("cret");
 			if(pc==03620) System.out.print("_main");
 			if(pc==04466) System.out.print("_sureg");
 			if(pc==04650) System.out.print("_estabur");

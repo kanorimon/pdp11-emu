@@ -42,58 +42,66 @@ public class Rk11 extends Thread {
 			}catch (InterruptedException e){
 			}
 			
-			if(Util.checkBit(RKCS, 0) == 1){
-				RKCS = Util.clearBit(RKCS, 0);
-				//System.out.println("RK11OUT");
-				
-				if(RKCS << 28 >>> 29 == 2){
-					//バイナリ取得
-					String dir = System.getProperty("user.dir");
-					File file = new File(dir + "\\v6root");
-					Path fileName = file.toPath();
-					byte[] bf = null;
-					try {
-				        bf = java.nio.file.Files.readAllBytes(fileName);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					
-					System.out.printf("RKCS=%x ", RKCS);
-					System.out.printf("RKWC=%x ", RKWC);
-					int datasizeWord = ~(RKWC - 1 - 65535);
-					//System.out.printf("cnt=%x ", datasizeWord);
-					System.out.printf("RKBA=%x ", RKBA);
-					System.out.printf("RKDA=%x ", RKDA);
-					int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
-					//System.out.printf("tmpRKDA=%x ", tmpRKDA);
-					System.out.printf("blockNo=%x\n", tmpRKDA*512);
-					for(int i=0;i<(datasizeWord+1)*2;i++){
-						Memory.setMemory1(Mmu.analyzeMemory(RKBA + i,Register.getNowMode()), bf[tmpRKDA*512 + i]);
-					}
-					
-					/*
-					for(int i=0;i<256;i++){
-						if(i%16 == 0) System.out.print("\n");
-						System.out.printf("%02x ",Memory.mem[i]);
-					}
-					*/
-					RKCS = Util.setBit(RKCS, 7);
-					if(Util.checkBit(RKCS, 6) == 1){
-						System.out.println("RK11INTER");
-						//System.out.printf("NowMode=%d\n",Register.getNowMode());
-						BR_PRI = 5;
-						BR_VEC = 0220;
-					}					
-				}
+			//if(Util.checkBit(RKCS, 0) == 1){
+
+			//}
+			
+			//if(RKER != 0){
+
+			//}
+			
+		}
+	}
+	
+	static void rk11out(){
+		RKCS = Util.clearBit(RKCS, 0);
+		//System.out.println("RK11OUT");
+		
+		if(RKCS << 28 >>> 29 == 2){
+			//バイナリ取得
+			String dir = System.getProperty("user.dir");
+			File file = new File(dir + "\\v6root");
+			Path fileName = file.toPath();
+			byte[] bf = null;
+			try {
+		        bf = java.nio.file.Files.readAllBytes(fileName);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 			
-			if(RKER != 0){
-				RKCS = Util.setBit(RKCS, 15);
-				if((RKER << 16 >>> 21) != 0){
-					RKCS = Util.setBit(RKCS, 14);
-				}
+			System.out.printf("RKCS=%x ", RKCS);
+			System.out.printf("RKWC=%x ", RKWC);
+			int datasizeWord = ~(RKWC - 1 - 65535);
+			//System.out.printf("cnt=%x ", datasizeWord);
+			System.out.printf("RKBA=%x ", RKBA);
+			System.out.printf("RKDA=%x ", RKDA);
+			int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
+			//System.out.printf("tmpRKDA=%x ", tmpRKDA);
+			System.out.printf("blockNo=%x\n", tmpRKDA*512);
+			for(int i=0;i<(datasizeWord+1)*2;i++){
+				Memory.setMemory1(Mmu.analyzeMemory(RKBA + i,Register.getNowMode()), bf[tmpRKDA*512 + i]);
 			}
 			
+			/*
+			for(int i=0;i<256;i++){
+				if(i%16 == 0) System.out.print("\n");
+				System.out.printf("%02x ",Memory.mem[i]);
+			}
+			*/
+			RKCS = Util.setBit(RKCS, 7);
+			if(Util.checkBit(RKCS, 6) == 1){
+				System.out.println("RK11INTER");
+				//System.out.printf("NowMode=%d\n",Register.getNowMode());
+				BR_PRI = 5;
+				BR_VEC = 0220;
+			}					
+		}
+	}
+	
+	static void rk11error(){
+		RKCS = Util.setBit(RKCS, 15);
+		if((RKER << 16 >>> 21) != 0){
+			RKCS = Util.setBit(RKCS, 14);
 		}
 	}
 

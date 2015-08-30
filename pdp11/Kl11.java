@@ -17,6 +17,7 @@ public class Kl11 extends Thread {
 	static int BR_VEC; //割り込みベクタ
 	
 	static final int XCSR_READY = 7;
+	static final int XCSR_ID = 6;
 
 	static final int RCSR_BUSY = 11;
 	static final int RCSR_DONE = 7;
@@ -95,10 +96,12 @@ public class Kl11 extends Thread {
 			}
 			
 			//X割り込み
+			/*
 			if(Util.checkBit(XCSR,6) == 1){
 				BR_PRI = 4;
 				BR_VEC = 064;
 			}
+			*/
 			
 			if(inputStr.length() > 0){
 				RCSR = Util.setBit(RCSR,RCSR_BUSY);
@@ -114,15 +117,19 @@ public class Kl11 extends Thread {
 				RCSR = Util.clearBit(RCSR,RCSR_BUSY);
 			}
 			
+			/*
 			if(Util.checkBit(RCSR,RCSR_ENB) == 1){
 				RCSR = Util.clearBit(RCSR,RCSR_DONE);
 			}
+			*/
 			
 			//R割り込み
+			/*
 			if(Util.checkBit(RCSR,RCSR_ID) == 1 && Util.checkBit(RCSR,RCSR_DONE) == 1){
 				BR_PRI = 4;
 				BR_VEC = 060;
 			}
+			*/
 			
 		}
 	}

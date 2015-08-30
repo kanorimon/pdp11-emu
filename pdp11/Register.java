@@ -20,6 +20,7 @@ public class Register{
 	static int STACK_LIMIT; //STACK_LIMIT
 	static int PIRQ; //PIRQ
 	static int PB; //PB
+	static int CPUERR; //CPUERR
 	
 	static int[] kernelPAR; //カーネルPAR
 	static int[] userPAR; //ユーザーPAR
@@ -58,6 +59,7 @@ public class Register{
 		STACK_LIMIT = 0;
 		PIRQ = 0;
 		PB = 0;
+		CPUERR = 0;
 		
 		for(int i=0;i<8;i++){
 			kernelPAR[i] = 0;
@@ -205,6 +207,13 @@ public class Register{
 			System.out.print("-");
 		}
 
+		
+		//System.out.print(" ");
+		//System.out.print(String.format("%04x",Cpu.exeCnt));
+
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Register.CLOCK1));
+		
 		/*
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Memory.getMemory2(0x49fa)));

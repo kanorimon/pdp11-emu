@@ -8,7 +8,7 @@ public class Cpu extends Thread {
 	 * 変数定義
 	 */
 	int strnum; //逆アセンブラ出力用
-	int exeCnt = 0; //実行回数制御
+	static int exeCnt = 0; //実行回数制御
 	ArrayList<Integer> dbgList; //スタックトレース出力用 
 	ArrayList<Integer> rtnList; //スタックトレース出力用
 	
@@ -61,42 +61,68 @@ public class Cpu extends Thread {
 		for(;;){
 			
 			exeCnt++;
-			//if(exeCnt > 1000000) System.exit(0);
+			//if(exeCnt > 0x9f000) System.exit(0);
 			
-			if(Pdp11.flgDebugMode>=1) popCall(Register.get(7)); //シンボルPOP
-			if(Pdp11.flgDebugMode>1) printDebug(); //レジスタ・フラグ出力
 			//if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力
 			//if(Pdp11.flgMemoryDump) printMemory(); //メモリダンプ出力
 
+			//RK11
+			if(Util.checkBit(Rk11.RKCS, 0) == 1)	Rk11.rk11out();
+			if(Rk11.RKER != 0)	Rk11.rk11error();
 			
-			//if(waitFlg){
-				if(Kl11.BR_PRI < Rk11.BR_PRI){
-					//System.out.println("RK11トラップ");
-					if(Rk11.BR_PRI > Register.getPriority()){
-						//if(Register.get(6) < 50110) System.exit(0);
-						//System.out.println("RK11トラップ2");
-						System.out.printf("prePC=%x ",Register.get(7));
-						pushStack(Register.PSW);
-						pushStack(Register.get(7));
-						Register.set(7, getMemory2(Rk11.BR_VEC));
-						System.out.printf("BR_VEC=%x ",Rk11.BR_VEC);
-						System.out.printf("BR_VEC_mem=%x\n",getMemory2(Rk11.BR_VEC));
-						Rk11.BR_PRI = 0;
-						waitFlg = false;
-					}
-				}else{
-					if(Kl11.BR_PRI > Register.getPriority()){
-						//System.out.println("KL11トラップ");
-						//if(Register.get(6) < 50110) System.exit(0);
-						pushStack(Register.PSW);
-						pushStack(Register.get(7));
-						Register.set(7, getMemory2(Kl11.BR_VEC));
-						Kl11.BR_PRI = 0;
-						waitFlg = false;
-					}
+			//KL11
+			if(Util.checkBit(Kl11.RCSR,Kl11.RCSR_ENB) == 1)	
+				Kl11.RCSR = Util.clearBit(Kl11.RCSR,Kl11.RCSR_DONE);
+			if(Util.checkBit(Kl11.XCSR,Kl11.XCSR_ID) == 1&& Util.checkBit(Kl11.XCSR,Kl11.XCSR_READY) == 1){
+				Kl11.BR_PRI = 4;
+				Kl11.BR_VEC = 064;
+			}
+			if(Util.checkBit(Kl11.RCSR,Kl11.RCSR_ID) == 1 && Util.checkBit(Kl11.RCSR,Kl11.RCSR_DONE) == 1){
+				Kl11.BR_PRI = 4;
+				Kl11.BR_VEC = 060;
+			}
+			
+			//CLOCK
+			if(exeCnt%10000 == 0){
+				Register.CLOCK1 = Util.setBit(Register.CLOCK1, 7);
+			}else{
+				Register.CLOCK1 = Util.clearBit(Register.CLOCK1, 7);
+			}
+			
+			if(Util.checkBit(Register.CLOCK1, 7)==1 && Util.checkBit(Register.CLOCK1, 6)==1){
+				pushStack(Register.PSW);
+				pushStack(Register.get(7));
+				Register.set(7, getMemory2(0100));
+				//Register.CLOCK1 = Util.clearBit(Register.CLOCK1, 7);
+				waitFlg = false;
+			}else if(Kl11.BR_PRI < Rk11.BR_PRI){
+				//System.out.println("RK11トラップ");
+				if(Rk11.BR_PRI > Register.getPriority()){
+					//if(Register.get(6) < 50110) System.exit(0);
+					//System.out.println("RK11トラップ2");
+					//System.out.printf("prePC=%x ",Register.get(7));
+					pushStack(Register.PSW);
+					pushStack(Register.get(7));
+					Register.set(7, getMemory2(Rk11.BR_VEC));
+					//System.out.printf("BR_VEC=%x ",Rk11.BR_VEC);
+					//System.out.printf("BR_VEC_mem=%x\n",getMemory2(Rk11.BR_VEC));
+					Rk11.BR_PRI = 0;
+					waitFlg = false;
 				}
-			//}
+			}else{
+				if(Kl11.BR_PRI > Register.getPriority()){
+					//System.out.println("KL11トラップ");
+					//if(Register.get(6) < 50110) System.exit(0);
+					pushStack(Register.PSW);
+					pushStack(Register.get(7));
+					Register.set(7, getMemory2(Kl11.BR_VEC));
+					Kl11.BR_PRI = 0;
+					waitFlg = false;
+				}
+			}
 			
+			if(Pdp11.flgDebugMode>=1) popCall(Register.get(7)); //シンボルPOP
+			if(Pdp11.flgDebugMode>1) printDebug(); //レジスタ・フラグ出力
 
 			if(!waitFlg){
 			//ワーク
@@ -815,6 +841,12 @@ public class Cpu extends Thread {
 				break;
 			case SETD:
 				break;
+			case SEN:
+				Register.setCC(true, Register.getZ(),  Register.getV(), Register.getC());
+				break;
+			case SENZ:
+				Register.setCC(true, true,  Register.getV(), Register.getC());
+				break;
 			case SEV:
 				Register.setCC(Register.getN(), Register.getZ(), true, Register.getC());
 				break;
@@ -1190,7 +1222,7 @@ public class Cpu extends Thread {
 	    ROR, ROL, RTT, RTS, RTI,
 		MOV, MOVB, MUL,
 		NEG,
-		SBC, SETD, SEV, SOB, SUB, SWAB, SXT, SYS,
+		SBC, SETD, SEN, SEV, SENZ, SOB, SUB, SWAB, SXT, SYS,
 		TST, TSTB,
 		XOR,
 		RESET,
@@ -1241,6 +1273,16 @@ public class Cpu extends Thread {
 							switch(opnum  & 7){
 							case 2:
 								opcode = Opcode.SEV;
+								break;
+							}
+							break;
+						case 7:
+							switch(opnum  & 7){
+							case 0:
+								opcode = Opcode.SEN;
+								break;
+							case 4:
+								opcode = Opcode.SENZ;
 								break;
 							}
 							break;
@@ -1635,22 +1677,26 @@ public class Cpu extends Thread {
 	
 	//指定した命令を出力
 	void printOpcode(int opcode){
-		System.out.print(String.format("%04x", opcode));
-		System.out.print(" ");
+		if(exeCnt > 0xf0000){
+			System.out.print(String.format("%04x", opcode));
+			System.out.print(" ");
+		}
 	}
 
 	//レジスタ・フラグの出力
 	void printDebug(){
-		//popCall(Register.get(7));
-		Register.printDebug();
+		//if(exeCnt > 0xf0000){
+			//popCall(Register.get(7));
+			Register.printDebug();
+		//}
 	}
 	
 	//関数呼び出しをpush
 	void pushCall(int pc,int nextPc){
-		if(Util.isPush(pc)){
+		//if(Util.isPush(pc)){
 			dbgList.add(pc);
 			rtnList.add(nextPc);
-		}
+		//}
 	}
 
 	//関数呼び出しをpop
@@ -1665,13 +1711,15 @@ public class Cpu extends Thread {
 	//関数呼び出しをprint
 	void printCall(){
 		if(Pdp11.flgDebugMode>=1 && dbgList.size() != 0){
-			System.out.print("\n***StackTrace***\n");
+			//System.out.print("\n***StackTrace***\n");
+			System.out.print("\n*** ");
 			
 			for(int i=0;i<dbgList.size(); i++){
 				Util.printSub(dbgList.get(i));
-				System.out.print(" - ");
+				//System.out.print(" - ");
 			}
-			System.out.print("\n****************");
+			System.out.print("\n");
+			//System.out.print("\n****************");
 		}
 	}
 	
@@ -1917,6 +1965,12 @@ public class Cpu extends Thread {
  				break;
  			case SETD:
  				printDisasm("setd", "", "");
+ 				break;
+ 			case SEN:
+ 				printDisasm("sen", "", "");
+ 				break;
+ 			case SENZ:
+ 				printDisasm("senz", "", "");
  				break;
  			case SEV:
  				printDisasm("sev", "", "");

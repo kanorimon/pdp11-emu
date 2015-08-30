@@ -25,6 +25,8 @@ public class Memory {
 	final static int PIRQ = 0777772;
 	final static int PB = 0777770;
 
+	final static int CPUERR = 0777766;
+
 	final static int UISA7 = 0777656;
 	final static int UISA6 = 0777654;
 	final static int UISA5 = 0777652;
@@ -226,6 +228,8 @@ public class Memory {
 				return Kl11.XBUF;
 			case DISPLAY_REG:
 				return Kl11.consoleSwitchRegister;
+			case CPUERR:
+				return Register.CPUERR;
 			case PB:
 				return Register.PB;
 			case PIRQ:
@@ -391,6 +395,9 @@ public class Memory {
 				break;
 			case DISPLAY_REG:
 				Kl11.consoleSwitchRegister = src;
+				break;
+			case CPUERR:
+				Register.CPUERR = 0;
 				break;
 			case PB:
 				Register.PB = src;
