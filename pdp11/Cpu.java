@@ -66,6 +66,7 @@ public class Cpu extends Thread {
 			//if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力
 			//if(Pdp11.flgMemoryDump) printMemory(); //メモリダンプ出力
 
+			if(exeCnt % 10000000 == 0) System.out.printf("exeCnt=%d\n",exeCnt);
 			//RK11
 			if(Util.checkBit(Rk11.RKCS, 0) == 1)	Rk11.rk11out();
 			if(Rk11.RKER != 0)	Rk11.rk11error();
@@ -83,7 +84,7 @@ public class Cpu extends Thread {
 			}
 			
 			//CLOCK
-			if(exeCnt%10000 == 0){
+			if(exeCnt%1000 == 0){
 				Register.CLOCK1 = Util.setBit(Register.CLOCK1, 7);
 			}else{
 				Register.CLOCK1 = Util.clearBit(Register.CLOCK1, 7);
@@ -1581,6 +1582,7 @@ public class Cpu extends Thread {
 		addr = addr << 16 >>> 16;
 		int tmp = Memory.getMemory2(Mmu.analyzeMemory(addr, mode));
 		if(tmp == Integer.MAX_VALUE){
+			System.out.printf("execnt=%d\n",exeCnt);
 			System.out.println("max value");
 			System.exit(0);
 		}
@@ -1602,7 +1604,7 @@ public class Cpu extends Thread {
 	}
 	void setMemory2(int addr,int src,int mode){
 		addr = addr << 16 >>> 16;
-		Memory.setMemory2(Mmu.analyzeMemory(addr, mode),src);
+		Memory.setMemory2(Mmu.analyzeMemory(addr, mode), src);
 	}
 
 	//1バイト単位で指定箇所のメモリを更新
@@ -1611,7 +1613,7 @@ public class Cpu extends Thread {
 	}
 	void setMemory1(int addr,int src,int mode){
 		addr = addr << 16 >>> 16;
-		Memory.setMemory1(Mmu.analyzeMemory(addr, mode),src);
+		Memory.setMemory1(Mmu.analyzeMemory(addr, mode), src);
 	}
 	
 	//メモリ上のデータを取得して、PC+2する
@@ -1626,7 +1628,7 @@ public class Cpu extends Thread {
 			strnum++;
 		}
 		
-		Register.add(7,2); //PC+2
+		Register.add(7, 2); //PC+2
 		
 		return opcode;
 	}
@@ -1642,7 +1644,7 @@ public class Cpu extends Thread {
 	//スタックプッシュ
 	void pushStack(int n){
 		Register.add(6,-2);
-		setMemory2(Register.get(6),n);
+		setMemory2(Register.get(6), n);
 	}
 	
 	//スタックポップ
@@ -1677,7 +1679,7 @@ public class Cpu extends Thread {
 	
 	//指定した命令を出力
 	void printOpcode(int opcode){
-		if(exeCnt > 0xf0000){
+		if(exeCnt > 31100000){
 			System.out.print(String.format("%04x", opcode));
 			System.out.print(" ");
 		}
@@ -1685,10 +1687,10 @@ public class Cpu extends Thread {
 
 	//レジスタ・フラグの出力
 	void printDebug(){
-		//if(exeCnt > 0xf0000){
+		if(exeCnt > 31100000){
 			//popCall(Register.get(7));
 			Register.printDebug();
-		//}
+		}
 	}
 	
 	//関数呼び出しをpush
@@ -1711,15 +1713,18 @@ public class Cpu extends Thread {
 	//関数呼び出しをprint
 	void printCall(){
 		if(Pdp11.flgDebugMode>=1 && dbgList.size() != 0){
-			//System.out.print("\n***StackTrace***\n");
-			System.out.print("\n*** ");
-			
-			for(int i=0;i<dbgList.size(); i++){
-				Util.printSub(dbgList.get(i));
-				//System.out.print(" - ");
+
+			if(exeCnt > 31100000) {
+				//System.out.print("\n***StackTrace***\n");
+				System.out.print("\n*** ");
+
+				for (int i = 0; i < dbgList.size(); i++) {
+					Util.printSub(dbgList.get(i));
+					//System.out.print(" - ");
+				}
+				System.out.print("\n");
+				//System.out.print("\n****************");
 			}
-			System.out.print("\n");
-			//System.out.print("\n****************");
 		}
 	}
 	

@@ -83,8 +83,9 @@ public class Kl11 extends Thread {
 	public void run(){
 		System.out.println("KL11 run");
 
+		//consoleSwitchRegister = 0173030; //電源ON
 		consoleSwitchRegister = 1; //電源ON
-		
+
 		CommandReceiver commandReceiver = new CommandReceiver();
         commandReceiver.start();
         

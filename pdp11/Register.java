@@ -212,7 +212,7 @@ public class Register{
 		//System.out.print(String.format("%04x",Cpu.exeCnt));
 
 		System.out.print(" ");
-		System.out.print(String.format("%04x",Register.CLOCK1));
+		System.out.print(String.format("%d",getNowMode() ));
 		
 		/*
 		System.out.print(" ");
