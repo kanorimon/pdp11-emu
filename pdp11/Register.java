@@ -92,10 +92,10 @@ public class Register{
 	
 	//レジスタに加算
 	static void add(int regNo,int val){
-		if(get(regNo)+val > 0xffff){
-			set(regNo, (get(regNo)+val) << 16 >>> 16);
+		if(regNo == 6 && getNowMode() != 0){
+			reg6_u = (reg6_u+val) << 16 >>> 16;
 		}else{
-			set(regNo, get(regNo) + val);
+			set(regNo, (get(regNo)+val) << 16 >>> 16);
 		}
 	}
 
@@ -211,10 +211,19 @@ public class Register{
 		//System.out.print(" ");
 		//System.out.print(String.format("%04x",Cpu.exeCnt));
 
-		System.out.print(" ");
-		System.out.print(String.format("%d",getNowMode() ));
-		
 		/*
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(0xaac0) ));
+
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Mmu.analyzeMemoryKernel(0xc000)));
+
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(Mmu.analyzeMemoryKernel(0xc000)) ));
+
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getMemory2(Mmu.analyzeMemoryKernel(Register.get(6)))));
+
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Memory.getMemory2(0x49fa)));
 		
