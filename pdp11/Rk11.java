@@ -1,7 +1,9 @@
 package pdp11;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
 public class Rk11 extends Thread {
@@ -56,7 +58,50 @@ public class Rk11 extends Thread {
 	static void rk11out(){
 		RKCS = Util.clearBit(RKCS, 0);
 		//System.out.println("RK11OUT");
-		
+
+		if(RKCS << 28 >>> 29 == 1){
+			//バイナリ取得
+			String dir = System.getProperty("user.dir");
+			File file = new File(dir + "\\v6root");
+
+			System.out.print("RK11-Write ");
+
+			System.out.printf("RKCS=%x ", RKCS);
+			System.out.printf("RKWC=%x ", RKWC);
+			int datasizeWord = (~(RKWC - 1 - 65535)) + 1;
+			System.out.printf("cnt=%x ", datasizeWord);
+			System.out.printf("RKBA=%x ", RKBA);
+			System.out.printf("RKDA=%x ", RKDA);
+			int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
+			//System.out.printf("tmpRKDA=%x ", tmpRKDA);
+			System.out.printf("blockNo=%x\n", tmpRKDA*512);
+
+			//書き込み内容取得
+			byte[] writeByte = new byte[datasizeWord*2];
+
+			for(int i=0;i<datasizeWord*2;i++){
+				writeByte[i] = (byte) (Memory.getMemory1(Mmu.analyzeMemory(RKBA + i, Register.getNowMode())));
+			}
+
+			//ランダムアクセスファイル取得
+			RandomAccessFile raf;
+			try {
+				raf = new RandomAccessFile(file, "rw");
+				raf.seek(tmpRKDA);
+				raf.write(writeByte);
+				raf.close();
+
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			RKCS = Util.setBit(RKCS, 7);
+		}
+
 		if(RKCS << 28 >>> 29 == 2){
 			//バイナリ取得
 			String dir = System.getProperty("user.dir");
@@ -68,20 +113,22 @@ public class Rk11 extends Thread {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+
+			System.out.print("RK11-Read ");
+
 			System.out.printf("RKCS=%x ", RKCS);
 			System.out.printf("RKWC=%x ", RKWC);
-			int datasizeWord = ~(RKWC - 1 - 65535);
-			//System.out.printf("cnt=%x ", datasizeWord);
+			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
+			System.out.printf("cnt=%x ", datasizeWord);
 			System.out.printf("RKBA=%x ", RKBA);
 			System.out.printf("RKDA=%x ", RKDA);
 			int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
 			//System.out.printf("tmpRKDA=%x ", tmpRKDA);
 			System.out.printf("blockNo=%x\n", tmpRKDA*512);
-			for(int i=0;i<(datasizeWord+1)*2;i++){
+			for(int i=0;i<datasizeWord*2;i++){
 				Memory.setMemory1(Mmu.analyzeMemory(RKBA + i,Register.getNowMode()), bf[tmpRKDA*512 + i]);
 			}
-			
+
 			/*
 			for(int i=0;i<256;i++){
 				if(i%16 == 0) System.out.print("\n");
@@ -89,13 +136,16 @@ public class Rk11 extends Thread {
 			}
 			*/
 			RKCS = Util.setBit(RKCS, 7);
-			if(Util.checkBit(RKCS, 6) == 1){
-				System.out.println("RK11INTER");
-				//System.out.printf("NowMode=%d\n",Register.getNowMode());
-				BR_PRI = 5;
-				BR_VEC = 0220;
-			}					
+
 		}
+
+		if(Util.checkBit(RKCS, 6) == 1){
+			System.out.println("RK11INTER");
+			//System.out.printf("NowMode=%d\n",Register.getNowMode());
+			BR_PRI = 5;
+			BR_VEC = 0220;
+		}
+
 	}
 	
 	static void rk11error(){

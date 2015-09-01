@@ -8,7 +8,7 @@ public class Cpu extends Thread {
 	 * 変数定義
 	 */
 	int strnum; //逆アセンブラ出力用
-	static int exeCnt = 0; //実行回数制御
+	static int exeCnt = 10000; //実行回数制御
 	ArrayList<Integer> dbgList; //スタックトレース出力用 
 	ArrayList<Integer> rtnList; //スタックトレース出力用
 	
@@ -66,9 +66,12 @@ public class Cpu extends Thread {
 			//if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力
 			//if(Pdp11.flgMemoryDump) printMemory(); //メモリダンプ出力
 
-			if(exeCnt % 10000000 == 0) System.out.printf("exeCnt=%d\n",exeCnt);
+			//if(exeCnt % 10000000 == 0) System.out.printf("exeCnt=%d\n",exeCnt);
 			//RK11
-			if(Util.checkBit(Rk11.RKCS, 0) == 1)	Rk11.rk11out();
+			if(Util.checkBit(Rk11.RKCS, 0) == 1){
+				Rk11.rk11out();
+				exeCnt = 0;
+			}
 			if(Rk11.RKER != 0)	Rk11.rk11error();
 			
 			//KL11
@@ -1679,7 +1682,7 @@ public class Cpu extends Thread {
 	
 	//指定した命令を出力
 	void printOpcode(int opcode){
-		if(exeCnt > 31100000){
+		if(exeCnt < 5000 || Pdp11.flgDismMode){
 			System.out.print(String.format("%04x", opcode));
 			System.out.print(" ");
 		}
@@ -1687,7 +1690,7 @@ public class Cpu extends Thread {
 
 	//レジスタ・フラグの出力
 	void printDebug(){
-		if(exeCnt > 31100000){
+		if(exeCnt < 5000){
 			//popCall(Register.get(7));
 			Register.printDebug();
 		}
@@ -1714,7 +1717,7 @@ public class Cpu extends Thread {
 	void printCall(){
 		if(Pdp11.flgDebugMode>=1 && dbgList.size() != 0){
 
-			if(exeCnt > 31100000) {
+			if(exeCnt < 5000){
 				//System.out.print("\n***StackTrace***\n");
 				System.out.print("\n*** ");
 
