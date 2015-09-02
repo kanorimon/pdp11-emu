@@ -97,14 +97,14 @@ public class Memory {
 		
 		//System.out.print("RK11_BOOT_ROM : ");
 		for(int i=0;i<rom.length;i++){
-			setMemory2(startNo + i*2,rom[i]);
-			//System.out.printf("%04x ",getMemory2(startNo + i*2));
+			setPhyMemory2(startNo + i * 2, rom[i]);
+			//System.out.printf("%04x ",getPhyMemory2(startNo + i*2));
 		}
 	}
 
 	static void load(byte[] rom,int startNo){
 		for(int i=0;i<rom.length;i++){
-			setMemory1(startNo + i,rom[i]);
+			setPhyMemory1(startNo + i, rom[i]);
 		}
 	}
 	
@@ -145,7 +145,7 @@ public class Memory {
 	
 	
 	//2バイト単位でリトルエンディアンを反転して10進数で取得
-	static int getMemory2(int addr){
+	static int getPhyMemory2(int addr){
 		
 		if(addr >= IOADDRP){
 			switch(addr){
@@ -258,6 +258,7 @@ public class Memory {
 				return Rk11.RKDB;
 			default:
 				System.out.printf("\n#####get addr=%d#####\n",addr);
+				Cpu.memoryErrorFlg = true;
 				return Integer.MAX_VALUE;
 			}
 		}else{
@@ -266,16 +267,16 @@ public class Memory {
 	}
 
 	//1バイト単位で指定箇所のメモリを取得
-	static int getMemory1(int addr){
+	static int getPhyMemory1(int addr){
 		if(addr >= IOADDRP){
-			return getMemory2(addr) & 0xff;
+			return getPhyMemory2(addr) & 0xff;
 		}else{
 			return mem[addr];
 		}
 	}
 	
 	//2バイト単位で指定箇所のメモリを更新
-	static void setMemory2(int addr,int src){
+	static void setPhyMemory2(int addr, int src){
 		
 		if(addr >= IOADDRP){
 			switch(addr){
@@ -441,7 +442,8 @@ public class Memory {
 			default:
 				System.out.printf("execnt=%d\n",Cpu.exeCnt);
 				System.out.printf("\n#####set addr=%d#####\n",addr);
-				System.exit(0);
+				Cpu.memoryErrorFlg = true;
+				//System.exit(0);
 			}
 		}else{
 			mem[addr] = (byte)src;
@@ -450,9 +452,9 @@ public class Memory {
 	}
 
 	//1バイト単位で指定箇所のメモリを更新
-	static void setMemory1(int addr,int src){
+	static void setPhyMemory1(int addr, int src){
 		if(addr >= IOADDRP){
-			setMemory2(addr, (int)(src & 0xFF)|(int)(getMemory2(addr) & 0xFF00));
+			setPhyMemory2(addr, (int) (src & 0xFF) | (int) (getPhyMemory2(addr) & 0xFF00));
 		}else{
 			mem[addr] = (byte)src;
 		}

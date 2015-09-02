@@ -8,11 +8,13 @@ public class Cpu extends Thread {
 	 * 変数定義
 	 */
 	int strnum; //逆アセンブラ出力用
-	static int exeCnt = 10000; //実行回数制御
+	static int exeCnt = 100000; //実行回数制御
 	ArrayList<Integer> dbgList; //スタックトレース出力用 
 	ArrayList<Integer> rtnList; //スタックトレース出力用
 	
 	static boolean opGetFlg;
+
+	static boolean memoryErrorFlg;
 	
 	boolean waitFlg;
 	
@@ -23,6 +25,7 @@ public class Cpu extends Thread {
 		
 		waitFlg = false;
 		opGetFlg = false;
+		memoryErrorFlg = false;
 
 	}
 	
@@ -94,9 +97,10 @@ public class Cpu extends Thread {
 			}
 			
 			if(Util.checkBit(Register.CLOCK1, 7)==1 && Util.checkBit(Register.CLOCK1, 6)==1){
-				pushStack(Register.PSW);
-				pushStack(Register.get(7));
-				Register.set(7, getMemory2(0100));
+				pushKernelStack(Register.PSW);
+				pushKernelStack(Register.get(7));
+				Register.set(7, Memory.getPhyMemory2(0100));
+				Register.PSW = Memory.getPhyMemory2(0102);
 				//Register.CLOCK1 = Util.clearBit(Register.CLOCK1, 7);
 				waitFlg = false;
 			}else if(Kl11.BR_PRI < Rk11.BR_PRI){
@@ -105,11 +109,12 @@ public class Cpu extends Thread {
 					//if(Register.get(6) < 50110) System.exit(0);
 					//System.out.println("RK11トラップ2");
 					//System.out.printf("prePC=%x ",Register.get(7));
-					pushStack(Register.PSW);
-					pushStack(Register.get(7));
-					Register.set(7, getMemory2(Rk11.BR_VEC));
+					pushKernelStack(Register.PSW);
+					pushKernelStack(Register.get(7));
+					Register.set(7, Memory.getPhyMemory2(Rk11.BR_VEC));
+					Register.PSW = Memory.getPhyMemory2(Rk11.BR_VEC + 2);
 					//System.out.printf("BR_VEC=%x ",Rk11.BR_VEC);
-					//System.out.printf("BR_VEC_mem=%x\n",getMemory2(Rk11.BR_VEC));
+					//System.out.printf("BR_VEC_mem=%x\n",getPhyMemory2(Rk11.BR_VEC));
 					Rk11.BR_PRI = 0;
 					waitFlg = false;
 				}
@@ -117,9 +122,10 @@ public class Cpu extends Thread {
 				if(Kl11.BR_PRI > Register.getPriority()){
 					//System.out.println("KL11トラップ");
 					//if(Register.get(6) < 50110) System.exit(0);
-					pushStack(Register.PSW);
-					pushStack(Register.get(7));
-					Register.set(7, getMemory2(Kl11.BR_VEC));
+					pushKernelStack(Register.PSW);
+					pushKernelStack(Register.get(7));
+					Register.set(7, Memory.getPhyMemory2(Kl11.BR_VEC));
+					Register.PSW = Memory.getPhyMemory2(Kl11.BR_VEC + 2);
 					Kl11.BR_PRI = 0;
 					waitFlg = false;
 				}
@@ -583,10 +589,10 @@ public class Cpu extends Thread {
 
 				break;
 			case JSR:
-				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
+				dstObj = getField(dstObj, (opnum >> 3) & 7, opnum & 7);
 				
 				tmp = Register.get(7);
-				
+
 				pushStack(Register.get((opnum >> 6) & 7));
 				Register.set((opnum >> 6) & 7,Register.get(7));
 				Register.set(7, dstObj.address);
@@ -610,22 +616,35 @@ public class Cpu extends Thread {
 				srcObj = getField(srcObj,(opnum >> 3) & 7,opnum  & 7);
 
 				try{
-					//tmp = getMemory2(srcObj.operand, Register.getPreMode());
+					//tmp = getPhyMemory2(srcObj.operand, Register.getPreMode());
 					tmp = getMemory2(srcObj.address, Register.getPreMode());
 					//System.out.printf("\nmfpi=%04x,%04x,%04x\n",srcObj.address,Register.getPreMode(),tmp);
+
+					if(memoryErrorFlg){
+						pushKernelStack(Register.PSW);
+						pushKernelStack(Register.get(7));
+
+						Register.set(7, Memory.getPhyMemory2(04));
+						Register.PSW = Memory.getPhyMemory2(06);
+
+						memoryErrorFlg = false;
+						break;
+					}
+
 					pushStack(tmp);
+
 				}catch(ArrayIndexOutOfBoundsException e){
-					int oldPSW = Register.PSW;
-					int oldPC = Register.get(7);
-					//pushStack(Register.PSW);
-					//pushStack(Register.get(7));
+					//int oldPSW = Register.PSW;
+					//int oldPC = Register.get(7);
+					pushKernelStack(Register.PSW);
+					pushKernelStack(Register.get(7));
 
 					//Register.PSW = Register.PSW & 4095;
-					//Register.PSW = Register.PSW | Memory.getMemory2(06);
-					Register.PSW = Memory.getMemory2(06);
-					Register.set(7, Memory.getMemory2(04));
-					pushStack(oldPSW);
-					pushStack(oldPC);
+					//Register.PSW = Register.PSW | Memory.getPhyMemory2(06);
+					Register.set(7, Memory.getPhyMemory2(04));
+					Register.PSW = Memory.getPhyMemory2(06);
+					//pushStack(oldPSW);
+					//pushStack(oldPC);
 				}
 				
 				Register.setCC((srcObj.operand << 1 >>> 16)>0, srcObj.operand==0, false, Register.getC());
@@ -703,8 +722,22 @@ public class Cpu extends Thread {
 				try{
 					tmp = popStack();
 					setMemory2(dstObj.address, tmp, Register.getPreMode());
+
+					if(memoryErrorFlg){
+						pushStack(tmp);
+
+						pushKernelStack(Register.PSW);
+						pushKernelStack(Register.get(7));
+
+						Register.set(7, Memory.getPhyMemory2(04));
+						Register.PSW = Memory.getPhyMemory2(06);
+
+						memoryErrorFlg = false;
+						break;
+					}
+
 				}catch(ArrayIndexOutOfBoundsException e){
-					System.out.println("catch mtpi");
+					//System.out.println("catch mtpi");
 					
 					/*
 					int oldPSW = Register.PSW;
@@ -713,9 +746,9 @@ public class Cpu extends Thread {
 					//pushStack(Register.get(7));
 
 					//Register.PSW = Register.PSW & 4095;
-					//Register.PSW = Register.PSW | Memory.getMemory2(06);
-					Register.PSW = Memory.getMemory2(06);
-					Register.set(7, Memory.getMemory2(04));
+					//Register.PSW = Register.PSW | Memory.getPhyMemory2(06);
+					Register.PSW = Memory.getPhyMemory2(06);
+					Register.set(7, Memory.getPhyMemory2(04));
 					pushStack(oldPSW);
 					pushStack(oldPC);
 					*/
@@ -725,8 +758,8 @@ public class Cpu extends Thread {
 					pushStack(Register.PSW);
 					pushStack(Register.get(7));
 					Register.PSW = Register.PSW & 4095;
-					Register.PSW = Register.PSW | Memory.getMemory2(04);
-					Register.set(7, Memory.getMemory2(04));
+					Register.PSW = Register.PSW | Memory.getPhyMemory2(04);
+					Register.set(7, Memory.getPhyMemory2(04));
 					*/
 					
 				}
@@ -916,19 +949,19 @@ public class Cpu extends Thread {
 
 				break;
 			case SYS:
-				int oldPSW = Register.PSW;
-				int oldPC = Register.get(7);
-				//pushStack(Register.PSW);
-				//pushStack(Register.get(7));
+				//int oldPSW = Register.PSW;
+				//int oldPC = Register.get(7);
+				pushKernelStack(Register.PSW);
+				pushKernelStack(Register.get(7));
 
 				//Register.PSW = Register.PSW & 4095;
-				//Register.PSW = Register.PSW | Memory.getMemory2(036);
-				Register.PSW = Memory.getMemory2(036);
-				Register.set(7, Memory.getMemory2(034));
+				//Register.PSW = Register.PSW | Memory.getPhyMemory2(036);
+				Register.set(7, Memory.getPhyMemory2(034));
+				Register.PSW = Memory.getPhyMemory2(036);
 
-				pushStack(oldPSW);
-				pushStack(oldPC);
-				
+				//pushStack(oldPSW);
+				//pushStack(oldPC);
+
 				break;
 			case TST:
 				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
@@ -1091,7 +1124,7 @@ public class Cpu extends Thread {
 					//System.out.printf("\ncase6_opcode=%d,case6_register=%d", opcodeInt, Register.get(regNo));
 					//System.out.printf("\ncase6_address=%d", Register.get(regNo) + opcodeInt);
 					//System.out.printf("\ncase6_address=%d", (Register.get(regNo) + opcodeInt) << 16 >>> 16);
-					//System.out.printf("\ncase6_memory=%d", getMemory2((Register.get(regNo) + opcodeInt)) << 16 >>> 16);
+					//System.out.printf("\ncase6_memory=%d", getPhyMemory2((Register.get(regNo) + opcodeInt)) << 16 >>> 16);
 					field.setOperand(getMemory2(Register.get(regNo) + opcodeInt));
 					field.setAddress(Register.get(regNo) + opcodeInt);
 				}
@@ -1099,10 +1132,10 @@ public class Cpu extends Thread {
 				/*
 				opcodeShort = (short)getMem();
 				if(byteFlg){
-					field.setOperand(getMemory1(Register.get(regNo) + opcodeShort));
+					field.setOperand(getPhyMemory1(Register.get(regNo) + opcodeShort));
 					field.setAddress(Register.get(regNo) + opcodeShort);
 				}else{
-					field.setOperand(getMemory2(Register.get(regNo) + opcodeShort));
+					field.setOperand(getPhyMemory2(Register.get(regNo) + opcodeShort));
 					field.setAddress(Register.get(regNo) + opcodeShort);
 				}
 				break;
@@ -1116,8 +1149,8 @@ public class Cpu extends Thread {
 				break;
 				/*
 				opcodeShort = (short)getMem();
-				field.setOperand(getMemory2(getMemory2(Register.get(regNo) + opcodeShort)));
-				field.setAddress(getMemory2(Register.get(regNo) + opcodeShort));
+				field.setOperand(getPhyMemory2(getPhyMemory2(Register.get(regNo) + opcodeShort)));
+				field.setAddress(getPhyMemory2(Register.get(regNo) + opcodeShort));
 				break;
 				*/
 			}
@@ -1163,7 +1196,7 @@ public class Cpu extends Thread {
 				/*
 				opcodeShort = (short)getMem();
 				field.setAddress((int)opcodeShort);
-				field.setOperand(getMemory2(field.address)); //TODO
+				field.setOperand(getPhyMemory2(field.address)); //TODO
 				break;
 				*/
 			case 4:
@@ -1190,7 +1223,7 @@ public class Cpu extends Thread {
 				//相対
 				//命令に続くワードの内容 a を PC+2 に加算したものをアドレスとして使用する。
 				opcodeInt = getMem() << 16 >>> 16;
-				tmp = (opcodeInt + Register.get(7)) << 16 >>> 16;
+				tmp = (Register.get(7) + opcodeInt) << 16 >>> 16;
 				field.setOperand(getMemory2(tmp));
 				field.setAddress(tmp);
 				break;
@@ -1198,7 +1231,7 @@ public class Cpu extends Thread {
 				//相対間接
 				//命令に続くワードの内容 a を PC+2 に加算したものをアドレスのアドレスとして使用する。
 				opcodeInt = getMem() << 16 >>> 16;
-				tmp = opcodeInt + Register.get(7);
+				tmp = (Register.get(7) + opcodeInt) << 16 >>> 16;
 				field.setOperand(getMemory2(getMemory2(tmp))); //TODO
 				field.setAddress(getMemory2(tmp));
 				break;
@@ -1583,12 +1616,7 @@ public class Cpu extends Thread {
 	}
 	static int getMemory2(int addr, int mode){
 		addr = addr << 16 >>> 16;
-		int tmp = Memory.getMemory2(Mmu.analyzeMemory(addr, mode));
-		if(tmp == Integer.MAX_VALUE){
-			System.out.printf("execnt=%d\n",exeCnt);
-			System.out.println("max value");
-			System.exit(0);
-		}
+		int tmp = Memory.getPhyMemory2(Mmu.analyzeMemory(addr, mode));
 		return tmp;
 	}	
 	
@@ -1598,7 +1626,7 @@ public class Cpu extends Thread {
 	}
 	int getMemory1(int addr,int mode){
 		addr = addr << 16 >>> 16;
-		return Memory.getMemory1(Mmu.analyzeMemory(addr, mode));
+		return Memory.getPhyMemory1(Mmu.analyzeMemory(addr, mode));
 	}
 
 	//2バイト単位で指定箇所のメモリを更新
@@ -1607,7 +1635,7 @@ public class Cpu extends Thread {
 	}
 	void setMemory2(int addr,int src,int mode){
 		addr = addr << 16 >>> 16;
-		Memory.setMemory2(Mmu.analyzeMemory(addr, mode), src);
+		Memory.setPhyMemory2(Mmu.analyzeMemory(addr, mode), src);
 	}
 
 	//1バイト単位で指定箇所のメモリを更新
@@ -1616,7 +1644,7 @@ public class Cpu extends Thread {
 	}
 	void setMemory1(int addr,int src,int mode){
 		addr = addr << 16 >>> 16;
-		Memory.setMemory1(Mmu.analyzeMemory(addr, mode), src);
+		Memory.setPhyMemory1(Mmu.analyzeMemory(addr, mode), src);
 	}
 	
 	//メモリ上のデータを取得して、PC+2する
@@ -1636,18 +1664,16 @@ public class Cpu extends Thread {
 		return opcode;
 	}
 
-	/*
-	//カーネルスタックプッシュ
-	void pushKernelStack(int n){
-		Register.addKernelStack(-2);
-		setMemory2(Register.reg[6],n,0);
-	}
-	*/
-	
 	//スタックプッシュ
 	void pushStack(int n){
 		Register.add(6,-2);
 		setMemory2(Register.get(6), n);
+	}
+
+	//カーネルスタックプッシュ
+	void pushKernelStack(int n){
+		Register.addKernelStack(-2);
+		setMemory2(Register.getKernelStack(), n,0);
 	}
 	
 	//スタックポップ
@@ -1682,7 +1708,7 @@ public class Cpu extends Thread {
 	
 	//指定した命令を出力
 	void printOpcode(int opcode){
-		if(exeCnt < 9000 || Pdp11.flgDismMode){
+		if(exeCnt < 100000 || Pdp11.flgDismMode){
 			System.out.print(String.format("%04x", opcode));
 			System.out.print(" ");
 		}
@@ -1690,7 +1716,7 @@ public class Cpu extends Thread {
 
 	//レジスタ・フラグの出力
 	void printDebug(){
-		if(exeCnt < 9000){
+		if(exeCnt < 100000){
 			//popCall(Register.get(7));
 			Register.printDebug();
 		}
@@ -1717,7 +1743,7 @@ public class Cpu extends Thread {
 	void printCall(){
 		if(Pdp11.flgDebugMode>=1 && dbgList.size() != 0){
 
-			if(exeCnt < 9000){
+			if(exeCnt < 100000){
 				//System.out.print("\n***StackTrace***\n");
 				System.out.print("\n*** ");
 
