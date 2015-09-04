@@ -9,8 +9,9 @@ public class Memory {
 	//static int textSize;
 	//static int dataSize;
 	//static int bssSize;
-	
-	final static int MEMORY_SIZE = 253366;
+
+	final static int MEMORY_SIZE = 0760000;
+	//final static int MEMORY_SIZE = 262144;
 	//final static int MEMORY_SIZE = 253366000;
 	final static int HEADER_SIZE = 16;
 
@@ -147,7 +148,7 @@ public class Memory {
 	//2バイト単位でリトルエンディアンを反転して10進数で取得
 	static int getPhyMemory2(int addr){
 		
-		if(addr >= IOADDRP){
+		if(addr >= IOADDRP-1){
 			switch(addr){
 			case KISD0:
 				return Register.kernelPDR[0];
@@ -258,6 +259,7 @@ public class Memory {
 				return Rk11.RKDB;
 			default:
 				System.out.printf("\n#####get addr=%d#####\n",addr);
+				printPAR();
 				Cpu.memoryErrorFlg = true;
 				return Integer.MAX_VALUE;
 			}
@@ -278,7 +280,7 @@ public class Memory {
 	//2バイト単位で指定箇所のメモリを更新
 	static void setPhyMemory2(int addr, int src){
 		
-		if(addr >= IOADDRP){
+		if(addr >= IOADDRP-1){
 			switch(addr){
 			case KISD0:
 				Register.kernelPDR[0] = src;

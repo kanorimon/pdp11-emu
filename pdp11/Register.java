@@ -217,7 +217,13 @@ public class Register{
 		System.out.print(String.format("%x",(getNowMode())));
 
 		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0xa866)));
+		System.out.print(String.format("%x",(getPreMode())));
+
+		//System.out.print(" ");
+		//System.out.print(String.format("%04x",Memory.getPhyMemory2(0xa866)));
+
+		//System.out.print(" ");
+		//System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc3ca))));
 
 		/*
 		System.out.print(" ");

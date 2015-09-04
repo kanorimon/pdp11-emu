@@ -45,6 +45,7 @@ public class Mmu {
 			
 			int btrblockno = (Register.getUserBaseBlockNo(par) + blockno) << 6;
 
+			//System.out.printf("\nmemoryUser=%x\n",btrblockno + offset);
 			return btrblockno + offset;
 		}else{
 			return addr;
@@ -52,7 +53,7 @@ public class Mmu {
 	}
 	
 	static int getPAR(int addr){
-		return addr >>> 13;
+		return addr << 16 >>> 29;
 	}
 	
 }

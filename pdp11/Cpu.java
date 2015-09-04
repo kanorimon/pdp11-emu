@@ -8,14 +8,14 @@ public class Cpu extends Thread {
 	 * 変数定義
 	 */
 	int strnum; //逆アセンブラ出力用
-	static int exeCnt = 100000; //実行回数制御
+	static int exeCnt = 200000; //実行回数制御
 	ArrayList<Integer> dbgList; //スタックトレース出力用 
 	ArrayList<Integer> rtnList; //スタックトレース出力用
 	
 	static boolean opGetFlg;
 
 	static boolean memoryErrorFlg;
-	
+
 	boolean waitFlg;
 	
 	Cpu(){
@@ -28,48 +28,25 @@ public class Cpu extends Thread {
 		memoryErrorFlg = false;
 
 	}
-	
-	/*
-	void load(String[] args,int argsNo){
-		//バイナリ取得
-		File file = new File(args[argsNo]);
-		Path fileName = file.toPath();
-		byte[] bf = null;
-		try {
-	        bf = java.nio.file.Files.readAllBytes(fileName);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
-		//メモリにロード
-		Memory.load(bf);
-	}
-	*/
-	
 	public void run(){
-		//if(Pdp11.flgDismMode) dissAssemble(); //逆アセンブル
-		if(Pdp11.flgExeMode) execute(); //実行
+		if(Pdp11.flgExeMode) execute();
 	}
 
 	//インタプリタ
 	public void execute(){
-		//Register.set(7,0); //PCを初期化
 
 		FieldDto srcObj = new FieldDto();
 		FieldDto dstObj = new FieldDto();
+		//Operand srcOperand = new Operand();
+		//Operand dstOperand = new Operand();
 
 		boolean aprPrintFlg = false;
 		
-		//for(;Register.get(7)<Memory.textSize;){
 		for(;;){
 			
 			exeCnt++;
-			//if(exeCnt > 0x9f000) System.exit(0);
-			
-			//if(Pdp11.flgDebugMode==1) printCall(); //関数コール出力
-			//if(Pdp11.flgMemoryDump) printMemory(); //メモリダンプ出力
 
-			//if(exeCnt % 10000000 == 0) System.out.printf("exeCnt=%d\n",exeCnt);
 			//RK11
 			if(Util.checkBit(Rk11.RKCS, 0) == 1){
 				Rk11.rk11out();
@@ -145,7 +122,7 @@ public class Cpu extends Thread {
 				aprPrintFlg = true;
 				Memory.printPAR(); //メモリーマップ出力
 			}
-			
+
 			switch(opcode){
 			case ADC:
 				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum & 7);
@@ -613,11 +590,12 @@ public class Cpu extends Thread {
 
 				break;
 			case MFPI:
-				srcObj = getField(srcObj,(opnum >> 3) & 7,opnum  & 7);
+				srcObj = getField(srcObj,(opnum >> 3) & 7,opnum  & 7, false, Register.getPreMode());
 
 				try{
 					//tmp = getPhyMemory2(srcObj.operand, Register.getPreMode());
 					tmp = getMemory2(srcObj.address, Register.getPreMode());
+					//tmp = getMemory2(srcObj.address, Register.getNowMode());
 					//System.out.printf("\nmfpi=%04x,%04x,%04x\n",srcObj.address,Register.getPreMode(),tmp);
 
 					if(memoryErrorFlg){
@@ -717,11 +695,12 @@ public class Cpu extends Thread {
 				
 				break;
 			case MTPI:
-				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
-				
+				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7,false,Register.getPreMode());
+
 				try{
 					tmp = popStack();
 					setMemory2(dstObj.address, tmp, Register.getPreMode());
+					//setMemory2(dstObj.address, tmp, Register.getNowMode());
 
 					if(memoryErrorFlg){
 						pushStack(tmp);
@@ -999,8 +978,7 @@ public class Cpu extends Thread {
 			}
 		}
 	}
-	
-	
+
 	//フィールド取得（PC+オフセット*2 8bit（符号付））
 	FieldDto getOffset(FieldDto operand,int first,int second,int third){
 		operand.reset();
@@ -1022,13 +1000,19 @@ public class Cpu extends Thread {
 		return operand;
 	}
 
+
 	//フィールド取得（dst,src）
 	FieldDto getField(FieldDto field,int mode, int regNo){
 		return getField(field, mode, regNo, false);
 	}
 
 	//フィールド取得（dst,src）
-	FieldDto getField(FieldDto field,int mode, int regNo, boolean byteFlg){
+	FieldDto getField(FieldDto field,int mode, int regNo,boolean byteFlg){
+		return getField(field, mode, regNo, byteFlg, Register.getNowMode());
+	}
+
+	//フィールド取得（dst,src）
+	FieldDto getField(FieldDto field,int mode, int regNo, boolean byteFlg,int mmuMode){
 		opGetFlg = true;
 		field.reset();
 		
@@ -1057,10 +1041,10 @@ public class Cpu extends Thread {
 				//レジスタ間接
 				//registerにオペランドのアドレスがある。
 				if(byteFlg){
-					field.setOperand(getMemory1(Register.get(regNo)));
+					field.setOperand(getMemory1(Register.get(regNo),mmuMode));
 					field.setAddress(Register.get(regNo));
 				}else{
-					field.setOperand(getMemory2(Register.get(regNo)));
+					field.setOperand(getMemory2(Register.get(regNo),mmuMode));
 					field.setAddress(Register.get(regNo));
 				}
 				break;
@@ -1068,7 +1052,7 @@ public class Cpu extends Thread {
 				//自動インクリメント
 				//registerにオペランドのアドレスがあり、命令実行後にregisterの内容をインクリメントする。
 				if(byteFlg){
-					field.setOperand(getMemory1(Register.get(regNo)));
+					field.setOperand(getMemory1(Register.get(regNo),mmuMode));
 					field.setAddress(Register.get(regNo));
 					if(regNo==6){
 						Register.add(regNo,2);
@@ -1076,7 +1060,7 @@ public class Cpu extends Thread {
 						Register.add(regNo,1);
 					}
 				}else{
-					field.setOperand(getMemory2(Register.get(regNo)));
+					field.setOperand(getMemory2(Register.get(regNo),mmuMode));
 					field.setAddress(Register.get(regNo));
 					Register.add(regNo,2);
 				}
@@ -1084,8 +1068,8 @@ public class Cpu extends Thread {
 			case 3:
 				//自動インクリメント間接
 				//registerにオペランドへのポインタのアドレスがあり、命令実行後にregisterの内容を2だけインクリメントする。
-				field.setOperand(getMemory2(getMemory2(Register.get(regNo))));
-				field.setAddress(getMemory2(Register.get(regNo)));
+				field.setOperand(getMemory2(getMemory2(Register.get(regNo),mmuMode),mmuMode));
+				field.setAddress(getMemory2(Register.get(regNo),mmuMode));
 				Register.add(regNo,2);
 				break;
 			case 4:
@@ -1097,11 +1081,11 @@ public class Cpu extends Thread {
 					}else{
 						Register.add(regNo,-1);
 					}
-					field.setOperand(getMemory1(Register.get(regNo)));
+					field.setOperand(getMemory1(Register.get(regNo),mmuMode));
 					field.setAddress(Register.get(regNo));
 				}else{
 					Register.add(regNo,-2);
-					field.setOperand(getMemory2(Register.get(regNo)));
+					field.setOperand(getMemory2(Register.get(regNo),mmuMode));
 					field.setAddress(Register.get(regNo));
 				}
 				break;
@@ -1109,8 +1093,8 @@ public class Cpu extends Thread {
 				//自動デクリメント間接
 				//命令実行前にregisterを2だけデクリメントし、それをオペランドへのポインタのアドレスとして使用する。
 				Register.add(regNo,-2);
-				field.setOperand(getMemory2(getMemory2(Register.get(regNo))));
-				field.setAddress(getMemory2(Register.get(regNo)));
+				field.setOperand(getMemory2(getMemory2(Register.get(regNo),mmuMode),mmuMode));
+				field.setAddress(getMemory2(Register.get(regNo),mmuMode));
 				break;
 			case 6:
 				//インデックス
@@ -1118,41 +1102,24 @@ public class Cpu extends Thread {
 				
 				opcodeInt = getMem() << 16 >>> 16;
 				if(byteFlg){
-					field.setOperand(getMemory1(Register.get(regNo) + opcodeInt));
+					field.setOperand(getMemory1(Register.get(regNo) + opcodeInt,mmuMode));
 					field.setAddress(Register.get(regNo) + opcodeInt);
 				}else{
 					//System.out.printf("\ncase6_opcode=%d,case6_register=%d", opcodeInt, Register.get(regNo));
 					//System.out.printf("\ncase6_address=%d", Register.get(regNo) + opcodeInt);
 					//System.out.printf("\ncase6_address=%d", (Register.get(regNo) + opcodeInt) << 16 >>> 16);
 					//System.out.printf("\ncase6_memory=%d", getPhyMemory2((Register.get(regNo) + opcodeInt)) << 16 >>> 16);
-					field.setOperand(getMemory2(Register.get(regNo) + opcodeInt));
+					field.setOperand(getMemory2(Register.get(regNo) + opcodeInt,mmuMode));
 					field.setAddress(Register.get(regNo) + opcodeInt);
 				}
 				break;
-				/*
-				opcodeShort = (short)getMem();
-				if(byteFlg){
-					field.setOperand(getPhyMemory1(Register.get(regNo) + opcodeShort));
-					field.setAddress(Register.get(regNo) + opcodeShort);
-				}else{
-					field.setOperand(getPhyMemory2(Register.get(regNo) + opcodeShort));
-					field.setAddress(Register.get(regNo) + opcodeShort);
-				}
-				break;
-				*/
 			case 7:
 				//インデックス間接
 				//register+Xがオペランドへのポインタのアドレス。Xはこの命令に続くワード。
 				opcodeInt = getMem() << 16 >>> 16;
-				field.setOperand(getMemory2(getMemory2(Register.get(regNo) + opcodeInt)));
-				field.setAddress(getMemory2(Register.get(regNo) + opcodeInt));
+				field.setOperand(getMemory2(getMemory2(Register.get(regNo) + opcodeInt,mmuMode)));
+				field.setAddress(getMemory2(Register.get(regNo) + opcodeInt,mmuMode));
 				break;
-				/*
-				opcodeShort = (short)getMem();
-				field.setOperand(getPhyMemory2(getPhyMemory2(Register.get(regNo) + opcodeShort)));
-				field.setAddress(getPhyMemory2(Register.get(regNo) + opcodeShort));
-				break;
-				*/
 			}
 			break;
 
@@ -1168,10 +1135,10 @@ public class Cpu extends Thread {
 				//レジスタ間接
 				//registerにオペランドのアドレスがある。
 				if(byteFlg){
-					field.setOperand(getMemory1(Register.get(regNo)));
+					field.setOperand(getMemory1(Register.get(regNo),mmuMode));
 					field.setAddress(Register.get(regNo));
 				}else{
-					field.setOperand(getMemory2(Register.get(regNo)));
+					field.setOperand(getMemory2(Register.get(regNo),mmuMode));
 					field.setAddress(Register.get(regNo));
 				}
 				break;			
@@ -1181,34 +1148,23 @@ public class Cpu extends Thread {
 				opcodeInt = getMem() << 16 >>> 16;
 				field.setOperand(opcodeInt);
 				break;
-				/*
-				opcodeShort = (short)getMem();
-				field.setOperand((int)opcodeShort);
-				break;
-				*/
 			case 3:
 				//絶対
 				//オペランドの絶対アドレスが命令内にある。
 				opcodeInt = getMem() << 16 >>> 16;
 				field.setAddress(opcodeInt);
-				field.setOperand(getMemory2(field.address)); //TODO
+				field.setOperand(getMemory2(field.address,mmuMode)); //TODO
 				break;
-				/*
-				opcodeShort = (short)getMem();
-				field.setAddress((int)opcodeShort);
-				field.setOperand(getPhyMemory2(field.address)); //TODO
-				break;
-				*/
 			case 4:
 				//自動デクリメント
 				//命令実行前にregisterをデクリメントし、それをオペランドのアドレスとして使用する。
 				if(byteFlg){
 					Register.add(regNo,-2);
-					field.setOperand(getMemory1(Register.get(regNo)));
+					field.setOperand(getMemory1(Register.get(regNo),mmuMode));
 					field.setAddress(Register.get(regNo));
 				}else{
 					Register.add(regNo,-2);
-					field.setOperand(getMemory2(Register.get(regNo)));
+					field.setOperand(getMemory2(Register.get(regNo),mmuMode));
 					field.setAddress(Register.get(regNo));
 				}
 				break;
@@ -1216,15 +1172,15 @@ public class Cpu extends Thread {
 				//自動デクリメント間接
 				//命令実行前にregisterを2だけデクリメントし、それをオペランドへのポインタのアドレスとして使用する。
 				Register.add(regNo,-4);
-				field.setOperand(getMemory2(getMemory2(Register.get(regNo))));
-				field.setAddress(getMemory2(Register.get(regNo)));
+				field.setOperand(getMemory2(getMemory2(Register.get(regNo),mmuMode),mmuMode));
+				field.setAddress(getMemory2(Register.get(regNo),mmuMode));
 				break;
 			case 6:
 				//相対
 				//命令に続くワードの内容 a を PC+2 に加算したものをアドレスとして使用する。
 				opcodeInt = getMem() << 16 >>> 16;
 				tmp = (Register.get(7) + opcodeInt) << 16 >>> 16;
-				field.setOperand(getMemory2(tmp));
+				field.setOperand(getMemory2(tmp,mmuMode));
 				field.setAddress(tmp);
 				break;
 			case 7:
@@ -1232,8 +1188,8 @@ public class Cpu extends Thread {
 				//命令に続くワードの内容 a を PC+2 に加算したものをアドレスのアドレスとして使用する。
 				opcodeInt = getMem() << 16 >>> 16;
 				tmp = (Register.get(7) + opcodeInt) << 16 >>> 16;
-				field.setOperand(getMemory2(getMemory2(tmp))); //TODO
-				field.setAddress(getMemory2(tmp));
+				field.setOperand(getMemory2(getMemory2(tmp,mmuMode),mmuMode)); //TODO
+				field.setAddress(getMemory2(tmp,mmuMode));
 				break;
 			}
 			break;
@@ -1241,10 +1197,6 @@ public class Cpu extends Thread {
 		opGetFlg = false;
 		return field;
 	}
-
-	
-
-
 
 	/*
 	 * ニーモニック
@@ -1708,7 +1660,7 @@ public class Cpu extends Thread {
 	
 	//指定した命令を出力
 	void printOpcode(int opcode){
-		if(exeCnt < 100000 || Pdp11.flgDismMode){
+		if(exeCnt < 200000 || Pdp11.flgDismMode){
 			System.out.print(String.format("%04x", opcode));
 			System.out.print(" ");
 		}
@@ -1716,7 +1668,7 @@ public class Cpu extends Thread {
 
 	//レジスタ・フラグの出力
 	void printDebug(){
-		if(exeCnt < 100000){
+		if(exeCnt < 200000){
 			//popCall(Register.get(7));
 			Register.printDebug();
 		}
@@ -1743,7 +1695,7 @@ public class Cpu extends Thread {
 	void printCall(){
 		if(Pdp11.flgDebugMode>=1 && dbgList.size() != 0){
 
-			if(exeCnt < 100000){
+			if(exeCnt < 200000){
 				//System.out.print("\n***StackTrace***\n");
 				System.out.print("\n*** ");
 
@@ -2176,6 +2128,34 @@ public class Cpu extends Thread {
 }
 
 
+/*
+ *オペランド
+ */
+class Operand{
+	int address;
+	int register;
+
+	public void reset(){
+		address = 0;
+		register = 0;
+	}
+
+	void setAddress(int input){
+		address = input;
+	}
+
+	void setRegister(int input){
+		register = input;
+	}
+
+	int getAddress(){
+		return address;
+	}
+
+	int getRegister(){
+		return register;
+	}
+}
 
 /*
  * フィールドDto
