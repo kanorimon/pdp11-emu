@@ -791,8 +791,8 @@ public class Cpu extends Thread {
 				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
 				int roltmp = 0;
 				if(Register.getC()) roltmp = 1;
-				if(dstObj.operand << 16 >>> 31 == 1) Register.c=true;
-				if(dstObj.operand << 16 >>> 31 == 0) Register.c=false;
+				if(dstObj.operand << 16 >>> 31 == 1) Register.setC(true);
+				if(dstObj.operand << 16 >>> 31 == 0) Register.setC(false);
 				
 				if(dstObj.flgRegister){
 					tmp = (Register.get(dstObj.register) << 1) + roltmp;
@@ -812,8 +812,8 @@ public class Cpu extends Thread {
 				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
 				int rortmp = 0;
 				if(Register.getC()) rortmp = 1;
-				if(dstObj.operand << 31 >>> 31 == 1) Register.c=true;
-				if(dstObj.operand << 31 >>> 31 == 0) Register.c=false;
+				if(dstObj.operand << 31 >>> 31 == 1) Register.setC(true);
+				if(dstObj.operand << 31 >>> 31 == 0) Register.setC(false);
 				
 				if(dstObj.flgRegister){
 					tmp = (rortmp << 15) + (Register.get(dstObj.register) << 16 >>> 16 >> 1);
@@ -835,6 +835,15 @@ public class Cpu extends Thread {
 
 				Register.set(7, popStack());
 				Register.PSW = popStack();
+				
+				
+				System.out.printf("\nstack+2=%x:%x,stack+4=%x:%x\n",
+						Register.reg[6]-2,
+						getMemory2(Register.reg[6]-2,0),
+						Register.reg[6]-4,
+						getMemory2(Register.reg[6]-4,0)
+						);
+				
 				
 				break;
 			case SBC:
@@ -932,6 +941,15 @@ public class Cpu extends Thread {
 				//int oldPC = Register.get(7);
 				pushKernelStack(Register.PSW);
 				pushKernelStack(Register.get(7));
+				
+				
+				System.out.printf("\nstack=%x:%x,stack+2=%x:%x\n",
+						Register.reg[6],
+						getMemory2(Register.reg[6],0),
+						Register.reg[6]+2,
+						getMemory2(Register.reg[6]+2,0)
+						);
+				
 
 				//Register.PSW = Register.PSW & 4095;
 				//Register.PSW = Register.PSW | Memory.getPhyMemory2(036);
@@ -970,6 +988,9 @@ public class Cpu extends Thread {
 				System.out.print("\n");
 				System.out.println("not case");
 				System.out.println(getMemory2(Register.get(7)-2));
+				System.out.printf("\nffee=%x\n",Mmu.analyzeMemoryUser(0xffee));
+				Memory.printPAR();
+				
 				
 				//printMemory();
 				System.exit(0);

@@ -10,10 +10,12 @@ public class Register{
 	static int[] reg; //汎用レジスタ
 	static int reg6_u; //ユーザモードR6
 	
+	/*
 	static boolean n; //負の場合
 	static boolean z; //ゼロの場合
 	static boolean v; //オーバーフローが発生した場合
 	static boolean c; //MSB(最上位ビット)からキャリが発生、MSB/LSB(最下位ビット)から1がシフトされた場合
+	*/
 
 	static int PSW; //PSW モード 0:カーネル,3:ユーザー
 
@@ -50,10 +52,12 @@ public class Register{
 
 		reg6_u = 0;
 		
+		/*
 		n = false;
 		z = false;
 		v = false;
 		c = false;
+		*/
 		
 		PSW = 0;
 		STACK_LIMIT = 0;
@@ -154,22 +158,61 @@ public class Register{
 	
 	//コンディションコード設定
 	static void setCC(boolean args_n,boolean args_z,boolean args_v,boolean args_c){
+		setN(args_n);
+		setZ(args_z);
+		setV(args_v);
+		setC(args_c);
+		/*
 		c = args_c;
 		z = args_z;
 		n = args_n;
 		v = args_v;
+		*/
 	}
-	static boolean getC(){
-		return c;
+	
+	static void setN(boolean args_n){
+		if(args_n){
+			PSW = PSW | (1 << 3);
+		}else{
+			if((PSW & (1 << 3)) != 0)	PSW = PSW - (1 << 3);
+		}
 	}
-	static boolean getZ(){
-		return z;
+	static void setZ(boolean args_z){
+		if(args_z){
+			PSW = PSW | (1 << 2);
+		}else{
+			if((PSW & (1 << 2)) != 0)	PSW = PSW - (1 << 2);
+		}
 	}
-	static boolean getV(){
-		return v;
+	static void setV(boolean args_v){
+		if(args_v){
+			PSW = PSW | (1 << 1);
+		}else{
+			if((PSW & (1 << 1)) != 0)	PSW = PSW - (1 << 1);
+		}
+	}
+	static void setC(boolean args_c){
+		if(args_c){
+			PSW = PSW | 1;
+		}else{
+			if((PSW & 1) != 0)	PSW = PSW - 1;
+		}
 	}
 	static boolean getN(){
-		return n;
+		if((PSW & (1 << 3)) == 0)	return false;
+		return true;
+	}
+	static boolean getZ(){
+		if((PSW & (1 << 2)) == 0)	return false;
+		return true;
+	}
+	static boolean getV(){
+		if((PSW & (1 << 1)) == 0)	return false;
+		return true;
+	}
+	static boolean getC(){
+		if((PSW & 1) == 0)	return false;
+		return true;
 	}
 	
 	//デバッグ用出力
@@ -219,8 +262,15 @@ public class Register{
 		System.out.print(" ");
 		System.out.print(String.format("%x",(getPreMode())));
 
-		//System.out.print(" ");
-		//System.out.print(String.format("%04x",Memory.getPhyMemory2(0xa866)));
+		/*
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getPhyMemory2(0xC42e)));
+
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Mmu.analyzeMemoryUser(0x2e)));
+
+		System.out.print(" ");
+		System.out.print(String.format("%04x",Memory.getPhyMemory2(0xb96e)));
 
 		//System.out.print(" ");
 		//System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc3ca))));

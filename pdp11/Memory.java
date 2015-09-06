@@ -148,7 +148,7 @@ public class Memory {
 	//2バイト単位でリトルエンディアンを反転して10進数で取得
 	static int getPhyMemory2(int addr){
 		
-		if(addr >= IOADDRP-1){
+		if(addr >= IOADDRP){
 			switch(addr){
 			case KISD0:
 				return Register.kernelPDR[0];
@@ -280,7 +280,7 @@ public class Memory {
 	//2バイト単位で指定箇所のメモリを更新
 	static void setPhyMemory2(int addr, int src){
 		
-		if(addr >= IOADDRP-1){
+		if(addr >= IOADDRP){
 			switch(addr){
 			case KISD0:
 				Register.kernelPDR[0] = src;

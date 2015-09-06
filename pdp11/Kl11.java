@@ -116,6 +116,8 @@ public class Kl11 extends Thread {
 				RCSR = Util.setBit(RCSR,RCSR_DONE);
 				RCSR = Util.clearBit(RCSR,RCSR_ENB);
 				RCSR = Util.clearBit(RCSR,RCSR_BUSY);
+				Cpu.exeCnt = 0;
+
 			}
 			
 			/*
