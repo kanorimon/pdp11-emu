@@ -505,6 +505,14 @@ public class Cpu extends Thread {
 				
 				srcObj = getField(srcObj,(opnum >> 3) & 7,opnum & 7);
 				
+				if(srcObj.operand==0){
+					Register.setCC(false, 
+							false, 
+							true,
+							true);
+					break;
+				}
+				
 				Register.set((opnum >> 6) & 7, divValue / srcObj.operand);
 				Register.set(((opnum >> 6) & 7)+1, divValue % srcObj.operand);
 
@@ -570,7 +578,7 @@ public class Cpu extends Thread {
 				
 				tmp = Register.get(7);
 
-				pushStack(Register.get((opnum >> 6) & 7));
+				pushKernelStack(Register.get((opnum >> 6) & 7));
 				Register.set((opnum >> 6) & 7,Register.get(7));
 				Register.set(7, dstObj.address);
 				/*
@@ -778,15 +786,6 @@ public class Cpu extends Thread {
 				Register.setCC(Register.getN(), Register.getZ(), Register.getV(), Register.getC());
 
 				break;
-				
-			case RTS:
-				Register.set(7,Register.get(opnum  & 7));
-				Register.set(opnum  & 7,getMemory2(Register.get(6)));
-				Register.add(6,2);
-				
-				Register.setCC(Register.getN(), Register.getZ(), Register.getV(), Register.getC());
-				
-				break;
 			case ROL:
 				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
 				int roltmp = 0;
@@ -829,20 +828,35 @@ public class Cpu extends Thread {
 				Register.setCC(Register.getN(), Register.getZ(), Register.getV(), Register.getC());
 
 				break;
+			case RTS:
+				/*
+				Register.set(7,Register.get(opnum  & 7));
+				Register.set(opnum  & 7,getMemory2(Register.get(6)));
+				Register.add(6,2);
+				*/
+				
+				Register.set(7,Register.get(opnum & 7));
+				Register.set(opnum & 7,popKernelStack());
+				//Register.set(opnum & 7,getMemory2(popKernelStack()));
+				
+				Register.setCC(Register.getN(), Register.getZ(), Register.getV(), Register.getC());
+				
+				break;
 			case RTI:
 			case RTT:
 				//Register.PSW = Register.PSW & 4095;
 
-				Register.set(7, popStack());
-				Register.PSW = popStack();
+				Register.set(7, popKernelStack());
+				Register.PSW = popKernelStack();
 				
-				
+				/*
 				System.out.printf("\nstack+2=%x:%x,stack+4=%x:%x\n",
 						Register.reg[6]-2,
 						getMemory2(Register.reg[6]-2,0),
 						Register.reg[6]-4,
 						getMemory2(Register.reg[6]-4,0)
 						);
+				*/
 				
 				
 				break;
@@ -942,14 +956,14 @@ public class Cpu extends Thread {
 				pushKernelStack(Register.PSW);
 				pushKernelStack(Register.get(7));
 				
-				
+				/*
 				System.out.printf("\nstack=%x:%x,stack+2=%x:%x\n",
 						Register.reg[6],
 						getMemory2(Register.reg[6],0),
 						Register.reg[6]+2,
 						getMemory2(Register.reg[6]+2,0)
 						);
-				
+				*/
 
 				//Register.PSW = Register.PSW & 4095;
 				//Register.PSW = Register.PSW | Memory.getPhyMemory2(036);
@@ -1653,6 +1667,13 @@ public class Cpu extends Thread {
 	int popStack(){
 		int tmp = getMemory2(Register.get(6));
 		Register.add(6,2);
+		return tmp;
+	}
+	
+	//カーネルスタックポップ
+	int popKernelStack(){
+		int tmp = getMemory2(Register.getKernelStack(),0);
+		Register.addKernelStack(2);
 		return tmp;
 	}
 	
