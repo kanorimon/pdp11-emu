@@ -19,8 +19,6 @@ public class Rk11 extends Thread {
 	
 	static final int BOOT_START = 1024; //BOOT_ROMの読込先アドレス
 	
-	static int no = 0;
-	
 	static void reset(){
 		RKDS = 0;
 		RKER = 0;

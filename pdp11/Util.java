@@ -601,590 +601,1722 @@ public class Util {
 		return ret;
 	}
 	*/
-	
+
+
 	static void printSub(int pc){
 
 		if(Pdp11.argsFileName.length()!=0){
-			if(pc==0320) System.out.print("trap");
-			//if(pc==0412) System.out.print("call");
-			if(pc==0524) System.out.print("_display");
-			if(pc==0524) System.out.print("_savfp");
-			if(pc==0526) System.out.print("_incupc");
-			if(pc==0634) System.out.print("_getc");
-			if(pc==01000) System.out.print("_putc");
-			if(pc==01154) System.out.print("_backup");
-			if(pc==02102) System.out.print("_fubyte");
-			if(pc==02102) System.out.print("_fuibyte");
-			if(pc==02134) System.out.print("_subyte");
-			if(pc==02134) System.out.print("_suibyte");
-			if(pc==02206) System.out.print("_fuiword");
-			if(pc==02206) System.out.print("_fuword");
-			if(pc==02252) System.out.print("_suiword");
-			if(pc==02252) System.out.print("_suword");
-			if(pc==02352) System.out.print("_copyin");
-			if(pc==02366) System.out.print("_copyout");
-			if(pc==02466) System.out.print("_idle");
-			if(pc==02510) System.out.print("_savu");
-			if(pc==02536) System.out.print("_aretu");
-			if(pc==02552) System.out.print("_retu");
-			if(pc==02606) System.out.print("_spl0");
-			if(pc==02616) System.out.print("_spl1");
-			if(pc==02634) System.out.print("_spl4");
-			if(pc==02634) System.out.print("_spl5");
-			if(pc==02652) System.out.print("_spl6");
-			if(pc==02670) System.out.print("_spl7");
-			if(pc==02700) System.out.print("_copyseg");
-			if(pc==03034) System.out.print("_clearse");
-			if(pc==03124) System.out.print("_dpadd");
-			if(pc==03142) System.out.print("_dpcmp");
-			if(pc==03230) System.out.print("dump");
-			if(pc==03332) System.out.print("start");
-			if(pc==03514) System.out.print("_ldiv");
-			if(pc==03530) System.out.print("_lrem");
-			if(pc==03546) System.out.print("_lshift");
-			//if(pc==03566) System.out.print("csv");
-			//if(pc==03602) System.out.print("cret");
-			if(pc==03620) System.out.print("_main");
-			if(pc==04424) System.out.print("_sureg");
-			if(pc==04604) System.out.print("_estabur");
-			if(pc==05446) System.out.print("_nseg");
-			if(pc==05472) System.out.print("_iinit");
-			if(pc==05676) System.out.print("_alloc");
-			if(pc==06232) System.out.print("_free");
-			if(pc==06524) System.out.print("_badbloc");
-			if(pc==06612) System.out.print("_ialloc");
-			if(pc==07346) System.out.print("_ifree");
-			if(pc==07436) System.out.print("_getfs");
-			if(pc==07576) System.out.print("_update");
-			if(pc==010056) System.out.print("_iget");
-			if(pc==010532) System.out.print("_iput");
-			if(pc==010662) System.out.print("_iupdat");
-			if(pc==011140) System.out.print("_itrunc");
-			if(pc==011530) System.out.print("_maknode");
-			if(pc==011636) System.out.print("_wdir");
-			if(pc==011742) System.out.print("_printf");
-			if(pc==012130) System.out.print("_printn");
-			if(pc==012226) System.out.print("_putchar");
-			if(pc==012350) System.out.print("_panic");
-			if(pc==012412) System.out.print("_prdev");
-			if(pc==012456) System.out.print("_deverro");
-			if(pc==012540) System.out.print("_readi");
-			if(pc==013230) System.out.print("_writei");
-			if(pc==013730) System.out.print("_max");
-			if(pc==013762) System.out.print("_min");
-			if(pc==014014) System.out.print("_iomove");
-			if(pc==014252) System.out.print("_sleep");
-			if(pc==014450) System.out.print("_wakeup");
-			if(pc==014516) System.out.print("_setrun");
-			if(pc==014610) System.out.print("_setpri");
-			if(pc==014704) System.out.print("_sched");
-			if(pc==015562) System.out.print("_swtch");
-			if(pc==016026) System.out.print("_newproc");
-			if(pc==016514) System.out.print("_expand");
-			if(pc==017014) System.out.print("_bmap");
-			if(pc==020052) System.out.print("_passc");
-			if(pc==020172) System.out.print("_cpass");
-			if(pc==020304) System.out.print("_nodev");
-			if(pc==020322) System.out.print("_nulldev");
-			if(pc==020332) System.out.print("_bcopy");
-			if(pc==020362) System.out.print("_xswap");
-			if(pc==020624) System.out.print("_xfree");
-			if(pc==020756) System.out.print("_xalloc");
-			if(pc==021456) System.out.print("_xccdec");
-			if(pc==021536) System.out.print("_trap");
-			if(pc==022506) System.out.print("_trap1");
-			if(pc==022544) System.out.print("_nosys");
-			if(pc==022562) System.out.print("_nullsys");
-			if(pc==022572) System.out.print("_signal");
-			if(pc==022644) System.out.print("_psignal");
-			if(pc==022734) System.out.print("_issig");
-			if(pc==023026) System.out.print("_stop");
-			if(pc==023144) System.out.print("_psig");
-			if(pc==023440) System.out.print("_core");
-			if(pc==023744) System.out.print("_grow");
-			if(pc==024222) System.out.print("_ptrace");
-			if(pc==024520) System.out.print("_procxmt");
-			if(pc==025216) System.out.print("_clock");
-			if(pc==026054) System.out.print("_timeout");
-			if(pc==026230) System.out.print("_getf");
-			if(pc==026302) System.out.print("_closef");
-			if(pc==026420) System.out.print("_closei");
-			if(pc==026556) System.out.print("_openi");
-			if(pc==026722) System.out.print("_access");
-			if(pc==027114) System.out.print("_owner");
-			if(pc==027202) System.out.print("_suser");
-			if(pc==027236) System.out.print("_ufalloc");
-			if(pc==027314) System.out.print("_falloc");
-			if(pc==027432) System.out.print("_malloc");
-			if(pc==027536) System.out.print("_mfree");
-			if(pc==027766) System.out.print("_namei");
-			if(pc==031046) System.out.print("_schar");
-			if(pc==031072) System.out.print("_uchar");
-			if(pc==031136) System.out.print("_pipe");
-			if(pc==031320) System.out.print("_readp");
-			if(pc==031526) System.out.print("_writep");
-			if(pc==032016) System.out.print("_plock");
-			if(pc==032066) System.out.print("_prele");
-			if(pc==032126) System.out.print("_exec");
-			if(pc==033662) System.out.print("_rexit");
-			if(pc==033712) System.out.print("_exit");
-			if(pc==034302) System.out.print("_wait");
-			if(pc==034736) System.out.print("_fork");
-			if(pc==035076) System.out.print("_sbreak");
-			if(pc==035434) System.out.print("_read");
-			if(pc==035454) System.out.print("_write");
-			if(pc==035474) System.out.print("_rdwr");
-			if(pc==035720) System.out.print("_open");
-			if(pc==035772) System.out.print("_creat");
-			if(pc==036100) System.out.print("_open1");
-			if(pc==036354) System.out.print("_close");
-			if(pc==036420) System.out.print("_seek");
-			if(pc==036712) System.out.print("_link");
-			if(pc==037144) System.out.print("_mknod");
-			if(pc==037254) System.out.print("_sslep");
-			if(pc==037512) System.out.print("_fstat");
-			if(pc==037554) System.out.print("_stat");
-			if(pc==037626) System.out.print("_stat1");
-			if(pc==040112) System.out.print("_dup");
-			if(pc==040162) System.out.print("_smount");
-			if(pc==040576) System.out.print("_sumount");
-			if(pc==041020) System.out.print("_getmdev");
-			if(pc==041130) System.out.print("_getswit");
-			if(pc==041146) System.out.print("_gtime");
-			if(pc==041176) System.out.print("_stime");
-			if(pc==041246) System.out.print("_setuid");
-			if(pc==041320) System.out.print("_getuid");
-			if(pc==041350) System.out.print("_setgid");
-			if(pc==041412) System.out.print("_getgid");
-			if(pc==041442) System.out.print("_getpid");
-			if(pc==041464) System.out.print("_sync");
-			if(pc==041500) System.out.print("_nice");
-			if(pc==041554) System.out.print("_unlink");
-			if(pc==041754) System.out.print("_chdir");
-			if(pc==042102) System.out.print("_chmod");
-			if(pc==042172) System.out.print("_chown");
-			if(pc==042250) System.out.print("_ssig");
-			if(pc==042362) System.out.print("_kill");
-			if(pc==042540) System.out.print("_times");
-			if(pc==042604) System.out.print("_profil");
-			if(pc==042662) System.out.print("_bread");
-			if(pc==042764) System.out.print("_breada");
-			if(pc==043246) System.out.print("_bwrite");
-			if(pc==043356) System.out.print("_bdwrite");
-			if(pc==043444) System.out.print("_bawrite");
-			if(pc==043472) System.out.print("_brelse");
-			if(pc==043632) System.out.print("_incore");
-			if(pc==043724) System.out.print("_getblk");
-			if(pc==044320) System.out.print("_iowait");
-			if(pc==044376) System.out.print("_notavai");
-			if(pc==044456) System.out.print("_iodone");
-			if(pc==044542) System.out.print("_clrbuf");
-			if(pc==044572) System.out.print("_binit");
-			if(pc==045022) System.out.print("_devstar");
-			if(pc==045134) System.out.print("_rhstart");
-			if(pc==045250) System.out.print("_mapallo");
-			if(pc==045442) System.out.print("_mapfree");
-			if(pc==045504) System.out.print("_swap");
-			if(pc==045764) System.out.print("_bflush");
-			if(pc==046074) System.out.print("_physio");
-			if(pc==046706) System.out.print("_geterro");
-			if(pc==046746) System.out.print("_gtty");
-			if(pc==047056) System.out.print("_stty");
-			if(pc==047146) System.out.print("_sgtty");
-			if(pc==047252) System.out.print("_wflusht");
-			if(pc==047342) System.out.print("_cinit");
-			if(pc==047442) System.out.print("_flushtt");
-			if(pc==047564) System.out.print("_canon");
-			if(pc==050110) System.out.print("_ttyinpu");
-			if(pc==050412) System.out.print("_ttyoutp");
-			if(pc==051246) System.out.print("_ttrstrt");
-			if(pc==051276) System.out.print("_ttstart");
-			if(pc==051450) System.out.print("_ttread");
-			if(pc==051546) System.out.print("_ttwrite");
-			if(pc==051702) System.out.print("_ttystty");
-			if(pc==052016) System.out.print("_klopen");
-			if(pc==052226) System.out.print("_klclose");
-			if(pc==052264) System.out.print("_klread");
-			if(pc==052316) System.out.print("_klwrite");
-			if(pc==052350) System.out.print("_klxint");
-			if(pc==052432) System.out.print("_klrint");
-			if(pc==052516) System.out.print("_klsgtty");
-			if(pc==052556) System.out.print("_mmread");
-			if(pc==053004) System.out.print("_mmwrite");
-			if(pc==053264) System.out.print("_rkstrat");
-			if(pc==053452) System.out.print("_rkaddr");
-			if(pc==053626) System.out.print("_rkstart");
-			if(pc==053702) System.out.print("_rkintr");
-			if(pc==054040) System.out.print("_rkread");
-			if(pc==054100) System.out.print("_rkwrite");
-			if(pc==054136) System.out.print("_tcclose");
-			if(pc==054172) System.out.print("_tcstrat");
-			if(pc==054342) System.out.print("_tcstart");
-			if(pc==054532) System.out.print("_tcintr");
-			if(pc==055120) System.out.print("_tmopen");
-			if(pc==055200) System.out.print("_tmclose");
-			if(pc==055256) System.out.print("_tcomman");
-			if(pc==055350) System.out.print("_tmstrat");
-			if(pc==055540) System.out.print("_tmstart");
-			if(pc==056060) System.out.print("_tmintr");
-			if(pc==056322) System.out.print("_tmread");
-			if(pc==056404) System.out.print("_tmwrite");
-			if(pc==056456) System.out.print("_tmphys");
-			if(pc==056534) System.out.print("_ka6");
-			if(pc==056536) System.out.print("_cputype");
-			if(pc==056540) System.out.print("_bdevsw");
-			if(pc==056642) System.out.print("_cdevsw");
-			if(pc==057104) System.out.print("_rootdev");
-			if(pc==057106) System.out.print("_swapdev");
-			if(pc==057110) System.out.print("_swplo");
-			if(pc==057112) System.out.print("_nswap");
-			if(pc==057114) System.out.print("_icode");
-			if(pc==057512) System.out.print("_regloc");
-			if(pc==057712) System.out.print("_sysent");
-			if(pc==060440) System.out.print("_maptab");
-			if(pc==060700) System.out.print("_partab");
-			if(pc==061100) System.out.print("_runrun");
-			if(pc==061100) System.out.print("_edata");
-			if(pc==061102) System.out.print("_cfreeli");
-			if(pc==061104) System.out.print("_rktab");
-			if(pc==061116) System.out.print("_tmtab");
-			if(pc==061130) System.out.print("_tctab");
-			if(pc==061142) System.out.print("_canonb");
-			if(pc==061542) System.out.print("_coremap");
-			if(pc==062052) System.out.print("_swapmap");
-			if(pc==062362) System.out.print("_rootdir");
-			if(pc==062364) System.out.print("_execnt");
-			if(pc==062366) System.out.print("_lbolt");
-			if(pc==062370) System.out.print("_time");
-			if(pc==062374) System.out.print("_tout");
-			if(pc==062400) System.out.print("_callout");
-			if(pc==062570) System.out.print("_mount");
-			if(pc==062626) System.out.print("_mpid");
-			if(pc==062630) System.out.print("_runin");
-			if(pc==062632) System.out.print("_runout");
-			if(pc==062634) System.out.print("_curpri");
-			if(pc==062636) System.out.print("_maxmem");
-			if(pc==062640) System.out.print("_lks");
-			if(pc==062642) System.out.print("_updlock");
-			if(pc==062644) System.out.print("_rablock");
-			if(pc==062646) System.out.print("_proc");
-			if(pc==064762) System.out.print("_text");
-			if(pc==065602) System.out.print("_inode");
-			if(pc==074002) System.out.print("_nblkdev");
-			if(pc==074004) System.out.print("_nchrdev");
-			if(pc==074006) System.out.print("_buf");
-			if(pc==074556) System.out.print("_bfreeli");
-			if(pc==074606) System.out.print("_panicst");
-			if(pc==074610) System.out.print("_file");
-			if(pc==076250) System.out.print("_ipc");
-			if(pc==076260) System.out.print("_buffers");
-			if(pc==0115316) System.out.print("_swbuf");
-			if(pc==0115346) System.out.print("_httab");
-			if(pc==0115360) System.out.print("_maplock");
-			if(pc==0115362) System.out.print("_cfree");
-			if(pc==0117022) System.out.print("_kl11");
-			if(pc==0117062) System.out.print("_rrkbuf");
-			if(pc==0117112) System.out.print("_tcper");
-			if(pc==0117122) System.out.print("_rtmbuf");
-			if(pc==0117152) System.out.print("_t_openf");
-			if(pc==0117162) System.out.print("_t_blkno");
-			if(pc==0117202) System.out.print("_t_nxrec");
-			if(pc==0117224) System.out.print("nofault");
-			if(pc==0117226) System.out.print("ssr");
-			if(pc==0117234) System.out.print("badtrap");
-			if(pc==0117240) System.out.print("_end");
-			if(pc==0140000) System.out.print("_u");
+			switch(pc){
+				case 0320:
+					System.out.print("trap");
+					break;
+				case 0412:
+					//System.out.print("call");
+					break;
+				case 0524:
+					System.out.print("_display");
+					System.out.print("_savfp");
+					break;
+				case 0526:
+					System.out.print("_incupc");
+					break;
+				case 0634:
+					System.out.print("_getc");
+					break;
+				case 01000:
+					System.out.print("_putc");
+					break;
+				case 01154:
+					System.out.print("_backup");
+					break;
+				case 02102:
+					System.out.print("_fubyte");
+					System.out.print("_fuibyte");
+					break;
+				case 02134:
+					System.out.print("_subyte");
+					System.out.print("_suibyte");
+					break;
+				case 02206:
+					System.out.print("_fuiword");
+					System.out.print("_fuword");
+					break;
+				case 02252:
+					System.out.print("_suiword");
+					System.out.print("_suword");
+					break;
+				case 02352:
+					System.out.print("_copyin");
+					break;
+				case 02366:
+					System.out.print("_copyout");
+					break;
+				case 02466:
+					System.out.print("_idle");
+					break;
+				case 02510:
+					System.out.print("_savu");
+					break;
+				case 02536:
+					System.out.print("_aretu");
+					break;
+				case 02552:
+					System.out.print("_retu");
+					break;
+				case 02606:
+					System.out.print("_spl0");
+					break;
+				case 02616:
+					System.out.print("_spl1");
+					break;
+				case 02634:
+					System.out.print("_spl4");
+					System.out.print("_spl5");
+					break;
+				case 02652:
+					System.out.print("_spl6");
+					break;
+				case 02670:
+					System.out.print("_spl7");
+					break;
+				case 02700:
+					System.out.print("_copyseg");
+					break;
+				case 03034:
+					System.out.print("_clearse");
+					break;
+				case 03124:
+					System.out.print("_dpadd");
+					break;
+				case 03142:
+					System.out.print("_dpcmp");
+					break;
+				case 03230:
+					System.out.print("dump");
+					break;
+				case 03332:
+					System.out.print("start");
+					break;
+				case 03514:
+					System.out.print("_ldiv");
+					break;
+				case 03530:
+					System.out.print("_lrem");
+					break;
+				case 03546:
+					System.out.print("_lshift");
+					break;
+				case 03566:
+					//System.out.print("csv");
+					break;
+				case 03602:
+					//System.out.print("cret");
+					break;
+				case 03620:
+					System.out.print("_main");
+					break;
+				case 04424:
+					System.out.print("_sureg");
+					break;
+				case 04604:
+					System.out.print("_estabur");
+					break;
+				case 05446:
+					System.out.print("_nseg");
+					break;
+				case 05472:
+					System.out.print("_iinit");
+					break;
+				case 05676:
+					System.out.print("_alloc");
+					break;
+				case 06232:
+					System.out.print("_free");
+					break;
+				case 06524:
+					System.out.print("_badbloc");
+					break;
+				case 06612:
+					System.out.print("_ialloc");
+					break;
+				case 07346:
+					System.out.print("_ifree");
+					break;
+				case 07436:
+					System.out.print("_getfs");
+					break;
+				case 07576:
+					System.out.print("_update");
+					break;
+				case 010056:
+					System.out.print("_iget");
+					break;
+				case 010532:
+					System.out.print("_iput");
+					break;
+				case 010662:
+					System.out.print("_iupdat");
+					break;
+				case 011140:
+					System.out.print("_itrunc");
+					break;
+				case 011530:
+					System.out.print("_maknode");
+					break;
+				case 011636:
+					System.out.print("_wdir");
+					break;
+				case 011742:
+					System.out.print("_printf");
+					break;
+				case 012130:
+					System.out.print("_printn");
+					break;
+				case 012226:
+					System.out.print("_putchar");
+					break;
+				case 012350:
+					System.out.print("_panic");
+					break;
+				case 012412:
+					System.out.print("_prdev");
+					break;
+				case 012456:
+					System.out.print("_deverro");
+					break;
+				case 012540:
+					System.out.print("_readi");
+					break;
+				case 013230:
+					System.out.print("_writei");
+					break;
+				case 013730:
+					System.out.print("_max");
+					break;
+				case 013762:
+					System.out.print("_min");
+					break;
+				case 014014:
+					System.out.print("_iomove");
+					break;
+				case 014252:
+					System.out.print("_sleep");
+					break;
+				case 014450:
+					System.out.print("_wakeup");
+					break;
+				case 014516:
+					System.out.print("_setrun");
+					break;
+				case 014610:
+					System.out.print("_setpri");
+					break;
+				case 014704:
+					System.out.print("_sched");
+					break;
+				case 015562:
+					System.out.print("_swtch");
+					break;
+				case 016026:
+					System.out.print("_newproc");
+					break;
+				case 016514:
+					System.out.print("_expand");
+					break;
+				case 017014:
+					System.out.print("_bmap");
+					break;
+				case 020052:
+					System.out.print("_passc");
+					break;
+				case 020172:
+					System.out.print("_cpass");
+					break;
+				case 020304:
+					System.out.print("_nodev");
+					break;
+				case 020322:
+					System.out.print("_nulldev");
+					break;
+				case 020332:
+					System.out.print("_bcopy");
+					break;
+				case 020362:
+					System.out.print("_xswap");
+					break;
+				case 020624:
+					System.out.print("_xfree");
+					break;
+				case 020756:
+					System.out.print("_xalloc");
+					break;
+				case 021456:
+					System.out.print("_xccdec");
+					break;
+				case 021536:
+					System.out.print("_trap");
+					break;
+				case 022506:
+					System.out.print("_trap1");
+					break;
+				case 022544:
+					System.out.print("_nosys");
+					break;
+				case 022562:
+					System.out.print("_nullsys");
+					break;
+				case 022572:
+					System.out.print("_signal");
+					break;
+				case 022644:
+					System.out.print("_psignal");
+					break;
+				case 022734:
+					System.out.print("_issig");
+					break;
+				case 023026:
+					System.out.print("_stop");
+					break;
+				case 023144:
+					System.out.print("_psig");
+					break;
+				case 023440:
+					System.out.print("_core");
+					break;
+				case 023744:
+					System.out.print("_grow");
+					break;
+				case 024222:
+					System.out.print("_ptrace");
+					break;
+				case 024520:
+					System.out.print("_procxmt");
+					break;
+				case 025216:
+					System.out.print("_clock");
+					break;
+				case 026054:
+					System.out.print("_timeout");
+					break;
+				case 026230:
+					System.out.print("_getf");
+					break;
+				case 026302:
+					System.out.print("_closef");
+					break;
+				case 026420:
+					System.out.print("_closei");
+					break;
+				case 026556:
+					System.out.print("_openi");
+					break;
+				case 026722:
+					System.out.print("_access");
+					break;
+				case 027114:
+					System.out.print("_owner");
+					break;
+				case 027202:
+					System.out.print("_suser");
+					break;
+				case 027236:
+					System.out.print("_ufalloc");
+					break;
+				case 027314:
+					System.out.print("_falloc");
+					break;
+				case 027432:
+					System.out.print("_malloc");
+					break;
+				case 027536:
+					System.out.print("_mfree");
+					break;
+				case 027766:
+					System.out.print("_namei");
+					break;
+				case 031046:
+					System.out.print("_schar");
+					break;
+				case 031072:
+					System.out.print("_uchar");
+					break;
+				case 031136:
+					System.out.print("_pipe");
+					break;
+				case 031320:
+					System.out.print("_readp");
+					break;
+				case 031526:
+					System.out.print("_writep");
+					break;
+				case 032016:
+					System.out.print("_plock");
+					break;
+				case 032066:
+					System.out.print("_prele");
+					break;
+				case 032126:
+					System.out.print("_exec");
+					break;
+				case 033662:
+					System.out.print("_rexit");
+					break;
+				case 033712:
+					System.out.print("_exit");
+					break;
+				case 034302:
+					System.out.print("_wait");
+					break;
+				case 034736:
+					System.out.print("_fork");
+					break;
+				case 035076:
+					System.out.print("_sbreak");
+					break;
+				case 035434:
+					System.out.print("_read");
+					break;
+				case 035454:
+					System.out.print("_write");
+					break;
+				case 035474:
+					System.out.print("_rdwr");
+					break;
+				case 035720:
+					System.out.print("_open");
+					break;
+				case 035772:
+					System.out.print("_creat");
+					break;
+				case 036100:
+					System.out.print("_open1");
+					break;
+				case 036354:
+					System.out.print("_close");
+					break;
+				case 036420:
+					System.out.print("_seek");
+					break;
+				case 036712:
+					System.out.print("_link");
+					break;
+				case 037144:
+					System.out.print("_mknod");
+					break;
+				case 037254:
+					System.out.print("_sslep");
+					break;
+				case 037512:
+					System.out.print("_fstat");
+					break;
+				case 037554:
+					System.out.print("_stat");
+					break;
+				case 037626:
+					System.out.print("_stat1");
+					break;
+				case 040112:
+					System.out.print("_dup");
+					break;
+				case 040162:
+					System.out.print("_smount");
+					break;
+				case 040576:
+					System.out.print("_sumount");
+					break;
+				case 041020:
+					System.out.print("_getmdev");
+					break;
+				case 041130:
+					System.out.print("_getswit");
+					break;
+				case 041146:
+					System.out.print("_gtime");
+					break;
+				case 041176:
+					System.out.print("_stime");
+					break;
+				case 041246:
+					System.out.print("_setuid");
+					break;
+				case 041320:
+					System.out.print("_getuid");
+					break;
+				case 041350:
+					System.out.print("_setgid");
+					break;
+				case 041412:
+					System.out.print("_getgid");
+					break;
+				case 041442:
+					System.out.print("_getpid");
+					break;
+				case 041464:
+					System.out.print("_sync");
+					break;
+				case 041500:
+					System.out.print("_nice");
+					break;
+				case 041554:
+					System.out.print("_unlink");
+					break;
+				case 041754:
+					System.out.print("_chdir");
+					break;
+				case 042102:
+					System.out.print("_chmod");
+					break;
+				case 042172:
+					System.out.print("_chown");
+					break;
+				case 042250:
+					System.out.print("_ssig");
+					break;
+				case 042362:
+					System.out.print("_kill");
+					break;
+				case 042540:
+					System.out.print("_times");
+					break;
+				case 042604:
+					System.out.print("_profil");
+					break;
+				case 042662:
+					System.out.print("_bread");
+					break;
+				case 042764:
+					System.out.print("_breada");
+					break;
+				case 043246:
+					System.out.print("_bwrite");
+					break;
+				case 043356:
+					System.out.print("_bdwrite");
+					break;
+				case 043444:
+					System.out.print("_bawrite");
+					break;
+				case 043472:
+					System.out.print("_brelse");
+					break;
+				case 043632:
+					System.out.print("_incore");
+					break;
+				case 043724:
+					System.out.print("_getblk");
+					break;
+				case 044320:
+					System.out.print("_iowait");
+					break;
+				case 044376:
+					System.out.print("_notavai");
+					break;
+				case 044456:
+					System.out.print("_iodone");
+					break;
+				case 044542:
+					System.out.print("_clrbuf");
+					break;
+				case 044572:
+					System.out.print("_binit");
+					break;
+				case 045022:
+					System.out.print("_devstar");
+					break;
+				case 045134:
+					System.out.print("_rhstart");
+					break;
+				case 045250:
+					System.out.print("_mapallo");
+					break;
+				case 045442:
+					System.out.print("_mapfree");
+					break;
+				case 045504:
+					System.out.print("_swap");
+					break;
+				case 045764:
+					System.out.print("_bflush");
+					break;
+				case 046074:
+					System.out.print("_physio");
+					break;
+				case 046706:
+					System.out.print("_geterro");
+					break;
+				case 046746:
+					System.out.print("_gtty");
+					break;
+				case 047056:
+					System.out.print("_stty");
+					break;
+				case 047146:
+					System.out.print("_sgtty");
+					break;
+				case 047252:
+					System.out.print("_wflusht");
+					break;
+				case 047342:
+					System.out.print("_cinit");
+					break;
+				case 047442:
+					System.out.print("_flushtt");
+					break;
+				case 047564:
+					System.out.print("_canon");
+					break;
+				case 050110:
+					System.out.print("_ttyinpu");
+					break;
+				case 050412:
+					System.out.print("_ttyoutp");
+					break;
+				case 051246:
+					System.out.print("_ttrstrt");
+					break;
+				case 051276:
+					System.out.print("_ttstart");
+					break;
+				case 051450:
+					System.out.print("_ttread");
+					break;
+				case 051546:
+					System.out.print("_ttwrite");
+					break;
+				case 051702:
+					System.out.print("_ttystty");
+					break;
+				case 052016:
+					System.out.print("_klopen");
+					break;
+				case 052226:
+					System.out.print("_klclose");
+					break;
+				case 052264:
+					System.out.print("_klread");
+					break;
+				case 052316:
+					System.out.print("_klwrite");
+					break;
+				case 052350:
+					System.out.print("_klxint");
+					break;
+				case 052432:
+					System.out.print("_klrint");
+					break;
+				case 052516:
+					System.out.print("_klsgtty");
+					break;
+				case 052556:
+					System.out.print("_mmread");
+					break;
+				case 053004:
+					System.out.print("_mmwrite");
+					break;
+				case 053264:
+					System.out.print("_rkstrat");
+					break;
+				case 053452:
+					System.out.print("_rkaddr");
+					break;
+				case 053626:
+					System.out.print("_rkstart");
+					break;
+				case 053702:
+					System.out.print("_rkintr");
+					break;
+				case 054040:
+					System.out.print("_rkread");
+					break;
+				case 054100:
+					System.out.print("_rkwrite");
+					break;
+				case 054136:
+					System.out.print("_tcclose");
+					break;
+				case 054172:
+					System.out.print("_tcstrat");
+					break;
+				case 054342:
+					System.out.print("_tcstart");
+					break;
+				case 054532:
+					System.out.print("_tcintr");
+					break;
+				case 055120:
+					System.out.print("_tmopen");
+					break;
+				case 055200:
+					System.out.print("_tmclose");
+					break;
+				case 055256:
+					System.out.print("_tcomman");
+					break;
+				case 055350:
+					System.out.print("_tmstrat");
+					break;
+				case 055540:
+					System.out.print("_tmstart");
+					break;
+				case 056060:
+					System.out.print("_tmintr");
+					break;
+				case 056322:
+					System.out.print("_tmread");
+					break;
+				case 056404:
+					System.out.print("_tmwrite");
+					break;
+				case 056456:
+					System.out.print("_tmphys");
+					break;
+				case 056534:
+					System.out.print("_ka6");
+					break;
+				case 056536:
+					System.out.print("_cputype");
+					break;
+				case 056540:
+					System.out.print("_bdevsw");
+					break;
+				case 056642:
+					System.out.print("_cdevsw");
+					break;
+				case 057104:
+					System.out.print("_rootdev");
+					break;
+				case 057106:
+					System.out.print("_swapdev");
+					break;
+				case 057110:
+					System.out.print("_swplo");
+					break;
+				case 057112:
+					System.out.print("_nswap");
+					break;
+				case 057114:
+					System.out.print("_icode");
+					break;
+				case 057512:
+					System.out.print("_regloc");
+					break;
+				case 057712:
+					System.out.print("_sysent");
+					break;
+				case 060440:
+					System.out.print("_maptab");
+					break;
+				case 060700:
+					System.out.print("_partab");
+					break;
+				case 061100:
+					System.out.print("_runrun");
+					System.out.print("_edata");
+					break;
+				case 061102:
+					System.out.print("_cfreeli");
+					break;
+				case 061104:
+					System.out.print("_rktab");
+					break;
+				case 061116:
+					System.out.print("_tmtab");
+					break;
+				case 061130:
+					System.out.print("_tctab");
+					break;
+				case 061142:
+					System.out.print("_canonb");
+					break;
+				case 061542:
+					System.out.print("_coremap");
+					break;
+				case 062052:
+					System.out.print("_swapmap");
+					break;
+				case 062362:
+					System.out.print("_rootdir");
+					break;
+				case 062364:
+					System.out.print("_execnt");
+					break;
+				case 062366:
+					System.out.print("_lbolt");
+					break;
+				case 062370:
+					System.out.print("_time");
+					break;
+				case 062374:
+					System.out.print("_tout");
+					break;
+				case 062400:
+					System.out.print("_callout");
+					break;
+				case 062570:
+					System.out.print("_mount");
+					break;
+				case 062626:
+					System.out.print("_mpid");
+					break;
+				case 062630:
+					System.out.print("_runin");
+					break;
+				case 062632:
+					System.out.print("_runout");
+					break;
+				case 062634:
+					System.out.print("_curpri");
+					break;
+				case 062636:
+					System.out.print("_maxmem");
+					break;
+				case 062640:
+					System.out.print("_lks");
+					break;
+				case 062642:
+					System.out.print("_updlock");
+					break;
+				case 062644:
+					System.out.print("_rablock");
+					break;
+				case 062646:
+					System.out.print("_proc");
+					break;
+				case 064762:
+					System.out.print("_text");
+					break;
+				case 065602:
+					System.out.print("_inode");
+					break;
+				case 074002:
+					System.out.print("_nblkdev");
+					break;
+				case 074004:
+					System.out.print("_nchrdev");
+					break;
+				case 074006:
+					System.out.print("_buf");
+					break;
+				case 074556:
+					System.out.print("_bfreeli");
+					break;
+				case 074606:
+					System.out.print("_panicst");
+					break;
+				case 074610:
+					System.out.print("_file");
+					break;
+				case 076250:
+					System.out.print("_ipc");
+					break;
+				case 076260:
+					System.out.print("_buffers");
+					break;
+				case 0115316:
+					System.out.print("_swbuf");
+					break;
+				case 0115346:
+					System.out.print("_httab");
+					break;
+				case 0115360:
+					System.out.print("_maplock");
+					break;
+				case 0115362:
+					System.out.print("_cfree");
+					break;
+				case 0117022:
+					System.out.print("_kl11");
+					break;
+				case 0117062:
+					System.out.print("_rrkbuf");
+					break;
+				case 0117112:
+					System.out.print("_tcper");
+					break;
+				case 0117122:
+					System.out.print("_rtmbuf");
+					break;
+				case 0117152:
+					System.out.print("_t_openf");
+					break;
+				case 0117162:
+					System.out.print("_t_blkno");
+					break;
+				case 0117202:
+					System.out.print("_t_nxrec");
+					break;
+				case 0117224:
+					System.out.print("nofault");
+					break;
+				case 0117226:
+					System.out.print("ssr");
+					break;
+				case 0117234:
+					System.out.print("badtrap");
+					break;
+				case 0117240:
+					System.out.print("_end");
+					break;
+				case 0140000:
+					System.out.print("_u");
+					break;
+			}
 		}else{
-			if(pc==0320) System.out.print("trap");
-			//if(pc==0412) System.out.print("call");
-			if(pc==0524) System.out.print("_display");
-			if(pc==0524) System.out.print("_savfp");
-			if(pc==0526) System.out.print("_incupc");
-			if(pc==0634) System.out.print("_getc");
-			if(pc==01000) System.out.print("_putc");
-			if(pc==01154) System.out.print("_backup");
-			if(pc==02102) System.out.print("_fubyte");
-			if(pc==02102) System.out.print("_fuibyte");
-			if(pc==02134) System.out.print("_subyte");
-			if(pc==02134) System.out.print("_suibyte");
-			if(pc==02206) System.out.print("_fuiword");
-			if(pc==02206) System.out.print("_fuword");
-			if(pc==02252) System.out.print("_suiword");
-			if(pc==02252) System.out.print("_suword");
-			if(pc==02352) System.out.print("_copyin");
-			if(pc==02366) System.out.print("_copyout");
-			if(pc==02466) System.out.print("_idle");
-			if(pc==02510) System.out.print("_savu");
-			if(pc==02536) System.out.print("_aretu");
-			if(pc==02552) System.out.print("_retu");
-			if(pc==02606) System.out.print("_spl0");
-			if(pc==02616) System.out.print("_spl1");
-			if(pc==02634) System.out.print("_spl4");
-			if(pc==02634) System.out.print("_spl5");
-			if(pc==02652) System.out.print("_spl6");
-			if(pc==02670) System.out.print("_spl7");
-			if(pc==02700) System.out.print("_copyseg");
-			if(pc==03034) System.out.print("_clearse");
-			if(pc==03124) System.out.print("_dpadd");
-			if(pc==03142) System.out.print("_dpcmp");
-			if(pc==03230) System.out.print("dump");
-			if(pc==03332) System.out.print("start");
-			if(pc==03514) System.out.print("_ldiv");
-			if(pc==03530) System.out.print("_lrem");
-			if(pc==03546) System.out.print("_lshift");
-			//if(pc==03566) System.out.print("csv");
-			//if(pc==03602) System.out.print("cret");
-			if(pc==03620) System.out.print("_main");
-			if(pc==04466) System.out.print("_sureg");
-			if(pc==04650) System.out.print("_estabur");
-			if(pc==05544) System.out.print("_nseg");
-			if(pc==05572) System.out.print("_iinit");
-			if(pc==05776) System.out.print("_alloc");
-			if(pc==06332) System.out.print("_free");
-			if(pc==06624) System.out.print("_badbloc");
-			if(pc==06712) System.out.print("_ialloc");
-			if(pc==07446) System.out.print("_ifree");
-			if(pc==07536) System.out.print("_getfs");
-			if(pc==07676) System.out.print("_update");
-			if(pc==010156) System.out.print("_iget");
-			if(pc==010632) System.out.print("_iput");
-			if(pc==010762) System.out.print("_iupdat");
-			if(pc==011240) System.out.print("_itrunc");
-			if(pc==011630) System.out.print("_maknode");
-			if(pc==011736) System.out.print("_wdir");
-			if(pc==012042) System.out.print("_printf");
-			if(pc==012230) System.out.print("_printn");
-			if(pc==012326) System.out.print("_putchar");
-			if(pc==012450) System.out.print("_panic");
-			if(pc==012512) System.out.print("_prdev");
-			if(pc==012556) System.out.print("_deverro");
-			if(pc==012640) System.out.print("_readi");
-			if(pc==013330) System.out.print("_writei");
-			if(pc==014030) System.out.print("_max");
-			if(pc==014062) System.out.print("_min");
-			if(pc==014114) System.out.print("_iomove");
-			if(pc==014352) System.out.print("_sleep");
-			if(pc==014550) System.out.print("_wakeup");
-			if(pc==014616) System.out.print("_setrun");
-			if(pc==014710) System.out.print("_setpri");
-			if(pc==015004) System.out.print("_sched");
-			if(pc==015662) System.out.print("_swtch");
-			if(pc==016126) System.out.print("_newproc");
-			if(pc==016614) System.out.print("_expand");
-			if(pc==017114) System.out.print("_bmap");
-			if(pc==020152) System.out.print("_passc");
-			if(pc==020272) System.out.print("_cpass");
-			if(pc==020404) System.out.print("_nodev");
-			if(pc==020422) System.out.print("_nulldev");
-			if(pc==020432) System.out.print("_bcopy");
-			if(pc==020462) System.out.print("_xswap");
-			if(pc==020724) System.out.print("_xfree");
-			if(pc==021056) System.out.print("_xalloc");
-			if(pc==021556) System.out.print("_xccdec");
-			if(pc==021636) System.out.print("_trap");
-			if(pc==022606) System.out.print("_trap1");
-			if(pc==022644) System.out.print("_nosys");
-			if(pc==022662) System.out.print("_nullsys");
-			if(pc==022672) System.out.print("_signal");
-			if(pc==022744) System.out.print("_psignal");
-			if(pc==023034) System.out.print("_issig");
-			if(pc==023126) System.out.print("_stop");
-			if(pc==023244) System.out.print("_psig");
-			if(pc==023540) System.out.print("_core");
-			if(pc==024044) System.out.print("_grow");
-			if(pc==024322) System.out.print("_ptrace");
-			if(pc==024620) System.out.print("_procxmt");
-			if(pc==025316) System.out.print("_clock");
-			if(pc==026154) System.out.print("_timeout");
-			if(pc==026330) System.out.print("_getf");
-			if(pc==026402) System.out.print("_closef");
-			if(pc==026520) System.out.print("_closei");
-			if(pc==026656) System.out.print("_openi");
-			if(pc==027022) System.out.print("_access");
-			if(pc==027214) System.out.print("_owner");
-			if(pc==027302) System.out.print("_suser");
-			if(pc==027336) System.out.print("_ufalloc");
-			if(pc==027414) System.out.print("_falloc");
-			if(pc==027532) System.out.print("_malloc");
-			if(pc==027636) System.out.print("_mfree");
-			if(pc==030066) System.out.print("_namei");
-			if(pc==031146) System.out.print("_schar");
-			if(pc==031172) System.out.print("_uchar");
-			if(pc==031236) System.out.print("_pipe");
-			if(pc==031420) System.out.print("_readp");
-			if(pc==031626) System.out.print("_writep");
-			if(pc==032116) System.out.print("_plock");
-			if(pc==032166) System.out.print("_prele");
-			if(pc==032226) System.out.print("_exec");
-			if(pc==033762) System.out.print("_rexit");
-			if(pc==034012) System.out.print("_exit");
-			if(pc==034402) System.out.print("_wait");
-			if(pc==035036) System.out.print("_fork");
-			if(pc==035176) System.out.print("_sbreak");
-			if(pc==035534) System.out.print("_read");
-			if(pc==035554) System.out.print("_write");
-			if(pc==035574) System.out.print("_rdwr");
-			if(pc==036020) System.out.print("_open");
-			if(pc==036072) System.out.print("_creat");
-			if(pc==036200) System.out.print("_open1");
-			if(pc==036454) System.out.print("_close");
-			if(pc==036520) System.out.print("_seek");
-			if(pc==037012) System.out.print("_link");
-			if(pc==037244) System.out.print("_mknod");
-			if(pc==037354) System.out.print("_sslep");
-			if(pc==037612) System.out.print("_fstat");
-			if(pc==037654) System.out.print("_stat");
-			if(pc==037726) System.out.print("_stat1");
-			if(pc==040212) System.out.print("_dup");
-			if(pc==040262) System.out.print("_smount");
-			if(pc==040676) System.out.print("_sumount");
-			if(pc==041120) System.out.print("_getmdev");
-			if(pc==041230) System.out.print("_getswit");
-			if(pc==041246) System.out.print("_gtime");
-			if(pc==041276) System.out.print("_stime");
-			if(pc==041346) System.out.print("_setuid");
-			if(pc==041420) System.out.print("_getuid");
-			if(pc==041450) System.out.print("_setgid");
-			if(pc==041512) System.out.print("_getgid");
-			if(pc==041542) System.out.print("_getpid");
-			if(pc==041564) System.out.print("_sync");
-			if(pc==041600) System.out.print("_nice");
-			if(pc==041654) System.out.print("_unlink");
-			if(pc==042054) System.out.print("_chdir");
-			if(pc==042202) System.out.print("_chmod");
-			if(pc==042272) System.out.print("_chown");
-			if(pc==042350) System.out.print("_ssig");
-			if(pc==042462) System.out.print("_kill");
-			if(pc==042640) System.out.print("_times");
-			if(pc==042704) System.out.print("_profil");
-			if(pc==042762) System.out.print("_bread");
-			if(pc==043064) System.out.print("_breada");
-			if(pc==043346) System.out.print("_bwrite");
-			if(pc==043456) System.out.print("_bdwrite");
-			if(pc==043544) System.out.print("_bawrite");
-			if(pc==043572) System.out.print("_brelse");
-			if(pc==043732) System.out.print("_incore");
-			if(pc==044024) System.out.print("_getblk");
-			if(pc==044420) System.out.print("_iowait");
-			if(pc==044476) System.out.print("_notavai");
-			if(pc==044556) System.out.print("_iodone");
-			if(pc==044642) System.out.print("_clrbuf");
-			if(pc==044672) System.out.print("_binit");
-			if(pc==045122) System.out.print("_devstar");
-			if(pc==045234) System.out.print("_rhstart");
-			if(pc==045350) System.out.print("_mapallo");
-			if(pc==045542) System.out.print("_mapfree");
-			if(pc==045604) System.out.print("_swap");
-			if(pc==046064) System.out.print("_bflush");
-			if(pc==046174) System.out.print("_physio");
-			if(pc==047006) System.out.print("_geterro");
-			if(pc==047046) System.out.print("_gtty");
-			if(pc==047156) System.out.print("_stty");
-			if(pc==047246) System.out.print("_sgtty");
-			if(pc==047352) System.out.print("_wflusht");
-			if(pc==047442) System.out.print("_cinit");
-			if(pc==047542) System.out.print("_flushtt");
-			if(pc==047664) System.out.print("_canon");
-			if(pc==050210) System.out.print("_ttyinpu");
-			if(pc==050512) System.out.print("_ttyoutp");
-			if(pc==051346) System.out.print("_ttrstrt");
-			if(pc==051376) System.out.print("_ttstart");
-			if(pc==051550) System.out.print("_ttread");
-			if(pc==051646) System.out.print("_ttwrite");
-			if(pc==052002) System.out.print("_ttystty");
-			if(pc==052116) System.out.print("_klopen");
-			if(pc==052326) System.out.print("_klclose");
-			if(pc==052364) System.out.print("_klread");
-			if(pc==052416) System.out.print("_klwrite");
-			if(pc==052450) System.out.print("_klxint");
-			if(pc==052532) System.out.print("_klrint");
-			if(pc==052616) System.out.print("_klsgtty");
-			if(pc==052656) System.out.print("_mmread");
-			if(pc==053104) System.out.print("_mmwrite");
-			if(pc==053364) System.out.print("_rkstrat");
-			if(pc==053552) System.out.print("_rkaddr");
-			if(pc==053726) System.out.print("_rkstart");
-			if(pc==054002) System.out.print("_rkintr");
-			if(pc==054140) System.out.print("_rkread");
-			if(pc==054200) System.out.print("_rkwrite");
-			if(pc==054236) System.out.print("_tcclose");
-			if(pc==054272) System.out.print("_tcstrat");
-			if(pc==054442) System.out.print("_tcstart");
-			if(pc==054632) System.out.print("_tcintr");
-			if(pc==055220) System.out.print("_tmopen");
-			if(pc==055300) System.out.print("_tmclose");
-			if(pc==055356) System.out.print("_tcomman");
-			if(pc==055450) System.out.print("_tmstrat");
-			if(pc==055640) System.out.print("_tmstart");
-			if(pc==056160) System.out.print("_tmintr");
-			if(pc==056422) System.out.print("_tmread");
-			if(pc==056504) System.out.print("_tmwrite");
-			if(pc==056556) System.out.print("_tmphys");
-			if(pc==056634) System.out.print("_ka6");
-			if(pc==056636) System.out.print("_cputype");
-			if(pc==056640) System.out.print("_bdevsw");
-			if(pc==056742) System.out.print("_cdevsw");
-			if(pc==057204) System.out.print("_rootdev");
-			if(pc==057206) System.out.print("_swapdev");
-			if(pc==057210) System.out.print("_swplo");
-			if(pc==057212) System.out.print("_nswap");
-			if(pc==057214) System.out.print("_icode");
-			if(pc==060022) System.out.print("_regloc");
-			if(pc==060222) System.out.print("_sysent");
-			if(pc==060750) System.out.print("_maptab");
-			if(pc==061210) System.out.print("_partab");
-			if(pc==061410) System.out.print("_runrun");
-			if(pc==061410) System.out.print("_edata");
-			if(pc==061412) System.out.print("_cfreeli");
-			if(pc==061414) System.out.print("_rktab");
-			if(pc==061426) System.out.print("_tmtab");
-			if(pc==061440) System.out.print("_tctab");
-			if(pc==061452) System.out.print("_canonb");
-			if(pc==062052) System.out.print("_coremap");
-			if(pc==062362) System.out.print("_swapmap");
-			if(pc==062672) System.out.print("_rootdir");
-			if(pc==062674) System.out.print("_execnt");
-			if(pc==062676) System.out.print("_lbolt");
-			if(pc==062700) System.out.print("_time");
-			if(pc==062704) System.out.print("_tout");
-			if(pc==062710) System.out.print("_callout");
-			if(pc==063100) System.out.print("_mount");
-			if(pc==063136) System.out.print("_mpid");
-			if(pc==063140) System.out.print("_runin");
-			if(pc==063142) System.out.print("_runout");
-			if(pc==063144) System.out.print("_curpri");
-			if(pc==063146) System.out.print("_maxmem");
-			if(pc==063150) System.out.print("_lks");
-			if(pc==063152) System.out.print("_updlock");
-			if(pc==063154) System.out.print("_rablock");
-			if(pc==063156) System.out.print("_proc");
-			if(pc==065272) System.out.print("_text");
-			if(pc==066112) System.out.print("_inode");
-			if(pc==074312) System.out.print("_nblkdev");
-			if(pc==074314) System.out.print("_nchrdev");
-			if(pc==074316) System.out.print("_buf");
-			if(pc==075066) System.out.print("_bfreeli");
-			if(pc==075116) System.out.print("_panicst");
-			if(pc==075120) System.out.print("_file");
-			if(pc==076560) System.out.print("_ipc");
-			if(pc==076570) System.out.print("_buffers");
-			if(pc==0115626) System.out.print("_swbuf");
-			if(pc==0115656) System.out.print("_httab");
-			if(pc==0115670) System.out.print("_maplock");
-			if(pc==0115672) System.out.print("_cfree");
-			if(pc==0117332) System.out.print("_kl11");
-			if(pc==0117372) System.out.print("_rrkbuf");
-			if(pc==0117422) System.out.print("_tcper");
-			if(pc==0117432) System.out.print("_rtmbuf");
-			if(pc==0117462) System.out.print("_t_openf");
-			if(pc==0117472) System.out.print("_t_blkno");
-			if(pc==0117512) System.out.print("_t_nxrec");
-			if(pc==0117534) System.out.print("nofault");
-			if(pc==0117536) System.out.print("ssr");
-			if(pc==0117544) System.out.print("badtrap");
-			if(pc==0117550) System.out.print("_end");
-			if(pc==0140000) System.out.print("_u");
+			switch(pc){
+				case 0320:
+					System.out.print("trap");
+					break;
+				case 0412:
+					//System.out.print("call");
+					break;
+				case 0524:
+					System.out.print("_display");
+					System.out.print("_savfp");
+					break;
+				case 0526:
+					System.out.print("_incupc");
+					break;
+				case 0634:
+					System.out.print("_getc");
+					break;
+				case 01000:
+					System.out.print("_putc");
+					break;
+				case 01154:
+					System.out.print("_backup");
+					break;
+				case 02102:
+					System.out.print("_fubyte");
+					System.out.print("_fuibyte");
+					break;
+				case 02134:
+					System.out.print("_subyte");
+					System.out.print("_suibyte");
+					break;
+				case 02206:
+					System.out.print("_fuiword");
+					System.out.print("_fuword");
+					break;
+				case 02252:
+					System.out.print("_suiword");
+					System.out.print("_suword");
+					break;
+				case 02352:
+					System.out.print("_copyin");
+					break;
+				case 02366:
+					System.out.print("_copyout");
+					break;
+				case 02466:
+					System.out.print("_idle");
+					break;
+				case 02510:
+					System.out.print("_savu");
+					break;
+				case 02536:
+					System.out.print("_aretu");
+					break;
+				case 02552:
+					System.out.print("_retu");
+					break;
+				case 02606:
+					System.out.print("_spl0");
+					break;
+				case 02616:
+					System.out.print("_spl1");
+					break;
+				case 02634:
+					System.out.print("_spl4");
+					System.out.print("_spl5");
+					break;
+				case 02652:
+					System.out.print("_spl6");
+					break;
+				case 02670:
+					System.out.print("_spl7");
+					break;
+				case 02700:
+					System.out.print("_copyseg");
+					break;
+				case 03034:
+					System.out.print("_clearse");
+					break;
+				case 03124:
+					System.out.print("_dpadd");
+					break;
+				case 03142:
+					System.out.print("_dpcmp");
+					break;
+				case 03230:
+					System.out.print("dump");
+					break;
+				case 03332:
+					System.out.print("start");
+					break;
+				case 03514:
+					System.out.print("_ldiv");
+					break;
+				case 03530:
+					System.out.print("_lrem");
+					break;
+				case 03546:
+					System.out.print("_lshift");
+					break;
+				case 03566:
+					//System.out.print("csv");
+					break;
+				case 03602:
+					//System.out.print("cret");
+					break;
+				case 03620:
+					System.out.print("_main");
+					break;
+				case 04466:
+					System.out.print("_sureg");
+					break;
+				case 04650:
+					System.out.print("_estabur");
+					break;
+				case 05544:
+					System.out.print("_nseg");
+					break;
+				case 05572:
+					System.out.print("_iinit");
+					break;
+				case 05776:
+					System.out.print("_alloc");
+					break;
+				case 06332:
+					System.out.print("_free");
+					break;
+				case 06624:
+					System.out.print("_badbloc");
+					break;
+				case 06712:
+					System.out.print("_ialloc");
+					break;
+				case 07446:
+					System.out.print("_ifree");
+					break;
+				case 07536:
+					System.out.print("_getfs");
+					break;
+				case 07676:
+					System.out.print("_update");
+					break;
+				case 010156:
+					System.out.print("_iget");
+					break;
+				case 010632:
+					System.out.print("_iput");
+					break;
+				case 010762:
+					System.out.print("_iupdat");
+					break;
+				case 011240:
+					System.out.print("_itrunc");
+					break;
+				case 011630:
+					System.out.print("_maknode");
+					break;
+				case 011736:
+					System.out.print("_wdir");
+					break;
+				case 012042:
+					System.out.print("_printf");
+					break;
+				case 012230:
+					System.out.print("_printn");
+					break;
+				case 012326:
+					System.out.print("_putchar");
+					break;
+				case 012450:
+					System.out.print("_panic");
+					break;
+				case 012512:
+					System.out.print("_prdev");
+					break;
+				case 012556:
+					System.out.print("_deverro");
+					break;
+				case 012640:
+					System.out.print("_readi");
+					break;
+				case 013330:
+					System.out.print("_writei");
+					break;
+				case 014030:
+					System.out.print("_max");
+					break;
+				case 014062:
+					System.out.print("_min");
+					break;
+				case 014114:
+					System.out.print("_iomove");
+					break;
+				case 014352:
+					System.out.print("_sleep");
+					break;
+				case 014550:
+					System.out.print("_wakeup");
+					break;
+				case 014616:
+					System.out.print("_setrun");
+					break;
+				case 014710:
+					System.out.print("_setpri");
+					break;
+				case 015004:
+					System.out.print("_sched");
+					break;
+				case 015662:
+					System.out.print("_swtch");
+					break;
+				case 016126:
+					System.out.print("_newproc");
+					break;
+				case 016614:
+					System.out.print("_expand");
+					break;
+				case 017114:
+					System.out.print("_bmap");
+					break;
+				case 020152:
+					System.out.print("_passc");
+					break;
+				case 020272:
+					System.out.print("_cpass");
+					break;
+				case 020404:
+					System.out.print("_nodev");
+					break;
+				case 020422:
+					System.out.print("_nulldev");
+					break;
+				case 020432:
+					System.out.print("_bcopy");
+					break;
+				case 020462:
+					System.out.print("_xswap");
+					break;
+				case 020724:
+					System.out.print("_xfree");
+					break;
+				case 021056:
+					System.out.print("_xalloc");
+					break;
+				case 021556:
+					System.out.print("_xccdec");
+					break;
+				case 021636:
+					System.out.print("_trap");
+					break;
+				case 022606:
+					System.out.print("_trap1");
+					break;
+				case 022644:
+					System.out.print("_nosys");
+					break;
+				case 022662:
+					System.out.print("_nullsys");
+					break;
+				case 022672:
+					System.out.print("_signal");
+					break;
+				case 022744:
+					System.out.print("_psignal");
+					break;
+				case 023034:
+					System.out.print("_issig");
+					break;
+				case 023126:
+					System.out.print("_stop");
+					break;
+				case 023244:
+					System.out.print("_psig");
+					break;
+				case 023540:
+					System.out.print("_core");
+					break;
+				case 024044:
+					System.out.print("_grow");
+					break;
+				case 024322:
+					System.out.print("_ptrace");
+					break;
+				case 024620:
+					System.out.print("_procxmt");
+					break;
+				case 025316:
+					System.out.print("_clock");
+					break;
+				case 026154:
+					System.out.print("_timeout");
+					break;
+				case 026330:
+					System.out.print("_getf");
+					break;
+				case 026402:
+					System.out.print("_closef");
+					break;
+				case 026520:
+					System.out.print("_closei");
+					break;
+				case 026656:
+					System.out.print("_openi");
+					break;
+				case 027022:
+					System.out.print("_access");
+					break;
+				case 027214:
+					System.out.print("_owner");
+					break;
+				case 027302:
+					System.out.print("_suser");
+					break;
+				case 027336:
+					System.out.print("_ufalloc");
+					break;
+				case 027414:
+					System.out.print("_falloc");
+					break;
+				case 027532:
+					System.out.print("_malloc");
+					break;
+				case 027636:
+					System.out.print("_mfree");
+					break;
+				case 030066:
+					System.out.print("_namei");
+					break;
+				case 031146:
+					System.out.print("_schar");
+					break;
+				case 031172:
+					System.out.print("_uchar");
+					break;
+				case 031236:
+					System.out.print("_pipe");
+					break;
+				case 031420:
+					System.out.print("_readp");
+					break;
+				case 031626:
+					System.out.print("_writep");
+					break;
+				case 032116:
+					System.out.print("_plock");
+					break;
+				case 032166:
+					System.out.print("_prele");
+					break;
+				case 032226:
+					System.out.print("_exec");
+					break;
+				case 033762:
+					System.out.print("_rexit");
+					break;
+				case 034012:
+					System.out.print("_exit");
+					break;
+				case 034402:
+					System.out.print("_wait");
+					break;
+				case 035036:
+					System.out.print("_fork");
+					break;
+				case 035176:
+					System.out.print("_sbreak");
+					break;
+				case 035534:
+					System.out.print("_read");
+					break;
+				case 035554:
+					System.out.print("_write");
+					break;
+				case 035574:
+					System.out.print("_rdwr");
+					break;
+				case 036020:
+					System.out.print("_open");
+					break;
+				case 036072:
+					System.out.print("_creat");
+					break;
+				case 036200:
+					System.out.print("_open1");
+					break;
+				case 036454:
+					System.out.print("_close");
+					break;
+				case 036520:
+					System.out.print("_seek");
+					break;
+				case 037012:
+					System.out.print("_link");
+					break;
+				case 037244:
+					System.out.print("_mknod");
+					break;
+				case 037354:
+					System.out.print("_sslep");
+					break;
+				case 037612:
+					System.out.print("_fstat");
+					break;
+				case 037654:
+					System.out.print("_stat");
+					break;
+				case 037726:
+					System.out.print("_stat1");
+					break;
+				case 040212:
+					System.out.print("_dup");
+					break;
+				case 040262:
+					System.out.print("_smount");
+					break;
+				case 040676:
+					System.out.print("_sumount");
+					break;
+				case 041120:
+					System.out.print("_getmdev");
+					break;
+				case 041230:
+					System.out.print("_getswit");
+					break;
+				case 041246:
+					System.out.print("_gtime");
+					break;
+				case 041276:
+					System.out.print("_stime");
+					break;
+				case 041346:
+					System.out.print("_setuid");
+					break;
+				case 041420:
+					System.out.print("_getuid");
+					break;
+				case 041450:
+					System.out.print("_setgid");
+					break;
+				case 041512:
+					System.out.print("_getgid");
+					break;
+				case 041542:
+					System.out.print("_getpid");
+					break;
+				case 041564:
+					System.out.print("_sync");
+					break;
+				case 041600:
+					System.out.print("_nice");
+					break;
+				case 041654:
+					System.out.print("_unlink");
+					break;
+				case 042054:
+					System.out.print("_chdir");
+					break;
+				case 042202:
+					System.out.print("_chmod");
+					break;
+				case 042272:
+					System.out.print("_chown");
+					break;
+				case 042350:
+					System.out.print("_ssig");
+					break;
+				case 042462:
+					System.out.print("_kill");
+					break;
+				case 042640:
+					System.out.print("_times");
+					break;
+				case 042704:
+					System.out.print("_profil");
+					break;
+				case 042762:
+					System.out.print("_bread");
+					break;
+				case 043064:
+					System.out.print("_breada");
+					break;
+				case 043346:
+					System.out.print("_bwrite");
+					break;
+				case 043456:
+					System.out.print("_bdwrite");
+					break;
+				case 043544:
+					System.out.print("_bawrite");
+					break;
+				case 043572:
+					System.out.print("_brelse");
+					break;
+				case 043732:
+					System.out.print("_incore");
+					break;
+				case 044024:
+					System.out.print("_getblk");
+					break;
+				case 044420:
+					System.out.print("_iowait");
+					break;
+				case 044476:
+					System.out.print("_notavai");
+					break;
+				case 044556:
+					System.out.print("_iodone");
+					break;
+				case 044642:
+					System.out.print("_clrbuf");
+					break;
+				case 044672:
+					System.out.print("_binit");
+					break;
+				case 045122:
+					System.out.print("_devstar");
+					break;
+				case 045234:
+					System.out.print("_rhstart");
+					break;
+				case 045350:
+					System.out.print("_mapallo");
+					break;
+				case 045542:
+					System.out.print("_mapfree");
+					break;
+				case 045604:
+					System.out.print("_swap");
+					break;
+				case 046064:
+					System.out.print("_bflush");
+					break;
+				case 046174:
+					System.out.print("_physio");
+					break;
+				case 047006:
+					System.out.print("_geterro");
+					break;
+				case 047046:
+					System.out.print("_gtty");
+					break;
+				case 047156:
+					System.out.print("_stty");
+					break;
+				case 047246:
+					System.out.print("_sgtty");
+					break;
+				case 047352:
+					System.out.print("_wflusht");
+					break;
+				case 047442:
+					System.out.print("_cinit");
+					break;
+				case 047542:
+					System.out.print("_flushtt");
+					break;
+				case 047664:
+					System.out.print("_canon");
+					break;
+				case 050210:
+					System.out.print("_ttyinpu");
+					break;
+				case 050512:
+					System.out.print("_ttyoutp");
+					break;
+				case 051346:
+					System.out.print("_ttrstrt");
+					break;
+				case 051376:
+					System.out.print("_ttstart");
+					break;
+				case 051550:
+					System.out.print("_ttread");
+					break;
+				case 051646:
+					System.out.print("_ttwrite");
+					break;
+				case 052002:
+					System.out.print("_ttystty");
+					break;
+				case 052116:
+					System.out.print("_klopen");
+					break;
+				case 052326:
+					System.out.print("_klclose");
+					break;
+				case 052364:
+					System.out.print("_klread");
+					break;
+				case 052416:
+					System.out.print("_klwrite");
+					break;
+				case 052450:
+					System.out.print("_klxint");
+					break;
+				case 052532:
+					System.out.print("_klrint");
+					break;
+				case 052616:
+					System.out.print("_klsgtty");
+					break;
+				case 052656:
+					System.out.print("_mmread");
+					break;
+				case 053104:
+					System.out.print("_mmwrite");
+					break;
+				case 053364:
+					System.out.print("_rkstrat");
+					break;
+				case 053552:
+					System.out.print("_rkaddr");
+					break;
+				case 053726:
+					System.out.print("_rkstart");
+					break;
+				case 054002:
+					System.out.print("_rkintr");
+					break;
+				case 054140:
+					System.out.print("_rkread");
+					break;
+				case 054200:
+					System.out.print("_rkwrite");
+					break;
+				case 054236:
+					System.out.print("_tcclose");
+					break;
+				case 054272:
+					System.out.print("_tcstrat");
+					break;
+				case 054442:
+					System.out.print("_tcstart");
+					break;
+				case 054632:
+					System.out.print("_tcintr");
+					break;
+				case 055220:
+					System.out.print("_tmopen");
+					break;
+				case 055300:
+					System.out.print("_tmclose");
+					break;
+				case 055356:
+					System.out.print("_tcomman");
+					break;
+				case 055450:
+					System.out.print("_tmstrat");
+					break;
+				case 055640:
+					System.out.print("_tmstart");
+					break;
+				case 056160:
+					System.out.print("_tmintr");
+					break;
+				case 056422:
+					System.out.print("_tmread");
+					break;
+				case 056504:
+					System.out.print("_tmwrite");
+					break;
+				case 056556:
+					System.out.print("_tmphys");
+					break;
+				case 056634:
+					System.out.print("_ka6");
+					break;
+				case 056636:
+					System.out.print("_cputype");
+					break;
+				case 056640:
+					System.out.print("_bdevsw");
+					break;
+				case 056742:
+					System.out.print("_cdevsw");
+					break;
+				case 057204:
+					System.out.print("_rootdev");
+					break;
+				case 057206:
+					System.out.print("_swapdev");
+					break;
+				case 057210:
+					System.out.print("_swplo");
+					break;
+				case 057212:
+					System.out.print("_nswap");
+					break;
+				case 057214:
+					System.out.print("_icode");
+					break;
+				case 060022:
+					System.out.print("_regloc");
+					break;
+				case 060222:
+					System.out.print("_sysent");
+					break;
+				case 060750:
+					System.out.print("_maptab");
+					break;
+				case 061210:
+					System.out.print("_partab");
+					break;
+				case 061410:
+					System.out.print("_runrun");
+					System.out.print("_edata");
+					break;
+				case 061412:
+					System.out.print("_cfreeli");
+					break;
+				case 061414:
+					System.out.print("_rktab");
+					break;
+				case 061426:
+					System.out.print("_tmtab");
+					break;
+				case 061440:
+					System.out.print("_tctab");
+					break;
+				case 061452:
+					System.out.print("_canonb");
+					break;
+				case 062052:
+					System.out.print("_coremap");
+					break;
+				case 062362:
+					System.out.print("_swapmap");
+					break;
+				case 062672:
+					System.out.print("_rootdir");
+					break;
+				case 062674:
+					System.out.print("_execnt");
+					break;
+				case 062676:
+					System.out.print("_lbolt");
+					break;
+				case 062700:
+					System.out.print("_time");
+					break;
+				case 062704:
+					System.out.print("_tout");
+					break;
+				case 062710:
+					System.out.print("_callout");
+					break;
+				case 063100:
+					System.out.print("_mount");
+					break;
+				case 063136:
+					System.out.print("_mpid");
+					break;
+				case 063140:
+					System.out.print("_runin");
+					break;
+				case 063142:
+					System.out.print("_runout");
+					break;
+				case 063144:
+					System.out.print("_curpri");
+					break;
+				case 063146:
+					System.out.print("_maxmem");
+					break;
+				case 063150:
+					System.out.print("_lks");
+					break;
+				case 063152:
+					System.out.print("_updlock");
+					break;
+				case 063154:
+					System.out.print("_rablock");
+					break;
+				case 063156:
+					System.out.print("_proc");
+					break;
+				case 065272:
+					System.out.print("_text");
+					break;
+				case 066112:
+					System.out.print("_inode");
+					break;
+				case 074312:
+					System.out.print("_nblkdev");
+					break;
+				case 074314:
+					System.out.print("_nchrdev");
+					break;
+				case 074316:
+					System.out.print("_buf");
+					break;
+				case 075066:
+					System.out.print("_bfreeli");
+					break;
+				case 075116:
+					System.out.print("_panicst");
+					break;
+				case 075120:
+					System.out.print("_file");
+					break;
+				case 076560:
+					System.out.print("_ipc");
+					break;
+				case 076570:
+					System.out.print("_buffers");
+					break;
+				case 0115626:
+					System.out.print("_swbuf");
+					break;
+				case 0115656:
+					System.out.print("_httab");
+					break;
+				case 0115670:
+					System.out.print("_maplock");
+					break;
+				case 0115672:
+					System.out.print("_cfree");
+					break;
+				case 0117332:
+					System.out.print("_kl11");
+					break;
+				case 0117372:
+					System.out.print("_rrkbuf");
+					break;
+				case 0117422:
+					System.out.print("_tcper");
+					break;
+				case 0117432:
+					System.out.print("_rtmbuf");
+					break;
+				case 0117462:
+					System.out.print("_t_openf");
+					break;
+				case 0117472:
+					System.out.print("_t_blkno");
+					break;
+				case 0117512:
+					System.out.print("_t_nxrec");
+					break;
+				case 0117534:
+					System.out.print("nofault");
+					break;
+				case 0117536:
+					System.out.print("ssr");
+					break;
+				case 0117544:
+					System.out.print("badtrap");
+					break;
+				case 0117550:
+					System.out.print("_end");
+					break;
+				case 0140000:
+					System.out.print("_u");
+					break;
+			}
 		}
-
 	}
 }

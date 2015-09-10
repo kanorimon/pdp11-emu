@@ -201,20 +201,32 @@ public class Register{
 		}
 	}
 	static boolean getN(){
+		return !((PSW & (1 << 3)) == 0);
+		/*
 		if((PSW & (1 << 3)) == 0)	return false;
 		return true;
+		*/
 	}
 	static boolean getZ(){
+		return !((PSW & (1 << 2)) == 0);
+		/*
 		if((PSW & (1 << 2)) == 0)	return false;
 		return true;
+		*/
 	}
 	static boolean getV(){
+		return !((PSW & (1 << 1)) == 0);
+		/*
 		if((PSW & (1 << 1)) == 0)	return false;
 		return true;
+		*/
 	}
 	static boolean getC(){
+		return !((PSW & (1)) == 0);
+		/*
 		if((PSW & 1) == 0)	return false;
 		return true;
+		*/
 	}
 	
 	//デバッグ用出力

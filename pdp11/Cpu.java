@@ -20,8 +20,8 @@ public class Cpu extends Thread {
 	
 	Cpu(){
 
-		dbgList = new ArrayList<Integer>();
-		rtnList = new ArrayList<Integer>();
+		dbgList = new ArrayList<>();
+		rtnList = new ArrayList<>();
 		
 		waitFlg = false;
 		opGetFlg = false;
@@ -239,22 +239,22 @@ public class Cpu extends Thread {
 
 				break;
 			case BCC:
-				if(Register.getC() == false) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(!Register.getC()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BCS:
-				if(Register.getC() == true) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(Register.getC()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BEQ:
-				if(Register.getZ() == true) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(Register.getZ()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BGE:
 				if(Register.getN() == Register.getV()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BGT:
-				if(Register.getZ() == false && Register.getN() == Register.getV()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(!Register.getZ() && Register.getN() == Register.getV()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BHI:
-				if(Register.getC() == false && Register.getZ() == false) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(!Register.getC() && !Register.getZ()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BIC:
 				srcObj = getField(srcObj,(opnum >> 9) & 7,(opnum >> 6) & 7);
@@ -384,28 +384,28 @@ public class Cpu extends Thread {
 
 				break;
 			case BLE:
-				if(Register.getZ() == true || Register.getN() != Register.getV()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(Register.getZ() || Register.getN() != Register.getV()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BLOS:
-				if(Register.getC() == true || Register.getZ() == true) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(Register.getC() || Register.getZ()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BLT:
 				if(Register.getN() != Register.getV()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BMI:
-				if(Register.getN() == true) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(Register.getN()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BNE:
-				if(Register.getZ() == false) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(!Register.getZ()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BPL:
-				if(Register.getN() == false) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(!Register.getN()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BR:
 				Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case BVS:
-				if(Register.getV() == true) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
+				if(Register.getV()) Register.set(7,getOffset(dstObj,(opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7).address);
 				break;
 			case CLR:
 				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
@@ -936,7 +936,7 @@ public class Cpu extends Thread {
 				break;
 			case SXT:
 				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
-				if(Register.getN() == true){
+				if(Register.getN()){
 					if(dstObj.flgRegister){
 						Register.set(dstObj.register, 0xffff);
 					}else if(dstObj.flgAddress){
@@ -1027,8 +1027,6 @@ public class Cpu extends Thread {
 
 		Register.set(7, Memory.getPhyMemory2(04));
 		Register.PSW = Memory.getPhyMemory2(06);
-
-		return;
 	}
 
 	//フィールド取得（PC+オフセット*2 8bit（符号付））
@@ -1620,8 +1618,7 @@ public class Cpu extends Thread {
 	}
 	static int getMemory2(int addr, int mode){
 		addr = addr << 16 >>> 16;
-		int tmp = Memory.getPhyMemory2(Mmu.analyzeMemory(addr, mode));
-		return tmp;
+		return Memory.getPhyMemory2(Mmu.analyzeMemory(addr, mode));
 	}	
 	
 	//1バイト単位で指定箇所のメモリを取得
@@ -1670,7 +1667,7 @@ public class Cpu extends Thread {
 
 	//スタックプッシュ
 	void pushStack(int n){
-		Register.add(6,-2);
+		Register.add(6, -2);
 		setMemory2(Register.get(6), n);
 	}
 
@@ -1687,7 +1684,8 @@ public class Cpu extends Thread {
 		Register.add(6,2);
 		return tmp;
 	}
-	
+
+	/*
 	//カーネルスタックポップ
 	int popKernelStack(){
 		//int tmp = getMemory2(Register.getKernelStack(),0);
@@ -1695,7 +1693,7 @@ public class Cpu extends Thread {
 		Register.addKernelStack(2);
 		return tmp;
 	}
-	
+	*/
 
 	/*
 	 * データ編集関数
@@ -1760,8 +1758,8 @@ public class Cpu extends Thread {
 				//System.out.print("\n***StackTrace***\n");
 				System.out.print("\n*** ");
 
-				for (int i = 0; i < dbgList.size(); i++) {
-					Util.printSub(dbgList.get(i));
+				for (int tmp : dbgList) {
+					Util.printSub(tmp);
 					//System.out.print(" - ");
 				}
 				System.out.print("\n");
@@ -1769,19 +1767,7 @@ public class Cpu extends Thread {
 			}
 		}
 	}
-	
-	//メモリダンプの出力
-	void printMemory(){
-		System.out.print("\n--memory-start-------------");
-		for(int m=0;m<253366;m++){
-			if(m%16==0){
-				System.out.print(String.format("\n%02x:",m/16));
-			}
-			System.out.print(String.format(" %02x",Memory.mem[m]));
-		}
-		System.out.println("\n--memory-end-------------");
-	}
-	
+
 	/*
 	 * オーバーフロー判定関数
 	 */
@@ -2188,36 +2174,6 @@ public class Cpu extends Thread {
 	}
 }
 
-
-/*
- *オペランド
- */
-class Operand{
-	int address;
-	int register;
-
-	public void reset(){
-		address = 0;
-		register = 0;
-	}
-
-	void setAddress(int input){
-		address = input;
-	}
-
-	void setRegister(int input){
-		register = input;
-	}
-
-	int getAddress(){
-		return address;
-	}
-
-	int getRegister(){
-		return register;
-	}
-}
-
 /*
  * フィールドDto
  * for packing 1 line of asm
@@ -2259,6 +2215,7 @@ class FieldDto{
 		flgRegister = true;
 	}
 
+	/*
 	public void set(FieldDto input){
 		operand = input.operand;
 		address = input.address;
@@ -2266,6 +2223,7 @@ class FieldDto{
 		flgAddress = input.flgAddress;
 		flgRegister = input.flgRegister;
 	}
+	*/
 }
 
 

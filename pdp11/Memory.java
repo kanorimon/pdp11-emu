@@ -264,7 +264,7 @@ public class Memory {
 				return Integer.MAX_VALUE;
 			}
 		}else{
-			return (int) ((int)(mem[addr]) & 0xFF)|( (int)((mem[addr+1] & 0xFF) << 8));
+			return  ((int)(mem[addr]) & 0xFF) |  ((mem[addr+1] & 0xFF) << 8);
 		}
 	}
 
@@ -456,7 +456,7 @@ public class Memory {
 	//1バイト単位で指定箇所のメモリを更新
 	static void setPhyMemory1(int addr, int src){
 		if(addr >= IOADDRP){
-			setPhyMemory2(addr, (int) (src & 0xFF) | (int) (getPhyMemory2(addr) & 0xFF00));
+			setPhyMemory2(addr, (src & 0xFF) |  (getPhyMemory2(addr) & 0xFF00));
 		}else{
 			mem[addr] = (byte)src;
 		}
