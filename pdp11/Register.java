@@ -112,7 +112,8 @@ public class Register{
 			return reg[regNo];
 		}
 	}
-	
+
+	/*
 	//PAR設定
 	static void setPar(int type,int no,int value){
 		if(type == 0){
@@ -130,6 +131,7 @@ public class Register{
 			return userPAR[no];
 		}
 	}
+	*/
 	
 	//現モード取得
 	static int getNowMode(){

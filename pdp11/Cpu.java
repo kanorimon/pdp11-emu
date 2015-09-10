@@ -8,7 +8,7 @@ public class Cpu extends Thread {
 	 * 変数定義
 	 */
 	int strnum; //逆アセンブラ出力用
-	static int exeCnt = 200000; //実行回数制御
+	static int exeCnt = 1000000; //実行回数制御
 	ArrayList<Integer> dbgList; //スタックトレース出力用 
 	ArrayList<Integer> rtnList; //スタックトレース出力用
 	
@@ -50,7 +50,7 @@ public class Cpu extends Thread {
 			//RK11
 			if(Util.checkBit(Rk11.RKCS, 0) == 1){
 				Rk11.rk11out();
-				exeCnt = 0;
+				//exeCnt = 0;
 			}
 			if(Rk11.RKER != 0)	Rk11.rk11error();
 			
@@ -67,7 +67,7 @@ public class Cpu extends Thread {
 			}
 			
 			//CLOCK
-			if(exeCnt%1000 == 0){
+			if(exeCnt%10000 == 0){
 				Register.CLOCK1 = Util.setBit(Register.CLOCK1, 7);
 			}else{
 				Register.CLOCK1 = Util.clearBit(Register.CLOCK1, 7);
@@ -555,6 +555,11 @@ public class Cpu extends Thread {
 
 				break;
 			case JMP:
+				if(((opnum >> 3) & 7) == 0){
+					trap04();
+					break;
+				}
+
 				dstObj = getField(dstObj,(opnum >> 3) & 7,opnum  & 7);
 
 				tmp = Register.get(7);
@@ -574,11 +579,17 @@ public class Cpu extends Thread {
 
 				break;
 			case JSR:
+				if(((opnum >> 3) & 7) == 0){
+					trap04();
+					break;
+				}
+
 				dstObj = getField(dstObj, (opnum >> 3) & 7, opnum & 7);
 				
 				tmp = Register.get(7);
 
-				pushKernelStack(Register.get((opnum >> 6) & 7));
+				//pushKernelStack(Register.get((opnum >> 6) & 7));
+				pushStack(Register.get((opnum >> 6) & 7));
 				Register.set((opnum >> 6) & 7,Register.get(7));
 				Register.set(7, dstObj.address);
 				/*
@@ -607,11 +618,7 @@ public class Cpu extends Thread {
 					//System.out.printf("\nmfpi=%04x,%04x,%04x\n",srcObj.address,Register.getPreMode(),tmp);
 
 					if(memoryErrorFlg){
-						pushKernelStack(Register.PSW);
-						pushKernelStack(Register.get(7));
-
-						Register.set(7, Memory.getPhyMemory2(04));
-						Register.PSW = Memory.getPhyMemory2(06);
+						trap04();
 
 						memoryErrorFlg = false;
 						break;
@@ -713,11 +720,7 @@ public class Cpu extends Thread {
 					if(memoryErrorFlg){
 						pushStack(tmp);
 
-						pushKernelStack(Register.PSW);
-						pushKernelStack(Register.get(7));
-
-						Register.set(7, Memory.getPhyMemory2(04));
-						Register.PSW = Memory.getPhyMemory2(06);
+						trap04();
 
 						memoryErrorFlg = false;
 						break;
@@ -836,9 +839,10 @@ public class Cpu extends Thread {
 				*/
 				
 				Register.set(7,Register.get(opnum & 7));
-				Register.set(opnum & 7,popKernelStack());
-				//Register.set(opnum & 7,getMemory2(popKernelStack()));
-				
+				Register.set(opnum & 7,popStack());
+				//Register.set(opnum & 7,popKernelStack());
+				//Register.set(opnum & 7,getMemory2(Register.get(6)));
+
 				Register.setCC(Register.getN(), Register.getZ(), Register.getV(), Register.getC());
 				
 				break;
@@ -846,9 +850,11 @@ public class Cpu extends Thread {
 			case RTT:
 				//Register.PSW = Register.PSW & 4095;
 
-				Register.set(7, popKernelStack());
-				Register.PSW = popKernelStack();
-				
+				//Register.set(7, popKernelStack());
+				//Register.PSW = popKernelStack();
+				Register.set(7, popStack());
+				Register.PSW = popStack();
+
 				/*
 				System.out.printf("\nstack+2=%x:%x,stack+4=%x:%x\n",
 						Register.reg[6]-2,
@@ -1001,8 +1007,8 @@ public class Cpu extends Thread {
 			case WORD:
 				System.out.print("\n");
 				System.out.println("not case");
-				System.out.println(getMemory2(Register.get(7)-2));
-				System.out.printf("\nffee=%x\n",Mmu.analyzeMemoryUser(0xffee));
+				System.out.println(getMemory2(Register.get(7) - 2));
+				System.out.printf("\nexeCnt=%x\n", exeCnt);
 				Memory.printPAR();
 				
 				
@@ -1012,6 +1018,17 @@ public class Cpu extends Thread {
 			}
 			}
 		}
+	}
+
+	//トラップ
+	void trap04(){
+		pushKernelStack(Register.PSW);
+		pushKernelStack(Register.get(7));
+
+		Register.set(7, Memory.getPhyMemory2(04));
+		Register.PSW = Memory.getPhyMemory2(06);
+
+		return;
 	}
 
 	//フィールド取得（PC+オフセット*2 8bit（符号付））
@@ -1660,7 +1677,8 @@ public class Cpu extends Thread {
 	//カーネルスタックプッシュ
 	void pushKernelStack(int n){
 		Register.addKernelStack(-2);
-		setMemory2(Register.getKernelStack(), n,0);
+		//setMemory2(Register.getKernelStack(), n, 0);
+		setMemory2(Register.getKernelStack(), n);
 	}
 	
 	//スタックポップ
@@ -1672,7 +1690,8 @@ public class Cpu extends Thread {
 	
 	//カーネルスタックポップ
 	int popKernelStack(){
-		int tmp = getMemory2(Register.getKernelStack(),0);
+		//int tmp = getMemory2(Register.getKernelStack(),0);
+		int tmp = getMemory2(Register.getKernelStack());
 		Register.addKernelStack(2);
 		return tmp;
 	}
@@ -1702,7 +1721,7 @@ public class Cpu extends Thread {
 	
 	//指定した命令を出力
 	void printOpcode(int opcode){
-		if(exeCnt < 200000 || Pdp11.flgDismMode){
+		if(exeCnt < 1000000 || Pdp11.flgDismMode){
 			System.out.print(String.format("%04x", opcode));
 			System.out.print(" ");
 		}
@@ -1710,7 +1729,7 @@ public class Cpu extends Thread {
 
 	//レジスタ・フラグの出力
 	void printDebug(){
-		if(exeCnt < 200000){
+		if(exeCnt < 1000000){
 			//popCall(Register.get(7));
 			Register.printDebug();
 		}
@@ -1737,7 +1756,7 @@ public class Cpu extends Thread {
 	void printCall(){
 		if(Pdp11.flgDebugMode>=1 && dbgList.size() != 0){
 
-			if(exeCnt < 200000){
+			if(exeCnt < 1000000){
 				//System.out.print("\n***StackTrace***\n");
 				System.out.print("\n*** ");
 
