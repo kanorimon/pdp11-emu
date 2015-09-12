@@ -5,14 +5,8 @@ import java.util.Arrays;
 public class Memory {
 
 	static byte[] mem; //物理メモリ本体
-	//static int magicNo;
-	//static int textSize;
-	//static int dataSize;
-	//static int bssSize;
 
 	final static int MEMORY_SIZE = 0760000;
-	//final static int MEMORY_SIZE = 262144;
-	//final static int MEMORY_SIZE = 253366000;
 	final static int HEADER_SIZE = 16;
 
 	final static int IOADDRV = 0160000;
@@ -86,20 +80,11 @@ public class Memory {
 		//メモリ初期化
 		mem = new byte[MEMORY_SIZE];
 		Arrays.fill(mem, (byte)0);
-		
-		//magicNo = 0;
-		//textSize = 0;
-		//dataSize = 0;
-		//bssSize = 0;
 	}
-	
 
 	static void load(int[] rom,int startNo){
-		
-		//System.out.print("RK11_BOOT_ROM : ");
 		for(int i=0;i<rom.length;i++){
 			setPhyMemory2(startNo + i * 2, rom[i]);
-			//System.out.printf("%04x ",getPhyMemory2(startNo + i*2));
 		}
 	}
 
@@ -116,7 +101,6 @@ public class Memory {
 		//サイズを取得
 		int textSize = ((int)bf[2] & 0xFF)|(((int)bf[3] & 0xFF) << 8);
 		int dataSize = ((int)bf[4] & 0xFF)|(((int)bf[5] & 0xFF) << 8);
-		//int bssSize = ((int)bf[6] & 0xFF)|(((int)bf[7] & 0xFF) << 8);
 		
 		//メモリ初期化
 		int i;
@@ -445,7 +429,6 @@ public class Memory {
 				System.out.printf("execnt=%d\n",Cpu.exeCnt);
 				System.out.printf("\n#####set addr=%d#####\n",addr);
 				Cpu.memoryErrorFlg = true;
-				//System.exit(0);
 			}
 		}else{
 			mem[addr] = (byte)src;

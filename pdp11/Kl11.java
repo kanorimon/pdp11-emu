@@ -28,7 +28,7 @@ public class Kl11 extends Thread {
 	static byte[] inputByte;
 	
 	static void reset(){
-		consoleSwitchRegister = 0;
+		consoleSwitchRegister = 1;
 		XBUF = 0;
 		XCSR = 128;
 		RBUF = 0;
@@ -83,27 +83,16 @@ public class Kl11 extends Thread {
 	public void run(){
 		System.out.println("KL11 run");
 
-		//consoleSwitchRegister = 0173030; //電源ON
-		consoleSwitchRegister = 1; //電源ON
-
 		CommandReceiver commandReceiver = new CommandReceiver();
         commandReceiver.start();
         
 		for(;;){
-			
 			try{
 				  Thread.sleep(1);
 			}catch (InterruptedException e){
 			}
 			
-			//X割り込み
-			/*
-			if(Util.checkBit(XCSR,6) == 1){
-				BR_PRI = 4;
-				BR_VEC = 064;
-			}
-			*/
-			
+			//キーボードからの入力バッファ
 			if(inputStr.length() > 0){
 				RCSR = Util.setBit(RCSR,RCSR_BUSY);
 				
@@ -119,21 +108,6 @@ public class Kl11 extends Thread {
 				Cpu.exeCnt = 0;
 
 			}
-			
-			/*
-			if(Util.checkBit(RCSR,RCSR_ENB) == 1){
-				RCSR = Util.clearBit(RCSR,RCSR_DONE);
-			}
-			*/
-			
-			//R割り込み
-			/*
-			if(Util.checkBit(RCSR,RCSR_ID) == 1 && Util.checkBit(RCSR,RCSR_DONE) == 1){
-				BR_PRI = 4;
-				BR_VEC = 060;
-			}
-			*/
-			
 		}
 	}
 	

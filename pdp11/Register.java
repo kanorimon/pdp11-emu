@@ -52,13 +52,6 @@ public class Register{
 
 		reg6_u = 0;
 		
-		/*
-		n = false;
-		z = false;
-		v = false;
-		c = false;
-		*/
-		
 		PSW = 0;
 		STACK_LIMIT = 0;
 		PIRQ = 0;
@@ -106,32 +99,17 @@ public class Register{
 
 	//レジスタを取得
 	static int get(int regNo){
-		if(regNo == 6 && getNowMode() != 0){
+		return get(regNo,getNowMode());
+	}
+
+	//レジスタを取得
+	static int get(int regNo,int mode){
+		if(regNo == 6 && mode != 0){
 			return reg6_u;
 		}else{
 			return reg[regNo];
 		}
 	}
-
-	/*
-	//PAR設定
-	static void setPar(int type,int no,int value){
-		if(type == 0){
-			kernelPAR[no] = value;
-		}else{
-			userPAR[no] = value;
-		}
-	}
-	
-	//PAR取得
-	static int getPar(int type,int no){
-		if(type == 0){
-			return kernelPAR[no];
-		}else{
-			return userPAR[no];
-		}
-	}
-	*/
 	
 	//現モード取得
 	static int getNowMode(){
@@ -164,12 +142,6 @@ public class Register{
 		setZ(args_z);
 		setV(args_v);
 		setC(args_c);
-		/*
-		c = args_c;
-		z = args_z;
-		n = args_n;
-		v = args_v;
-		*/
 	}
 	
 	static void setN(boolean args_n){
@@ -202,31 +174,15 @@ public class Register{
 	}
 	static boolean getN(){
 		return !((PSW & (1 << 3)) == 0);
-		/*
-		if((PSW & (1 << 3)) == 0)	return false;
-		return true;
-		*/
 	}
 	static boolean getZ(){
 		return !((PSW & (1 << 2)) == 0);
-		/*
-		if((PSW & (1 << 2)) == 0)	return false;
-		return true;
-		*/
 	}
 	static boolean getV(){
 		return !((PSW & (1 << 1)) == 0);
-		/*
-		if((PSW & (1 << 1)) == 0)	return false;
-		return true;
-		*/
 	}
 	static boolean getC(){
 		return !((PSW & (1)) == 0);
-		/*
-		if((PSW & 1) == 0)	return false;
-		return true;
-		*/
 	}
 	
 	//デバッグ用出力
@@ -265,10 +221,8 @@ public class Register{
 			System.out.print("-");
 		}
 
-		
 		//System.out.print(" ");
 		//System.out.print(String.format("%04x",Cpu.exeCnt));
-
 
 		System.out.print(" ");
 		System.out.print(String.format("%x",(getNowMode())));
@@ -286,66 +240,8 @@ public class Register{
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Memory.getPhyMemory2(0xb96e)));
 
-		//System.out.print(" ");
-		//System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc3ca))));
-
-		/*
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc3b6))));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc3be))));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Mmu.analyzeMemoryKernel(0xc000)));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc000)) ));
-
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(Register.get(6)))));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0x49fa)));
-		
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0x49fe)));
-		
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0x49ea)));
-		
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0x49ee)));
-		
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0x6fc)));
-		
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0x700)));
-		
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0x6ec)));
-		
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0x6f0)));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(Memory.UISA1)));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0x9ec0)));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0xa2c0)));
-		
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(Register.get(6)))));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(Register.get(6)))));
-		
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Mmu.analyzeMemoryKernel(0xc000)));
 
 		System.out.print(" ");
 		System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc000))));

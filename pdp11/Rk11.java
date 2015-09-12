@@ -44,11 +44,8 @@ public class Rk11 extends Thread {
 		}
 	}
 	
-	static void rk11out(){
+	static void rk11access(){
 		RKCS = Util.clearBit(RKCS, 0);
-		//System.out.println("RK11OUT");
-
-		//System.out.printf("\n$$$$$RKCS=%x$$$$$\n", RKCS);
 
 		if(RKCS << 28 >>> 29 == 1){
 
@@ -67,17 +64,11 @@ public class Rk11 extends Thread {
 				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\v6root", "rw");
 				v6root.seek(tmpRKDA * 512);
 				
-				//RandomAccessFile v6root_memo = new RandomAccessFile( System.getProperty("user.dir") + "\\write_" + tmpRKDA + "_" + no, "rw");
-				//no++;
-				
 				for(int i=0;i<datasizeWord * 2; i++){
 					v6root.write(Memory.getPhyMemory1(Mmu.analyzeMemory(RKBA + i, Register.getNowMode())));
-					//v6root_memo.write(Memory.getPhyMemory1(Mmu.analyzeMemory(RKBA + i, Register.getNowMode())));
 				}
 				
 				v6root.close();
-				//v6root_memo.close();
-
 				
 			} catch (IOException e) {
 			}
@@ -103,17 +94,12 @@ public class Rk11 extends Thread {
 				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\v6root", "r");
 				v6root.seek(tmpRKDA * 512);
 
-				//RandomAccessFile v6root_memo = new RandomAccessFile( System.getProperty("user.dir") + "\\read_" + tmpRKDA + "_" + no, "rw");
-				//no++;
-
 				for(int i=0;i<datasizeWord * 2; i++){
 					byte tmp = v6root.readByte();
 					Memory.setPhyMemory1(Mmu.analyzeMemory(RKBA + i, Register.getNowMode()), tmp);
-					//v6root_memo.write(tmp);
 				}
 
 				v6root.close();
-				//v6root_memo.close();
 				
 			} catch (IOException e) {
 			}
@@ -124,7 +110,6 @@ public class Rk11 extends Thread {
 
 		if(Util.checkBit(RKCS, 6) == 1){
 			System.out.println("\nRK11INTER");
-			//System.out.printf("NowMode=%d\n",Register.getNowMode());
 			BR_PRI = 5;
 			BR_VEC = 0220;
 		}
@@ -177,6 +162,5 @@ public class Rk11 extends Thread {
 		0005007  //clr pc
 	    };
     */
-
 
 }
