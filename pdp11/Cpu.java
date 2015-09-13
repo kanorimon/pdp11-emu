@@ -93,11 +93,13 @@ public class Cpu extends Thread {
 			 */
 			//クロック割り込み
 			if(Util.checkBit(Register.CLOCK1, 7)==1 && Util.checkBit(Register.CLOCK1, 6)==1){
-				pushKernelStack(Register.PSW);
-				pushKernelStack(Register.get(7));
-				Register.set(7, Memory.getPhyMemory2(0100));
-				Register.PSW = Memory.getPhyMemory2(0102);
-				waitFlg = false;
+				if(7 > Register.getPriority()){
+					pushKernelStack(Register.PSW);
+					pushKernelStack(Register.get(7));
+					Register.set(7, Memory.getPhyMemory2(0100));
+					Register.PSW = Memory.getPhyMemory2(0102);
+					waitFlg = false;
+				}
 			//RK11割り込み
 			}else if(Kl11.BR_PRI < Rk11.BR_PRI){
 				if(Rk11.BR_PRI > Register.getPriority()){
@@ -1706,7 +1708,11 @@ public class Cpu extends Thread {
 	//指定した命令を出力
 	void printOpcode(int opcode){
 		if(exeCnt < 1000000 || Pdp11.flgDismMode){
-			System.out.print(String.format("%04x", opcode));
+			if(Pdp11.flgOctMode){
+				System.out.print(String.format("%06o", opcode));
+			}else{
+				System.out.print(String.format("%04x", opcode));
+			}
 			System.out.print(" ");
 		}
 	}

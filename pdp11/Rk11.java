@@ -52,6 +52,8 @@ public class Rk11 extends Thread {
 			System.out.print("\nRK11-Write ");
 
 			System.out.printf("RKCS=%x ", RKCS);
+			System.out.printf("RKER=%x ", RKER);
+			System.out.printf("RKDB=%x ", RKDB);
 			System.out.printf("RKWC=%x ", RKWC);
 			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
 			System.out.printf("cnt=%x ", datasizeWord);
@@ -65,7 +67,7 @@ public class Rk11 extends Thread {
 				v6root.seek(tmpRKDA * 512);
 				
 				for(int i=0;i<datasizeWord * 2; i++){
-					v6root.write(Memory.getPhyMemory1(Mmu.analyzeMemory(RKBA + i, Register.getNowMode())));
+					v6root.write(Memory.getPhyMemory1(RKBA + i));
 				}
 				
 				v6root.close();
@@ -82,6 +84,8 @@ public class Rk11 extends Thread {
 			System.out.print("\nRK11-Read ");
 
 			System.out.printf("RKCS=%x ", RKCS);
+			System.out.printf("RKER=%x ", RKER);
+			System.out.printf("RKDB=%x ", RKDB);
 			System.out.printf("RKWC=%x ", RKWC);
 			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
 			System.out.printf("cnt=%x ", datasizeWord);
@@ -96,7 +100,7 @@ public class Rk11 extends Thread {
 
 				for(int i=0;i<datasizeWord * 2; i++){
 					byte tmp = v6root.readByte();
-					Memory.setPhyMemory1(Mmu.analyzeMemory(RKBA + i, Register.getNowMode()), tmp);
+					Memory.setPhyMemory1(RKBA + i, tmp);
 				}
 
 				v6root.close();

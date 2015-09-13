@@ -190,13 +190,23 @@ public class Register{
 
 		System.out.print("\n");
 		
-		System.out.print(String.format("%04x",Register.get(0) << 16 >>> 16));
-		System.out.print(" " + String.format("%04x",Register.get(1) << 16 >>> 16));
-		System.out.print(" " + String.format("%04x",Register.get(2) << 16 >>> 16));
-		System.out.print(" " + String.format("%04x",Register.get(3) << 16 >>> 16));
-		System.out.print(" " + String.format("%04x",Register.get(4) << 16 >>> 16));
-		System.out.print(" " + String.format("%04x",Register.get(5) << 16 >>> 16));
-		System.out.print(" " + String.format("%04x",Register.get(6) << 16 >>> 16));
+		if(Pdp11.flgOctMode){
+			System.out.print(String.format("%06o",Register.get(0) << 16 >>> 16));
+			System.out.print(" " + String.format("%06o",Register.get(1) << 16 >>> 16));
+			System.out.print(" " + String.format("%06o",Register.get(2) << 16 >>> 16));
+			System.out.print(" " + String.format("%06o",Register.get(3) << 16 >>> 16));
+			System.out.print(" " + String.format("%06o",Register.get(4) << 16 >>> 16));
+			System.out.print(" " + String.format("%06o",Register.get(5) << 16 >>> 16));
+			System.out.print(" " + String.format("%06o",Register.get(6) << 16 >>> 16));
+		}else{
+			System.out.print(String.format("%04x",Register.get(0) << 16 >>> 16));
+			System.out.print(" " + String.format("%04x",Register.get(1) << 16 >>> 16));
+			System.out.print(" " + String.format("%04x",Register.get(2) << 16 >>> 16));
+			System.out.print(" " + String.format("%04x",Register.get(3) << 16 >>> 16));
+			System.out.print(" " + String.format("%04x",Register.get(4) << 16 >>> 16));
+			System.out.print(" " + String.format("%04x",Register.get(5) << 16 >>> 16));
+			System.out.print(" " + String.format("%04x",Register.get(6) << 16 >>> 16));
+		}
 		
 		System.out.print(" ");
 
@@ -249,7 +259,11 @@ public class Register{
 		*/
 		
 		System.out.print(" ");
-		System.out.print(String.format("%04x",Register.get(7)));
+		if(Pdp11.flgOctMode){
+			System.out.print(String.format("%06o",Register.get(7),Register.get(7)));
+		}else{
+			System.out.print(String.format("%04x",Register.get(7),Register.get(7)));
+		}
 		System.out.print(":");
 		
 	}

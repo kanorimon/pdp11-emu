@@ -11,6 +11,7 @@ public class Pdp11{
 	static int flgDebugMode = 0;
 	static boolean flgDismMode = false;
 	static boolean flgExeMode = false;
+	static boolean flgOctMode = false;
 	
 	/*
 	 * カーネル本体
@@ -23,7 +24,7 @@ public class Pdp11{
 	public static void main(String[] args){
 		//モード設定
 		if(args.length < 1 || !(args[0].substring(0,1).equals("-"))){
-			System.out.println("オプションを指定してください。\n-e:実行 -v:デバッグモードで実行 -s:シンボルを出力して実行 -d:逆アセンブル");
+			System.out.println("オプションを指定してください。\n-e:実行 -v:デバッグモードで実行 -o:デバッグモード（8進数表示）で実行 -s:シンボルを出力して実行 -d:逆アセンブル");
 			return;
 		}
 
@@ -34,6 +35,11 @@ public class Pdp11{
 		if(args[0].equals("-v")){
 			flgDebugMode = 2; //デバッグモード（すべて）
 			flgExeMode = true; //実行モード
+		}
+		if(args[0].equals("-o")){
+			flgDebugMode = 2; //デバッグモード（すべて）
+			flgExeMode = true; //実行モード
+			flgOctMode = true; //8進数モード
 		}
 		if(args[0].equals("-d")) flgDismMode = true; //逆アセンブルモード
 		if(args[0].equals("-e")) flgExeMode = true; //実行モード
