@@ -13,10 +13,12 @@ public class Cpu extends Thread {
 	ArrayList<Integer> rtnList;		//スタックトレース出力用
 	
 	boolean aprPrintFlg;			//APR出力用 false:出力しない true:出力する
-	static boolean opGetFlg;		
 	static boolean memoryErrorFlg;	//メモリエラー false:エラーでない true:エラー
 	boolean waitFlg;				//WAIT false:WAITしていない true:WAITしている
-	
+
+	static int prePC;
+	static int prePSW;
+
 	Cpu(){
 		exeCnt = 1000000;
 		
@@ -25,8 +27,10 @@ public class Cpu extends Thread {
 		
 		aprPrintFlg = true;
 		waitFlg = false;
-		opGetFlg = false;
 		memoryErrorFlg = false;
+
+		prePC = 0;
+		prePSW = 0;
 	}
 
 	public void run(){
@@ -48,80 +52,71 @@ public class Cpu extends Thread {
 		int srcValue;
 		int dstValue;
 
+		exeloop:
 		for(;;){
-
 
 			exeCnt++;
 
 			/*
-			 * RK11
-			 */
+		 	* RK11
+		 	*/
 			//ディスクアクセス
-			if(Util.checkBit(Rk11.RKCS, 0) == 1){
+			if (Util.checkBit(Rk11.RKCS, 0) == 1) {
 				Rk11.rk11access();
 			}
-			if(Rk11.RKER != 0)	Rk11.rk11error();
-			
+			if (Rk11.RKER != 0) Rk11.rk11error();
+
 			/*
-			 * KL11
-			 */
+			* KL11
+			*/
 			//入出力中
-			if(Util.checkBit(Kl11.RCSR,Kl11.RCSR_ENB) == 1)	
-				Kl11.RCSR = Util.clearBit(Kl11.RCSR,Kl11.RCSR_DONE);
+			if (Util.checkBit(Kl11.RCSR, Kl11.RCSR_ENB) == 1)
+				Kl11.RCSR = Util.clearBit(Kl11.RCSR, Kl11.RCSR_DONE);
 			//tty出力
-			if(Util.checkBit(Kl11.XCSR,Kl11.XCSR_ID) == 1&& Util.checkBit(Kl11.XCSR,Kl11.XCSR_READY) == 1){
+			if (Util.checkBit(Kl11.XCSR, Kl11.XCSR_ID) == 1 && Util.checkBit(Kl11.XCSR, Kl11.XCSR_READY) == 1) {
 				Kl11.BR_PRI = 4;
 				Kl11.BR_VEC = 064;
 			}
 			//tty入力
-			if(Util.checkBit(Kl11.RCSR,Kl11.RCSR_ID) == 1 && Util.checkBit(Kl11.RCSR,Kl11.RCSR_DONE) == 1){
+			if (Util.checkBit(Kl11.RCSR, Kl11.RCSR_ID) == 1 && Util.checkBit(Kl11.RCSR, Kl11.RCSR_DONE) == 1) {
 				Kl11.BR_PRI = 4;
 				Kl11.BR_VEC = 060;
 			}
-			
+
 			/*
 			 * CLOCK
 			 */
-			if(exeCnt%10000 == 0){
+			if (exeCnt % 10000 == 0) {
 				Register.CLOCK1 = Util.setBit(Register.CLOCK1, 7);
-			}else{
+			} else {
 				Register.CLOCK1 = Util.clearBit(Register.CLOCK1, 7);
 			}
-			
+
 			/*
 			 * 割り込み
 			 */
 			//クロック割り込み
-			if(Util.checkBit(Register.CLOCK1, 7)==1 && Util.checkBit(Register.CLOCK1, 6)==1){
-				if(7 > Register.getPriority()){
-					pushKernelStack(Register.PSW);
-					pushKernelStack(Register.get(7));
-					Register.set(7, Memory.getPhyMemory2(0100));
-					Register.PSW = Memory.getPhyMemory2(0102);
+			if (Util.checkBit(Register.CLOCK1, 7) == 1 && Util.checkBit(Register.CLOCK1, 6) == 1) {
+				if (7 > Register.getPriority()) {
+					trap(0100, 0102);
 					waitFlg = false;
 				}
-			//RK11割り込み
-			}else if(Kl11.BR_PRI < Rk11.BR_PRI){
-				if(Rk11.BR_PRI > Register.getPriority()){
-					pushKernelStack(Register.PSW);
-					pushKernelStack(Register.get(7));
-					Register.set(7, Memory.getPhyMemory2(Rk11.BR_VEC));
-					Register.PSW = Memory.getPhyMemory2(Rk11.BR_VEC + 2);
+				//RK11割り込み
+			} else if (Kl11.BR_PRI < Rk11.BR_PRI) {
+				if (Rk11.BR_PRI > Register.getPriority()) {
+					trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
 					Rk11.BR_PRI = 0;
 					waitFlg = false;
 				}
-			//KL11割り込み
-			}else{
-				if(Kl11.BR_PRI > Register.getPriority()){
-					pushKernelStack(Register.PSW);
-					pushKernelStack(Register.get(7));
-					Register.set(7, Memory.getPhyMemory2(Kl11.BR_VEC));
-					Register.PSW = Memory.getPhyMemory2(Kl11.BR_VEC + 2);
+				//KL11割り込み
+			} else {
+				if (Kl11.BR_PRI > Register.getPriority()) {
+					trap(Kl11.BR_VEC, Kl11.BR_VEC + 2);
 					Kl11.BR_PRI = 0;
 					waitFlg = false;
 				}
 			}
-			
+
 			/*
 			 * デバッグ出力
 			 */
@@ -136,7 +131,7 @@ public class Cpu extends Thread {
 			 * 命令解釈・実行
 			 */
 			if(!waitFlg){
-			
+
 				//Fetch
 				fetchedMem = readMemory(); //命令取得
 				
@@ -711,11 +706,8 @@ public class Cpu extends Thread {
 						pushStack(srcValue);
 	
 					}catch(ArrayIndexOutOfBoundsException e){
-						pushKernelStack(Register.PSW);
-						pushKernelStack(Register.get(7));
-	
-						Register.set(7, Memory.getPhyMemory2(04));
-						Register.PSW = Memory.getPhyMemory2(06);
+						trap04();
+						break;
 					}
 					
 					Register.setCC(	(srcValue << 16 >> 16) < 0, 
@@ -999,14 +991,9 @@ public class Cpu extends Thread {
 									Register.getC());
 	
 					break;
-				case SYS:
+				case TRAP:
 					//trap
-					pushKernelStack(Register.PSW);
-					pushKernelStack(Register.get(7));
-					
-					Register.set(7, Memory.getPhyMemory2(034));
-					Register.PSW = Memory.getPhyMemory2(036);
-	
+					trap(034,036);
 					break;
 				case TST:
 					//test
@@ -1068,11 +1055,19 @@ public class Cpu extends Thread {
 
 	//トラップ
 	void trap04(){
-		pushKernelStack(Register.PSW);
-		pushKernelStack(Register.get(7));
+		trap(04,06);
+	}
 
-		Register.set(7, Memory.getPhyMemory2(04));
-		Register.PSW = Memory.getPhyMemory2(06);
+	//割り込み・トラップ
+	void trap(int newPC,int newPSW){
+		prePSW = Register.PSW;
+		prePC = Register.get(7);
+
+		Register.set(7, Memory.getPhyMemory2(newPC));
+		Register.PSW = (Register.getNowMode() << 12) | Memory.getPhyMemory2(newPSW);
+
+		pushStack(prePSW);
+		pushStack(prePC);
 	}
 
 	//オフセット取得（PC+オフセット*2 8bit（符号付））
@@ -1243,7 +1238,6 @@ public class Cpu extends Thread {
 			}
 			break;
 		}
-		opGetFlg = false;
 		return operand;
 	}
 
@@ -1260,7 +1254,7 @@ public class Cpu extends Thread {
 	    ROR, ROL, RTT, RTS, RTI,
 		MOV, MOVB, MUL,
 		NEG,
-		SBC, SETD, SEN, SEV, SENZ, SOB, SUB, SWAB, SXT, SYS,
+		SBC, SETD, SEN, SEV, SENZ, SOB, SUB, SWAB, SXT, TRAP,
 		TST, TSTB,
 		XOR,
 		RESET,
@@ -1550,7 +1544,7 @@ public class Cpu extends Thread {
 				case 4:
 					switch((opnum >> 6) & 7){
 					case 4:	
-						opcode = Opcode.SYS;
+						opcode = Opcode.TRAP;
 						break;
 					}
 					break;
@@ -2012,7 +2006,7 @@ public class Cpu extends Thread {
  			case SXT:
  				printDisasm("sxt", "", getOperandStr((opnum >> 3) & 7,opnum  & 7));
  				break;
- 			case SYS:
+ 			case TRAP:
  				if(getDex((opnum >> 3) & 7,opnum  & 7) == 0) readMemory();
  				printDisasm("sys", "", String.valueOf(opnum  & 7));
  				break;

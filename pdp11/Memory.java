@@ -205,7 +205,6 @@ public class Memory {
 			case RCSR:
 				return Kl11.RCSR;
 			case RBUF:
-				if(Cpu.opGetFlg) return RBUF;
 				return Kl11.getRBUF();
 			case XCSR:
 				return Kl11.XCSR;

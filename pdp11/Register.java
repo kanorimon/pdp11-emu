@@ -189,27 +189,36 @@ public class Register{
 	static void printDebug(){
 
 		System.out.print("\n");
-		
-		if(Pdp11.flgOctMode){
-			System.out.print(String.format("%06o",Register.get(0) << 16 >>> 16));
-			System.out.print(" " + String.format("%06o",Register.get(1) << 16 >>> 16));
-			System.out.print(" " + String.format("%06o",Register.get(2) << 16 >>> 16));
-			System.out.print(" " + String.format("%06o",Register.get(3) << 16 >>> 16));
-			System.out.print(" " + String.format("%06o",Register.get(4) << 16 >>> 16));
-			System.out.print(" " + String.format("%06o",Register.get(5) << 16 >>> 16));
-			System.out.print(" " + String.format("%06o",Register.get(6) << 16 >>> 16));
-		}else{
-			System.out.print(String.format("%04x",Register.get(0) << 16 >>> 16));
-			System.out.print(" " + String.format("%04x",Register.get(1) << 16 >>> 16));
-			System.out.print(" " + String.format("%04x",Register.get(2) << 16 >>> 16));
-			System.out.print(" " + String.format("%04x",Register.get(3) << 16 >>> 16));
-			System.out.print(" " + String.format("%04x",Register.get(4) << 16 >>> 16));
-			System.out.print(" " + String.format("%04x",Register.get(5) << 16 >>> 16));
-			System.out.print(" " + String.format("%04x",Register.get(6) << 16 >>> 16));
-		}
-		
-		System.out.print(" ");
 
+		//R0-SP
+		if(Pdp11.flgOctMode){
+			System.out.printf("%06o", Register.get(0));
+			System.out.printf(" %06o", Register.get(1));
+			System.out.printf(" %06o", Register.get(2));
+			System.out.printf(" %06o", Register.get(3));
+			System.out.printf(" %06o", Register.get(4));
+			System.out.printf(" %06o", Register.get(5));
+			System.out.printf(" %06o", Register.get(6));
+		}else{
+			System.out.printf("%04x", Register.get(0));
+			System.out.printf(" %04x", Register.get(1));
+			System.out.printf(" %04x", Register.get(2));
+			System.out.printf(" %04x", Register.get(3));
+			System.out.printf(" %04x", Register.get(4));
+			System.out.printf(" %04x", Register.get(5));
+			System.out.printf(" %04x", Register.get(6));
+		}
+
+		//PSW
+		if(Pdp11.flgOctMode){
+			System.out.printf(" %06o ", PSW);
+		}else{
+			System.out.printf(" %04x ", PSW);
+		}
+
+		System.out.print(String.format("%x",(getNowMode())));
+		System.out.print(String.format("%x",(getPreMode())));
+		System.out.print(String.format("%x",(getPriority())));
 		if(getZ()){
 			System.out.print("Z");
 		}else{
@@ -235,10 +244,22 @@ public class Register{
 		//System.out.print(String.format("%04x",Cpu.exeCnt));
 
 		System.out.print(" ");
-		System.out.print(String.format("%x",(getNowMode())));
+		System.out.print(String.format("%08o",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(063206))));
 
 		System.out.print(" ");
-		System.out.print(String.format("%x",(getPreMode())));
+		System.out.print(String.format("%08o",Mmu.analyzeMemoryKernel(063206)));
+
+		/*
+
+		System.out.print(" ");
+		System.out.print(String.format("%08o",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0141746))));
+
+		System.out.print(" ");
+		System.out.print(String.format("%08o",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0141774))));
+
+		System.out.print(" ");
+		System.out.print(String.format("%08o",Mmu.analyzeMemoryKernel(0141774)));
+		*/
 
 		/*
 		System.out.print(" ");
