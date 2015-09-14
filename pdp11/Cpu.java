@@ -52,7 +52,6 @@ public class Cpu extends Thread {
 		int srcValue;
 		int dstValue;
 
-		exeloop:
 		for(;;){
 
 			exeCnt++;

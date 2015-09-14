@@ -262,6 +262,9 @@ public class Memory {
 	
 	//2バイト単位で指定箇所のメモリを更新
 	static void setPhyMemory2(int addr, int src){
+		if(addr == 063144){
+			System.out.printf("\nsrc=%x\n",src);
+		}
 		
 		if(addr >= IOADDRP){
 			switch(addr){

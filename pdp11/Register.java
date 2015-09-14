@@ -10,13 +10,6 @@ public class Register{
 	static int[] reg; //汎用レジスタ
 	static int reg6_u; //ユーザモードR6
 	
-	/*
-	static boolean n; //負の場合
-	static boolean z; //ゼロの場合
-	static boolean v; //オーバーフローが発生した場合
-	static boolean c; //MSB(最上位ビット)からキャリが発生、MSB/LSB(最下位ビット)から1がシフトされた場合
-	*/
-
 	static int PSW; //PSW モード 0:カーネル,3:ユーザー
 
 	static int STACK_LIMIT; //STACK_LIMIT
