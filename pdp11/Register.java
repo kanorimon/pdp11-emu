@@ -236,11 +236,11 @@ public class Register{
 		//System.out.print(" ");
 		//System.out.print(String.format("%04x",Cpu.exeCnt));
 
-		System.out.print(" ");
-		System.out.print(String.format("%08o",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(063206))));
+		//System.out.print(" ");
+		//System.out.print(String.format("%08o",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(063206))));
 
-		System.out.print(" ");
-		System.out.print(String.format("%08o",Mmu.analyzeMemoryKernel(063206)));
+		//System.out.print(" ");
+		//System.out.print(String.format("%08o",Mmu.analyzeMemoryKernel(063206)));
 
 		/*
 

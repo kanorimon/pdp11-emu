@@ -56,6 +56,7 @@ public class Cpu extends Thread {
 
 			exeCnt++;
 
+			
 			/*
 		 	* RK11
 		 	*/
@@ -949,8 +950,10 @@ public class Cpu extends Thread {
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
 									(tmp << 16 >> 16) == 0, 
 									getSubOverflow(srcValue, dstValue, tmp), 
-									!getSubBorrow(srcValue, dstValue, tmp));
-		
+									Register.getC());
+	
+					if(!getSubBorrow(srcValue, dstValue, tmp))	Register.setC(false);
+					
 					break;
 				case SWAB:
 					//swap byte
