@@ -1651,7 +1651,8 @@ public class Cpu extends Thread {
 			printOpcode(opcode);
 			strnum++;
 		}
-		
+
+		Mmu.SR2 = Register.get(7);
 		Register.add(7, 2); //PC+2
 		
 		return opcode;

@@ -16,7 +16,7 @@ public class Register{
 	static int PIRQ; //PIRQ
 	static int PB; //PB
 	static int CPUERR; //CPUERR
-	
+
 	static int[] kernelPAR; //カーネルPAR
 	static int[] userPAR; //ユーザーPAR
 	
@@ -50,7 +50,7 @@ public class Register{
 		PIRQ = 0;
 		PB = 0;
 		CPUERR = 0;
-		
+
 		for(int i=0;i<8;i++){
 			kernelPAR[i] = 0;
 			userPAR[i] = 0;
