@@ -180,8 +180,8 @@ public class Cpu extends Thread {
 					}				
 					
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16)	==	0, 
-									getAddOverflow(srcValue, dstValue, tmp), 
+									(tmp << 16 >> 16)	==	0,
+									getAddOverflow(srcValue, dstValue, tmp),
 									getAddCarry(srcValue, dstValue, tmp));
 	
 					break;
@@ -496,8 +496,8 @@ public class Cpu extends Thread {
 					tmp = (srcValue << 16 >>> 16) - (dstValue << 16 >>> 16);
 					
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									getSubOverflow(srcValue, dstValue, tmp), 
+									(tmp << 16 >> 16) == 0,
+									getSubOverflow(srcValue, dstValue, tmp),
 									getSubBorrow(srcValue, dstValue, tmp));
 	
 					break;
@@ -511,8 +511,8 @@ public class Cpu extends Thread {
 					tmp = (srcValue << 24 >>> 24) - (dstValue << 24 >>> 24);		//TODO
 					
 					Register.setCC(	(tmp << 24 >> 24) < 0, 
-									(tmp << 24 >> 24) == 0, 
-									getSubOverflow(srcValue << 24 >>> 24, dstValue << 24 >>> 24, tmp), 
+									(tmp << 24 >> 24) == 0,
+									getSubOverflow(srcValue << 24 >>> 24, dstValue << 24 >>> 24, tmp),
 									getSubBorrow(srcValue << 24 >>> 24, dstValue << 24 >>> 24, tmp));
 	
 					break;
@@ -801,7 +801,7 @@ public class Cpu extends Thread {
 					break;
 				case NEG:
 					//negate
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
 					dstValue = dstOperand.getValue();
 					
 					tmp = ~dstValue + 1;
@@ -815,7 +815,9 @@ public class Cpu extends Thread {
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
 									(tmp << 16 >> 16) == 0, 
 									(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) != 0);
+									Register.getC());
+
+					if((tmp << 16 >> 16) == 0)	Register.setC(false);
 	
 					break;
 				case RESET:
@@ -908,7 +910,9 @@ public class Cpu extends Thread {
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
 									(tmp << 16 >> 16) == 0, 
 									(dstValue << 16 >> 16) < 0 && Register.getC(), 
-									!(dstValue==0 && Register.getC()));
+									Register.getC());
+
+					if(dstValue==0 && Register.getC())	Register.setC(false);
 					
 					break;
 				case SETD:
@@ -935,7 +939,7 @@ public class Cpu extends Thread {
 				case SUB:
 					//subtract
 					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
 					srcValue = srcOperand.getValue();
 					dstValue = dstOperand.getValue();
 					
@@ -948,12 +952,12 @@ public class Cpu extends Thread {
 					}
 	
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									getSubOverflow(srcValue, dstValue, tmp), 
+									(tmp << 16 >> 16) == 0,
+									getSubOverflow(srcValue, dstValue, tmp),
 									Register.getC());
-	
-					if(!getSubBorrow(srcValue, dstValue, tmp))	Register.setC(false);
-					
+
+					if(getSubBorrow(srcValue, dstValue, tmp))	Register.setC(false);
+
 					break;
 				case SWAB:
 					//swap byte
@@ -1057,7 +1061,7 @@ public class Cpu extends Thread {
 
 	//トラップ
 	void trap04(){
-		trap(04,06);
+		trap(04, 06);
 	}
 
 	//割り込み・トラップ
@@ -1608,7 +1612,7 @@ public class Cpu extends Thread {
 	 * メモリアクセス関数
 	 */
 	//2バイト単位でリトルエンディアンを反転して10進数で取得
-	static int getMemory2(int addr){
+	static int getMemory2(int addr) {
 		return getMemory2(addr, Register.getNowMode());
 	}
 	static int getMemory2(int addr, int mode){
@@ -1617,7 +1621,7 @@ public class Cpu extends Thread {
 	}	
 	
 	//1バイト単位で指定箇所のメモリを取得
-	static int getMemory1(int addr){
+	static int getMemory1(int addr) {
 		return getMemory1(addr, Register.getNowMode());
 	}
 	static int getMemory1(int addr,int mode){
@@ -1626,7 +1630,7 @@ public class Cpu extends Thread {
 	}
 
 	//2バイト単位で指定箇所のメモリを更新
-	void setMemory2(int addr,int src){
+	void setMemory2(int addr, int src) {
 		setMemory2(addr, src, Register.getNowMode());
 	}
 	void setMemory2(int addr,int src,int mode){
@@ -1635,7 +1639,7 @@ public class Cpu extends Thread {
 	}
 
 	//1バイト単位で指定箇所のメモリを更新
-	void setMemory1(int addr,int src){
+	void setMemory1(int addr, int src) {
 		setMemory1(addr, src, Register.getNowMode());
 	}
 	void setMemory1(int addr,int src,int mode){
@@ -1676,7 +1680,7 @@ public class Cpu extends Thread {
 	//スタックポップ
 	int popStack(){
 		int tmp = getMemory2(Register.get(6));
-		Register.add(6,2);
+		Register.add(6, 2);
 		return tmp;
 	}
 
@@ -1760,56 +1764,53 @@ public class Cpu extends Thread {
 	/*
 	 * オーバーフロー判定関数
 	 */
+
 	//加算オーバーフロー判定
 	boolean getAddOverflow(int src, int dst, int val){
-		boolean addV = false;
-		if((dst << 1 >>> 16) == (src << 1 >>> 16)){
-			if((dst << 1 >>> 16) != (val << 1 >>> 16)) addV = true;
+		if((dst << 16 >>> 31) == (src << 16 >>> 31)){
+			if((dst << 16 >>> 31) != (val << 16 >>> 31))	return true;
 		}
-		return addV;
+		return false;
 	}
 
 	//減算オーバーフロー判定
 	boolean getSubOverflow(int src, int dst, int val){
-		boolean subV = false;
 		if((dst << 16 >>> 31) != (src << 16 >>> 31)){
-			if((dst << 16 >>> 31) == (val << 16 >>> 31)) subV = true;
+			if((dst << 16 >>> 31) == (val << 16 >>> 31)) return true;
 		}
-		return subV;
+		return false;
 	}
 
 	//加算キャリー判定
 	boolean getAddCarry(int src, int dst, int val){
-		boolean addC = false;
-		if(((src << 16) >>> 31) == 1){
-			if(((dst << 16) >>> 31) == 1){
-				addC = true;
+		if((src << 16 >>> 31) == 1){
+			if((dst << 16 >>> 31) == 1){
+				return true;
 			}else{
-				if(((val << 16) >>> 31) == 0) addC = true;
+				if((val << 16 >>> 31) == 0) return true;
 			}
 		}else{
-			if(((dst << 16) >>> 31) == 1){
-				if(((val << 16) >>> 31) == 0) addC = true;
+			if((dst << 16 >>> 31) == 1){
+				if((val << 16 >>> 31) == 0) return true;
 			}
 		}
-		return addC;
+		return false;
 	}
 	
 	//減算ボロー判定
 	boolean getSubBorrow(int src, int dst, int val){
-		boolean subC = false;
-		if(((src << 16) >>> 31) == 0){
-			if(((dst << 16) >>> 31) == 1){
-				subC = true;
+		if((src << 16 >>> 31) == 0){
+			if((dst << 16 >>> 31) == 1){
+				return true;
 			}else{
-				if(((val << 16) >>> 31) == 1) subC = true;
+				if((val << 16 >>> 31) == 1) return true;
 			}
 		}else{
-			if(((dst << 16) >>> 31) == 1){
-				if(((val << 16) >>> 31) == 1) subC = true;
+			if((dst << 16 >>> 31) == 1){
+				if((val << 16 >>> 31) == 1) return true;
 			}
 		}
-		return subC;
+		return false;
 	}
 
 	
