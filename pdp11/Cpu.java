@@ -150,6 +150,11 @@ public class Cpu extends Thread {
 					
 					tmp = dstValue + adctmp;
 					
+					Register.setCC(	(tmp << 16 >> 16) < 0, 
+									(tmp << 16 >> 16) == 0, 
+									((dstValue << 16 >>> 16 == 077777) && adctmp == 1), 
+									((dstValue << 16 >>> 16 == 0177777) && adctmp == 1));
+					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else if(dstOperand.flgAddress){
@@ -157,11 +162,6 @@ public class Cpu extends Thread {
 					}else{
 						setMemory2(dstOperand.immediate, tmp);
 					}
-	
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									((dstValue == 077777) && adctmp == 1), 
-									((dstValue == -1) && adctmp == 1));
 					
 					break;
 				case ADD:
@@ -173,16 +173,16 @@ public class Cpu extends Thread {
 					
 					tmp = srcValue + dstValue;
 					
+					Register.setCC(	(tmp << 16 >> 16) < 0, 
+									(tmp << 16 >> 16) == 0,
+									getAddOverflow(srcValue, dstValue, tmp),
+									getAddCarry(srcValue, dstValue, tmp));
+					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else{
 						setMemory2(dstOperand.address, tmp);
 					}				
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16)	==	0,
-									getAddOverflow(srcValue, dstValue, tmp),
-									getAddCarry(srcValue, dstValue, tmp));
 	
 					break;
 				case ASH:
@@ -194,21 +194,22 @@ public class Cpu extends Thread {
 	                int ashInt = srcValue << 26 >> 26;
 	                
 	                if(ashInt < 0){
-	                	Register.set((fetchedMem >> 6) & 7, ashReg >> Math.abs(ashInt));
-	                    Register.setC(((ashReg >> (Math.abs(ashInt) - 1)) & 1) == 1);
+	                	tmp = ashReg >> Math.abs(ashInt);
 	                }else{
-                        Register.set((fetchedMem >> 6) & 7, ashReg << ashInt);
+	                	tmp = ashReg << ashInt;
                         if(ashInt == 0){
                         	Register.setC(false);
                         }else{
                         	Register.setC(((ashReg << (ashInt - 1)) & 0x8000) != 0);
                         }
 	                }
-	                
-	                Register.setCC((Register.get((fetchedMem >> 6) & 7)  << 16 >> 16) < 0,
-	                               	Register.get((fetchedMem >> 6) & 7) == 0, 
-	                                ((ashReg << 16 ) >>> 31) != ((Register.get((fetchedMem >> 6) & 7) << 16) >>> 31), //TODO
+                	
+	                Register.setCC(	(tmp << 16 >> 16) < 0,
+	                				(tmp << 16 >> 16) == 0, 
+	                                (ashReg << 16 >>> 31) != (tmp << 16 >>> 31), //TODO
 	                                Register.getC());
+	                
+                	Register.set((fetchedMem >> 6) & 7, tmp);
 	                
 					break;
 				case ASHC: //TODO
@@ -224,13 +225,9 @@ public class Cpu extends Thread {
 				
 					if(ashcInt < 0){
 						tmp = ashcTmp >> Math.abs(ashcInt);
-						Register.set((fetchedMem >> 6) & 7, tmp >>> 16);
-						Register.set(((fetchedMem >> 6) & 7)+1, tmp << 16 >>> 16);
 	                    Register.setC(((ashcTmp >> (Math.abs(ashcInt) - 1)) & 1) == 1);
 					}else{
 						tmp = ashcTmp << ashcInt;
-						Register.set((fetchedMem >> 6) & 7, tmp >>> 16);
-						Register.set(((fetchedMem >> 6) & 7)+1, tmp << 16 >>> 16);
                         if(ashcInt == 0){
                         	Register.setC(false);
                         }else{
@@ -243,6 +240,9 @@ public class Cpu extends Thread {
 									(ashcTmp >>> 31) != (tmp  >>> 31),
 									Register.getC());
 					
+					Register.set((fetchedMem >> 6) & 7, tmp >>> 16);
+					Register.set(((fetchedMem >> 6) & 7)+1, tmp << 16 >>> 16);
+					
 					break;
 				case ASL:
 					//arithmetic shift left
@@ -251,17 +251,17 @@ public class Cpu extends Thread {
 					
 					tmp = dstValue << 1;
 					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}				
-	
 					Register.setCC( (tmp << 16 >> 16) < 0,
 									(tmp << 16 >> 16) == 0, 
 									Register.getV(), 
 									(dstValue << 16 >>> 16) < 0);
 					Register.setN((Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()));
+					
+					if(dstOperand.flgRegister){
+						Register.set(dstOperand.register, tmp);
+					}else{
+						setMemory2(dstOperand.address, tmp);
+					}				
 	
 					break;
 				case ASR:
@@ -271,17 +271,17 @@ public class Cpu extends Thread {
 					
 					tmp = (dstValue << 16 >> 16) >> 1;
 					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}				
-	
 					Register.setCC( (tmp << 16 >> 16) < 0,
 									(tmp << 16 >> 16) == 0, 
 									Register.getV(), 
 									(dstValue & 1) == 1);
 					Register.setN((Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()));
+					
+					if(dstOperand.flgRegister){
+						Register.set(dstOperand.register, tmp);
+					}else{
+						setMemory2(dstOperand.address, tmp);
+					}				
 	
 					break;
 				case BCC:
@@ -319,17 +319,17 @@ public class Cpu extends Thread {
 					dstValue = dstOperand.getValue();
 					
 					tmp = ~srcValue & dstValue;
+					
+					Register.setCC(	(tmp << 16 >> 16) < 0,
+									(tmp << 16 >> 16) == 0, 
+									false, 
+									Register.getC());
 	
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else{
 						setMemory2(dstOperand.address, tmp);
 					}
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0,
-									(tmp << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
 	
 					break;
 				case BICB:
@@ -340,17 +340,17 @@ public class Cpu extends Thread {
 					dstValue = dstOperand.getValue(true);					
 	
 					tmp = (~srcValue & dstValue) << 24 >>> 24;	//TODO
+					
+					Register.setCC(	(tmp << 24 >> 24) < 0,
+									(tmp << 24 >> 24) == 0, 
+									false, 
+									Register.getC());
 	
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else{
 						setMemory1(dstOperand.address, tmp);
 					}
-	
-					Register.setCC(	(tmp << 24 >> 24) < 0,
-									(tmp << 24 >> 24) == 0, 
-									false, 
-									Register.getC());
 	
 					break;
 				case BIS:
@@ -361,17 +361,17 @@ public class Cpu extends Thread {
 					dstValue = dstOperand.getValue();
 					
 					tmp = srcValue | dstValue;
+					
+					Register.setCC(	(tmp << 16 >> 16) < 0,
+									(tmp << 16 >> 16) == 0, 
+									false, 
+									Register.getC());
 
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else if(dstOperand.flgAddress){
 						setMemory2(dstOperand.address, tmp);
 					}
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0,
-									(tmp << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
 	
 					break;
 				case BISB:
@@ -381,6 +381,11 @@ public class Cpu extends Thread {
 					srcValue = srcOperand.getValue(true);
 					dstValue = dstOperand.getValue(true);
 					
+					Register.setCC(	(tmp << 24 >> 24) < 0,
+									(tmp << 24 >> 24) == 0, 
+									false, 
+									Register.getC());
+					
 					tmp = (srcValue | dstValue) << 24 >>> 24;	//TODO
 					
 					if(dstOperand.flgRegister){
@@ -388,11 +393,6 @@ public class Cpu extends Thread {
 					}else if(dstOperand.flgAddress){
 						setMemory1(dstOperand.address, tmp);
 					}
-					
-					Register.setCC(	(tmp << 24 >> 24) < 0,
-									(tmp << 24 >> 24) == 0, 
-									false, 
-									Register.getC());
 	
 					break;
 				case BIT:
@@ -464,26 +464,26 @@ public class Cpu extends Thread {
 					//clear
 					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
 					
+					Register.setCC(false, true, false, false);
+					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, 0);
 					}else{
 						setMemory2(dstOperand.address,0);
 					}
 					
-					Register.setCC(false, true, false, false);
-					
 					break;
 				case CLRB:
 					//clear
 					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
+					
+					Register.setCC(false, true, false, false);
 					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, 0);
 					}else{
 						setMemory1(dstOperand.address,0);
 					}
-					
-					Register.setCC(false, true, false, false);
 					
 					break;
 				case CMP:
@@ -521,16 +521,16 @@ public class Cpu extends Thread {
 					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
 					dstValue = dstOperand.getValue();
 					
+					Register.setCC(	((~dstValue) << 16 >> 16) < 0,
+									((~dstValue) << 16 >> 16) == 0, 
+									false, 
+									true);
+					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, ~dstValue);
 					}else{
 						setMemory2(dstOperand.address, ~dstValue);
 					}
-					
-					Register.setCC(	((~dstValue) << 16 >> 16) < 0,
-									((~dstValue) << 16 >> 16) == 0, 
-									false, 
-									true);
 					
 					break;
 				case DEC:
@@ -539,6 +539,11 @@ public class Cpu extends Thread {
 					dstValue = dstOperand.getValue();
 					
 					tmp = dstValue - 1;
+					
+					Register.setCC(	(tmp << 16 >> 16) < 0, 
+									(tmp << 16 >> 16) == 0, 
+									(dstValue << 16 >> 16) < 0, 
+									Register.getC());
 
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
@@ -547,11 +552,6 @@ public class Cpu extends Thread {
 					}else{
 						setMemory2(dstOperand.immediate, tmp);
 					}
-	
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									(dstValue << 16 >> 16) < 0, 
-									Register.getC());
 					
 					break;
 				case DECB:
@@ -561,6 +561,11 @@ public class Cpu extends Thread {
 
 					tmp = (dstValue - 1) << 24 >>> 24;		//TODO
 					
+					Register.setCC(	(tmp << 24 >> 24) < 0, 
+									(tmp << 24 >> 24) == 0, 
+									(dstValue << 24 >> 24) < 0, 
+									Register.getC());
+					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else if(dstOperand.flgAddress){
@@ -568,11 +573,6 @@ public class Cpu extends Thread {
 					}else{
 						setMemory1(dstOperand.immediate, tmp);
 					}
-					
-					Register.setCC(	(tmp << 24 >> 24) < 0, 
-									(tmp << 24 >> 24) == 0, 
-									(dstValue << 24 >> 24) < 0, 
-									Register.getC());
 					
 					break;
 				case DIV: 
@@ -592,13 +592,15 @@ public class Cpu extends Thread {
 						break;
 					}
 					
-					Register.set((fetchedMem >> 6) & 7, divValue / srcValue);
-					Register.set(((fetchedMem >> 6) & 7)+1, divValue % srcValue);
+					tmp = divValue / srcValue;
 					
-					Register.setCC(	(Register.get((fetchedMem >> 6) & 7) << 16 >> 16) < 0, 
-									(Register.get((fetchedMem >> 6) & 7) << 16 >> 16) == 0, 
-									false,
-									false);
+					Register.setCC(	(tmp << 16 >> 16) < 0, 
+							(tmp << 16 >> 16) == 0, 
+							false,
+							false);
+					
+					Register.set((fetchedMem >> 6) & 7, tmp);
+					Register.set(((fetchedMem >> 6) & 7)+1, divValue % srcValue);
 					
 					break;
 				case INC:
@@ -608,6 +610,11 @@ public class Cpu extends Thread {
 					
 					tmp = dstValue + 1;
 					
+					Register.setCC(	(tmp << 16 >> 16) < 0, 
+									(tmp << 16 >> 16) == 0, 
+									dstValue == 077777, 
+									Register.getC());
+					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else if(dstOperand.flgAddress){
@@ -615,11 +622,6 @@ public class Cpu extends Thread {
 					}else{
 						setMemory2(dstOperand.immediate, tmp);
 					}
-	
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									dstValue == 077777, 
-									Register.getC());
 	
 					break;
 				case INCB:
@@ -629,6 +631,11 @@ public class Cpu extends Thread {
 
 					tmp = (dstValue + 1) << 24 >>> 24;
 					
+					Register.setCC(	(tmp << 16 >> 16) < 0, 
+									(tmp << 16 >> 16) == 0, 
+									dstValue == 077777, 
+									Register.getC());
+					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else if(dstOperand.flgAddress){
@@ -636,11 +643,6 @@ public class Cpu extends Thread {
 					}else{
 						setMemory1(dstOperand.immediate, tmp);
 					}
-	
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									dstValue == 077777, 
-									Register.getC());
 	
 					break;
 				case JMP:
@@ -721,17 +723,18 @@ public class Cpu extends Thread {
 					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
 					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
 					srcValue = srcOperand.getValue();
+
+					Register.setCC(	(srcValue << 16 >> 16) < 0, 
+									(srcValue << 16 >> 16) == 0, 
+									false, 
+									Register.getC());
 					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, srcValue);
 					}else if(dstOperand.flgAddress){
 						setMemory2(dstOperand.address, srcValue);
 					}
-
-					Register.setCC(	(srcValue << 16 >> 16) < 0, 
-									(srcValue << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
+					
 					break;
 				case MOVB:
 					//move
@@ -739,17 +742,17 @@ public class Cpu extends Thread {
 					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
 					srcValue = srcOperand.getValue(true);
 
+					Register.setCC(	(srcValue << 24 >> 24) < 0, 
+									(srcValue << 24 >> 24) == 0, 
+									false, 
+									Register.getC());
+
 					if(dstOperand.flgRegister){
 						//モード0の場合、符号拡張を行う
 						Register.set(dstOperand.register, srcValue << 24 >> 24);
 					}else if(dstOperand.flgAddress){
 						setMemory1(dstOperand.address, srcValue);
 					}
-
-					Register.setCC(	(srcValue << 24 >> 24) < 0, 
-									(srcValue << 24 >> 24) == 0, 
-									false, 
-									Register.getC());
 					
 					break;
 				case MTPI:
@@ -787,6 +790,11 @@ public class Cpu extends Thread {
 					tmp = mulR * (srcValue << 16 >> 16);
 					long tmpLong = mulR * (srcValue << 16 >> 16);
 					
+					Register.setCC(	(tmp << 16 >> 16) < 0, 
+									(tmp << 16 >> 16) == 0, 
+									false,
+									tmpLong < -1*(2^15)|| tmpLong >= (2^15-1));
+					
 					if(((fetchedMem >> 6) & 7) %2 == 0){
 						Register.set((fetchedMem >> 6) & 7, tmp >>> 16);
 						Register.set(((fetchedMem >> 6) & 7) + 1, tmp << 16 >>> 16);
@@ -794,10 +802,6 @@ public class Cpu extends Thread {
 						Register.set((fetchedMem >> 6) & 7, tmp << 16 >>> 16);
 					}
 					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									false,
-									tmpLong < -1*(2^15)|| tmpLong >= (2^15-1));
 					break;
 				case NEG:
 					//negate
@@ -806,18 +810,18 @@ public class Cpu extends Thread {
 					
 					tmp = ~dstValue + 1;
 					
+					Register.setCC(	(tmp << 16 >> 16) < 0, 
+							(tmp << 16 >> 16) == 0, 
+							(tmp << 16 >> 16) < 0, 
+							Register.getC());
+
+					if((tmp << 16 >> 16) == 0)	Register.setC(false);
+					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else{
 						setMemory2(dstOperand.address, tmp);
 					}				
-	
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									(tmp << 16 >> 16) < 0, 
-									Register.getC());
-
-					if((tmp << 16 >> 16) == 0)	Register.setC(false);
 	
 					break;
 				case RESET:
@@ -836,14 +840,6 @@ public class Cpu extends Thread {
 
 					tmp = (dstValue << 1) + roltmp;
 					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
-					}else{
-						setMemory2(dstOperand.immediate, tmp);
-					}
-					
 					if(dstValue << 16 >>> 31 == 1) Register.setC(true);
 					if(dstValue << 16 >>> 31 == 0) Register.setC(false);
 	
@@ -852,6 +848,14 @@ public class Cpu extends Thread {
 									(Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()), 
 									Register.getC());
 	
+					if(dstOperand.flgRegister){
+						Register.set(dstOperand.register, tmp);
+					}else if(dstOperand.flgAddress){
+						setMemory2(dstOperand.address, tmp);
+					}else{
+						setMemory2(dstOperand.immediate, tmp);
+					}
+					
 					break;
 				case ROR:
 					//rotate right
@@ -862,14 +866,6 @@ public class Cpu extends Thread {
 					if(Register.getC()) rortmp = 1;
 					
 					tmp = (dstValue << 16 >>> 16 >> 1) | (rortmp << 15);
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
-					}else{
-						setMemory2(dstOperand.immediate, tmp);
-					}
 
 					if(dstValue << 31 >>> 31 == 1) Register.setC(true);
 					if(dstValue << 31 >>> 31 == 0) Register.setC(false);
@@ -878,6 +874,14 @@ public class Cpu extends Thread {
 									(tmp << 16 >> 16) == 0, 
 									(Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()), 
 									Register.getC());
+					
+					if(dstOperand.flgRegister){
+						Register.set(dstOperand.register, tmp);
+					}else if(dstOperand.flgAddress){
+						setMemory2(dstOperand.address, tmp);
+					}else{
+						setMemory2(dstOperand.immediate, tmp);
+					}
 	
 					break;
 				case RTS:
@@ -901,18 +905,18 @@ public class Cpu extends Thread {
 					tmp = dstValue;
 					if(Register.getC())	tmp = tmp - 1;
 					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}
-					
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
 									(tmp << 16 >> 16) == 0, 
 									(dstValue << 16 >> 16) < 0 && Register.getC(), 
 									Register.getC());
 
 					if(dstValue==0 && Register.getC())	Register.setC(false);
+					
+					if(dstOperand.flgRegister){
+						Register.set(dstOperand.register, tmp);
+					}else{
+						setMemory2(dstOperand.address, tmp);
+					}
 					
 					break;
 				case SETD:
@@ -944,19 +948,19 @@ public class Cpu extends Thread {
 					dstValue = dstOperand.getValue();
 					
 					tmp = dstValue - srcValue;
-	
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}
-	
+					
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
 									(tmp << 16 >> 16) == 0,
 									getSubOverflow(srcValue, dstValue, tmp),
 									Register.getC());
 
 					if(getSubBorrow(srcValue, dstValue, tmp))	Register.setC(false);
+	
+					if(dstOperand.flgRegister){
+						Register.set(dstOperand.register, tmp);
+					}else{
+						setMemory2(dstOperand.address, tmp);
+					}
 
 					break;
 				case SWAB:
@@ -965,17 +969,17 @@ public class Cpu extends Thread {
 					dstValue = dstOperand.getValue();
 					
 					tmp = (dstValue << 16 >>> 24 ) + (dstValue << 24 >>> 16);
+					
+					Register.setCC(	(tmp << 24 >> 24) < 0, 
+									(tmp << 24 >> 24) == 0, 
+									false, 
+									false);
 	
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else if(dstOperand.flgAddress){
 						setMemory2(dstOperand.address, tmp);
 					}
-	
-					Register.setCC(	(tmp << 24 >> 24) < 0, 
-									(tmp << 24 >> 24) == 0, 
-									false, 
-									false);
 	
 					break;
 				case SXT:
@@ -985,16 +989,16 @@ public class Cpu extends Thread {
 					tmp = 0;
 					if(Register.getN())	tmp = 0xffff;
 					
+					Register.setCC(	Register.getN(),
+									!Register.getN(), 
+									false, 
+									Register.getC());
+					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else if(dstOperand.flgAddress){
 						setMemory2(dstOperand.address, tmp);
 					}
-					
-					Register.setCC(	Register.getN(),
-									!Register.getN(), 
-									false, 
-									Register.getC());
 	
 					break;
 				case TRAP:
@@ -1033,16 +1037,16 @@ public class Cpu extends Thread {
 					
 					tmp = srcreg^dstValue;
 					
+					Register.setCC(	(tmp << 16 >> 16) < 0, 
+									(tmp << 16 >> 16) == 0, 
+									false, 
+									Register.getC());
+					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else if(dstOperand.flgAddress){
 						setMemory2(dstOperand.address, tmp);
 					}
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
 					
 					break;
 				case WORD:
