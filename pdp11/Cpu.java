@@ -188,8 +188,8 @@ public class Cpu extends Thread {
 					
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
 									(tmp << 16 >> 16) == 0,
-									getAddOverflow(srcValue, dstValue, tmp),
-									getAddCarry(srcValue, dstValue, tmp));
+									getOverflow(srcValue, dstValue, tmp, 16),
+									getCarry(srcValue, dstValue, tmp, 16));
 					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
@@ -501,32 +501,36 @@ public class Cpu extends Thread {
 					break;
 				case CMP:
 					//compare
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+					srcOperand = getOperand(srcOperand, (fetchedMem >> 9) & 7, (fetchedMem >> 6) & 7);
+					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
 					srcValue = srcOperand.getValue();
-					dstValue = dstOperand.getValue();
-					
-					tmp = (srcValue << 16 >>> 16) - (dstValue << 16 >>> 16);
-					
+					//dstValue =~ (dstOperand.getValue());
+					dstValue =(~(dstOperand.getValue()) + 1) << 16 >> 16;
+
+					//tmp = (srcValue << 16 >>> 16) - (dstValue << 16 >>> 16);
+					tmp = srcValue + dstValue;
+
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0,
-									getSubOverflow(srcValue, dstValue, tmp),
-									getSubBorrow(srcValue, dstValue, tmp));
+												(tmp << 16 >> 16) == 0,
+												getOverflow(srcValue, dstValue, tmp, 16),
+												dstValue != 0 && !getCarry(srcValue, dstValue, tmp, 16));
 	
 					break;
 				case CMPB:
 					//compare
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7, true);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
-					srcValue = srcOperand.getValue(true);
-					dstValue = dstOperand.getValue(true);
-	
-					tmp = (srcValue << 24 >>> 24) - (dstValue << 24 >>> 24);		//TODO
-					
+					srcOperand = getOperand(srcOperand, (fetchedMem >> 9) & 7, (fetchedMem >> 6) & 7, true);
+					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, true);
+					srcValue = srcOperand.getValue(true) ;
+					//dstValue = dstOperand.getValue(true);
+					dstValue = (~(dstOperand.getValue(true)) + 1) << 16 >> 16;
+
+					//tmp = (srcValue << 24 >>> 24) - (dstValue << 24 >>> 24);		//TODO
+					tmp = srcValue + dstValue;
+
 					Register.setCC(	(tmp << 24 >> 24) < 0, 
-									(tmp << 24 >> 24) == 0,
-									getSubOverflowB(srcValue, dstValue, tmp),
-									getSubBorrowB(srcValue, dstValue, tmp));
+												(tmp << 24 >> 24) == 0,
+												getOverflow(srcValue, dstValue, tmp, 24),
+												dstValue != 0 && !getCarry(srcValue, dstValue, tmp, 24));
 	
 					break;
 				case COM:
@@ -952,15 +956,17 @@ public class Cpu extends Thread {
 					//subtract
 					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
 					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
-					srcValue = srcOperand.getValue();
+					//srcValue = ~(srcOperand.getValue();
+					srcValue = (~(srcOperand.getValue()) + 1) << 16 >> 16;
 					dstValue = dstOperand.getValue();
 					
-					tmp = dstValue - srcValue;
-					
+					//tmp = dstValue - srcValue;
+					tmp = dstValue + srcValue;
+
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0,
-									getSubOverflow(dstValue, srcValue, tmp),
-									!getAddCarry(dstValue, ~srcValue + 1, tmp));
+												(tmp << 16 >> 16) == 0,
+												getOverflow(dstValue, srcValue, tmp, 16),
+												srcValue != 0 && !getCarry(dstValue, srcValue, tmp, 16));
 	
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
@@ -1775,6 +1781,15 @@ public class Cpu extends Thread {
 	 * オーバーフロー判定関数
 	 */
 
+	//オーバーフロー判定
+	boolean getOverflow(int front, int back, int result, int shiftCnt){
+		if((front << shiftCnt >>> 31) == (back << shiftCnt >>> 31)){
+			if((front << shiftCnt >>> 31) != (result << shiftCnt >>> 31))	return true;
+		}
+		return false;
+	}
+
+	/*
 	//加算オーバーフロー判定
 	boolean getAddOverflow(int front, int back, int result){
 		if((front << 16 >>> 31) == (back << 16 >>> 31)){
@@ -1790,7 +1805,9 @@ public class Cpu extends Thread {
 		}
 		return false;
 	}
+	*/
 
+	/*
 	//減算オーバーフロー判定
 	boolean getSubOverflow(int front, int back, int result){
 		if((front << 16 >>> 31) != (back << 16 >>> 31)){
@@ -1806,8 +1823,9 @@ public class Cpu extends Thread {
 		}
 		return false;
 	}
+	*/
 
-	//加算キャリー判定
+	//キャリー判定
 	boolean getCarry(int front, int back, int result, int shiftCnt){
 		if((front << shiftCnt >>> 31) == 1){
 			if((back << shiftCnt >>> 31) == 1){
@@ -1822,7 +1840,8 @@ public class Cpu extends Thread {
 		}
 		return false;
 	}
-	
+
+	/*
 	//加算キャリー判定
 	boolean getAddCarry(int front, int back, int result){
 		return getCarry(front, back, result, 16);
@@ -1832,7 +1851,9 @@ public class Cpu extends Thread {
 	boolean getAddCarryB(int front, int back, int result){
 		return getCarry(front, back, result, 24);
 	}
-	
+	*/
+
+	/*
 	//減算ボロー判定
 	boolean getBorrow(int front, int back, int result, int shiftCnt){
 		if((front << shiftCnt >>> 31) == 0){
@@ -1857,6 +1878,7 @@ public class Cpu extends Thread {
 	boolean getSubBorrowB(int front, int back, int result){
 		return getBorrow(front, back, result, 24);
 	}
+	*/
 	
 	/*
 	 * 逆アセンブル関数
