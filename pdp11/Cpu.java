@@ -15,6 +15,8 @@ public class Cpu extends Thread {
 	boolean aprPrintFlg;			//APR出力用 false:出力しない true:出力する
 	static boolean memoryErrorFlg;	//メモリエラー false:エラーでない true:エラー
 	boolean waitFlg;				//WAIT false:WAITしていない true:WAITしている
+	
+	static int printCnt;			//ダンプ出力フラグ 3以上で出力する
 
 	static int prePC;
 	static int prePSW;
@@ -28,6 +30,8 @@ public class Cpu extends Thread {
 		aprPrintFlg = true;
 		waitFlg = false;
 		memoryErrorFlg = false;
+		
+		printCnt = 0;
 
 		prePC = 0;
 		prePSW = 0;
@@ -56,7 +60,6 @@ public class Cpu extends Thread {
 
 			exeCnt++;
 
-			
 			/*
 		 	* RK11
 		 	*/
@@ -102,12 +105,20 @@ public class Cpu extends Thread {
 					waitFlg = false;
 				}
 				//RK11割り込み
+			}else if(Rk11.BR_PRI > 0 &&
+					dbgList.indexOf(02652) > 0 && 
+					dbgList.indexOf(044420) > 0){
+				trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
+				Rk11.BR_PRI = 0;
+				waitFlg = false;
+				/*
 			} else if (Kl11.BR_PRI < Rk11.BR_PRI) {
 				if (Rk11.BR_PRI > Register.getPriority()) {
 					trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
 					Rk11.BR_PRI = 0;
 					waitFlg = false;
 				}
+				*/
 				//KL11割り込み
 			} else {
 				if (Kl11.BR_PRI > Register.getPriority()) {
@@ -120,8 +131,10 @@ public class Cpu extends Thread {
 			/*
 			 * デバッグ出力
 			 */
-			if(Pdp11.flgDebugMode>=1) popCall(Register.get(7));	//シンボルPOP
-			if(Pdp11.flgDebugMode>1) printDebug();				//レジスタ・フラグ出力
+			if(Register.get(7) == 0) printCnt++;
+			
+			if(Pdp11.flgDebugMode>=1) popCall(Register.get(7));		//シンボルPOP
+			if(Pdp11.flgDebugMode>1) printDebug();	//レジスタ・フラグ出力
 			if(Register.get(7)==0x7c8 && aprPrintFlg){
 				aprPrintFlg = false;
 				Memory.printPAR(); //メモリーマップ出力
@@ -512,8 +525,8 @@ public class Cpu extends Thread {
 					
 					Register.setCC(	(tmp << 24 >> 24) < 0, 
 									(tmp << 24 >> 24) == 0,
-									getSubOverflow(srcValue << 24 >>> 24, dstValue << 24 >>> 24, tmp),
-									getSubBorrow(srcValue << 24 >>> 24, dstValue << 24 >>> 24, tmp));
+									getSubOverflowB(srcValue, dstValue, tmp),
+									getSubBorrowB(srcValue, dstValue, tmp));
 	
 					break;
 				case COM:
@@ -788,12 +801,11 @@ public class Cpu extends Thread {
 					srcValue = srcOperand.getValue();
 					
 					tmp = mulR * (srcValue << 16 >> 16);
-					long tmpLong = mulR * (srcValue << 16 >> 16);
 					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
+					Register.setCC(	tmp < 0, 
+									tmp == 0, 
 									false,
-									tmpLong < -1*(2^15)|| tmpLong >= (2^15-1));
+									tmp < (-1 * Math.pow(2,15))|| tmp >= (Math.pow(2,15)-1));
 					
 					if(((fetchedMem >> 6) & 7) %2 == 0){
 						Register.set((fetchedMem >> 6) & 7, tmp >>> 16);
@@ -813,9 +825,7 @@ public class Cpu extends Thread {
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
 							(tmp << 16 >> 16) == 0, 
 							(tmp << 16 >> 16) < 0, 
-							Register.getC());
-
-					if((tmp << 16 >> 16) == 0)	Register.setC(false);
+							!((tmp << 16 >> 16) == 0));
 					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
@@ -908,9 +918,7 @@ public class Cpu extends Thread {
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
 									(tmp << 16 >> 16) == 0, 
 									(dstValue << 16 >> 16) < 0 && Register.getC(), 
-									Register.getC());
-
-					if(dstValue==0 && Register.getC())	Register.setC(false);
+									!(dstValue==0 && Register.getC()));
 					
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
@@ -951,10 +959,8 @@ public class Cpu extends Thread {
 					
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
 									(tmp << 16 >> 16) == 0,
-									getSubOverflow(srcValue, dstValue, tmp),
-									Register.getC());
-
-					if(getSubBorrow(srcValue, dstValue, tmp))	Register.setC(false);
+									getSubOverflow(dstValue, srcValue, tmp),
+									!getAddCarry(dstValue, ~srcValue + 1, tmp));
 	
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
@@ -1712,7 +1718,7 @@ public class Cpu extends Thread {
 	
 	//指定した命令を出力
 	void printOpcode(int opcode){
-		if(exeCnt < 1000000 || Pdp11.flgDismMode){
+		if(printCnt >= 3 || Pdp11.flgDismMode){
 			if(Pdp11.flgOctMode){
 				System.out.print(String.format("%06o", opcode));
 			}else{
@@ -1724,7 +1730,7 @@ public class Cpu extends Thread {
 
 	//レジスタ・フラグの出力
 	void printDebug(){
-		if(exeCnt < 1000000){
+		if(printCnt >= 3){
 			//popCall(Register.get(7));
 			Register.printDebug();
 		}
@@ -1751,7 +1757,7 @@ public class Cpu extends Thread {
 	void printCall(){
 		if(Pdp11.flgDebugMode>=1 && dbgList.size() != 0){
 
-			if(exeCnt < 1000000){
+			if(printCnt >= 3){
 				//System.out.print("\n***StackTrace***\n");
 				System.out.print("\n*** ");
 
@@ -1770,53 +1776,87 @@ public class Cpu extends Thread {
 	 */
 
 	//加算オーバーフロー判定
-	boolean getAddOverflow(int src, int dst, int val){
-		if((dst << 16 >>> 31) == (src << 16 >>> 31)){
-			if((dst << 16 >>> 31) != (val << 16 >>> 31))	return true;
+	boolean getAddOverflow(int front, int back, int result){
+		if((front << 16 >>> 31) == (back << 16 >>> 31)){
+			if((front << 16 >>> 31) != (result << 16 >>> 31))	return true;
+		}
+		return false;
+	}
+	
+	//加算オーバーフロー判定
+	boolean getAddOverflowB(int front, int back, int result){
+		if((front << 24 >>> 31) == (back << 24 >>> 31)){
+			if((front << 24 >>> 31) != (result << 24 >>> 31))	return true;
 		}
 		return false;
 	}
 
 	//減算オーバーフロー判定
-	boolean getSubOverflow(int src, int dst, int val){
-		if((dst << 16 >>> 31) != (src << 16 >>> 31)){
-			if((dst << 16 >>> 31) == (val << 16 >>> 31)) return true;
+	boolean getSubOverflow(int front, int back, int result){
+		if((front << 16 >>> 31) != (back << 16 >>> 31)){
+			if((back << 16 >>> 31) == (result << 16 >>> 31)) return true;
+		}
+		return false;
+	}
+	
+	//減算オーバーフロー判定
+	boolean getSubOverflowB(int front, int back, int result){
+		if((front << 24 >>> 31) != (back << 24 >>> 31)){
+			if((back << 24 >>> 31) == (result << 24 >>> 31)) return true;
 		}
 		return false;
 	}
 
 	//加算キャリー判定
-	boolean getAddCarry(int src, int dst, int val){
-		if((src << 16 >>> 31) == 1){
-			if((dst << 16 >>> 31) == 1){
+	boolean getCarry(int front, int back, int result, int shiftCnt){
+		if((front << shiftCnt >>> 31) == 1){
+			if((back << shiftCnt >>> 31) == 1){
 				return true;
 			}else{
-				if((val << 16 >>> 31) == 0) return true;
+				if((result << shiftCnt >>> 31) == 0) return true;
 			}
 		}else{
-			if((dst << 16 >>> 31) == 1){
-				if((val << 16 >>> 31) == 0) return true;
+			if((back << shiftCnt >>> 31) == 1){
+				if((result << shiftCnt >>> 31) == 0) return true;
 			}
 		}
 		return false;
 	}
 	
+	//加算キャリー判定
+	boolean getAddCarry(int front, int back, int result){
+		return getCarry(front, back, result, 16);
+	}
+	
+	//加算キャリー判定
+	boolean getAddCarryB(int front, int back, int result){
+		return getCarry(front, back, result, 24);
+	}
+	
 	//減算ボロー判定
-	boolean getSubBorrow(int src, int dst, int val){
-		if((src << 16 >>> 31) == 0){
-			if((dst << 16 >>> 31) == 1){
+	boolean getBorrow(int front, int back, int result, int shiftCnt){
+		if((front << shiftCnt >>> 31) == 0){
+			if((back << shiftCnt >>> 31) == 1){
 				return true;
 			}else{
-				if((val << 16 >>> 31) == 1) return true;
+				if((result << shiftCnt >>> 31) == 1) return true;
 			}
 		}else{
-			if((dst << 16 >>> 31) == 1){
-				if((val << 16 >>> 31) == 1) return true;
+			if((back << shiftCnt >>> 31) == 1){
+				if((result << shiftCnt >>> 31) == 1) return true;
 			}
 		}
 		return false;
 	}
-
+	//減算ボロー判定
+	boolean getSubBorrow(int front, int back, int result){
+		return getBorrow(front, back, result, 16);
+	}
+	
+	//減算ボロー判定
+	boolean getSubBorrowB(int front, int back, int result){
+		return getBorrow(front, back, result, 24);
+	}
 	
 	/*
 	 * 逆アセンブル関数
