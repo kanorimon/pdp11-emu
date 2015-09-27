@@ -53,6 +53,7 @@ public class Rk11 extends Thread {
 
 			System.out.printf("RKCS=%x ", RKCS);
 			System.out.printf("RKER=%x ", RKER);
+			System.out.printf("RKDS=%x ", RKDS);
 			System.out.printf("RKDB=%x ", RKDB);
 			System.out.printf("RKWC=%x ", RKWC);
 			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
@@ -85,6 +86,7 @@ public class Rk11 extends Thread {
 
 			System.out.printf("RKCS=%x ", RKCS);
 			System.out.printf("RKER=%x ", RKER);
+			System.out.printf("RKDS=%x ", RKDS);
 			System.out.printf("RKDB=%x ", RKDB);
 			System.out.printf("RKWC=%x ", RKWC);
 			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
@@ -124,6 +126,12 @@ public class Rk11 extends Thread {
 		RKCS = Util.setBit(RKCS, 15);
 		if((RKER << 16 >>> 21) != 0){
 			RKCS = Util.setBit(RKCS, 14);
+		}
+		
+		if(Util.checkBit(RKCS, 6) == 1){
+			System.out.println("\nRK11INTER");
+			BR_PRI = 5;
+			BR_VEC = 0220;
 		}
 	}
 

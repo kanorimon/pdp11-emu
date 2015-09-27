@@ -16,8 +16,9 @@ public class Cpu extends Thread {
 	static boolean memoryErrorFlg;	//メモリエラー false:エラーでない true:エラー
 	boolean waitFlg;				//WAIT false:WAITしていない true:WAITしている
 	
-	static int printCnt;			//ダンプ出力フラグ 3以上で出力する
-
+	static int printCnt;			//ダンプ出力フラグ START_CNT以上で出力する
+	int START_CNT = 3;
+	
 	static int prePC;
 	static int prePSW;
 
@@ -105,20 +106,23 @@ public class Cpu extends Thread {
 					waitFlg = false;
 				}
 				//RK11割り込み
+				/*
 			}else if(Rk11.BR_PRI > 0 &&
-					dbgList.indexOf(02652) > 0 && 
-					dbgList.indexOf(044420) > 0){
+					((dbgList.indexOf(02652) > 0 && 
+					dbgList.indexOf(044420) > 0) ||
+					Register.get(7) == 030332)){
 				trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
 				Rk11.BR_PRI = 0;
 				waitFlg = false;
-				/*
+				*/
+				
 			} else if (Kl11.BR_PRI < Rk11.BR_PRI) {
 				if (Rk11.BR_PRI > Register.getPriority()) {
 					trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
 					Rk11.BR_PRI = 0;
 					waitFlg = false;
 				}
-				*/
+				
 				//KL11割り込み
 			} else {
 				if (Kl11.BR_PRI > Register.getPriority()) {
@@ -1724,7 +1728,7 @@ public class Cpu extends Thread {
 	
 	//指定した命令を出力
 	void printOpcode(int opcode){
-		if(printCnt >= 3 || Pdp11.flgDismMode){
+		if(printCnt >= START_CNT || Pdp11.flgDismMode){
 			if(Pdp11.flgOctMode){
 				System.out.print(String.format("%06o", opcode));
 			}else{
@@ -1736,7 +1740,7 @@ public class Cpu extends Thread {
 
 	//レジスタ・フラグの出力
 	void printDebug(){
-		if(printCnt >= 3){
+		if(printCnt >= START_CNT){
 			//popCall(Register.get(7));
 			Register.printDebug();
 		}
@@ -1763,7 +1767,7 @@ public class Cpu extends Thread {
 	void printCall(){
 		if(Pdp11.flgDebugMode>=1 && dbgList.size() != 0){
 
-			if(printCnt >= 3){
+			if(printCnt >= START_CNT){
 				//System.out.print("\n***StackTrace***\n");
 				System.out.print("\n*** ");
 
