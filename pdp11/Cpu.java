@@ -777,13 +777,24 @@ public class Cpu extends Thread {
 					
 					break;
 				case MTPI:
-					//moveto previous instruction space
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7,false,Register.getPreMode());
-					dstValue = dstOperand.getValue(Register.getPreMode());
-					
+					//move　to previous instruction space
+					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, false, Register.getPreMode());
+
 					try{
 						tmp = popStack();
-						setMemory2(dstOperand.address, tmp, Register.getPreMode());
+
+						Register.setCC(	(tmp << 16 >> 16) < 0,
+								(tmp << 16 >> 16) == 0,
+								false,
+								Register.getC());
+
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp, Register.getPreMode());
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, tmp, Register.getPreMode());
+						}
+
+						//System.out.printf("\n%o,%o",tmp,dstOperand.address);
 	
 						if(memoryErrorFlg){
 							pushStack(tmp);
@@ -795,12 +806,7 @@ public class Cpu extends Thread {
 					}catch(ArrayIndexOutOfBoundsException e){
 						
 					}
-					
-					Register.setCC(	(dstValue << 16 >> 16) < 0, 
-									(dstValue << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
-	
+
 					break;
 				case MUL: //TODO
 					//multiply
@@ -936,6 +942,7 @@ public class Cpu extends Thread {
 					
 					break;
 				case SETD:
+					trap(010, 012);
 					break;
 				case SEN:
 					//set n
@@ -967,10 +974,10 @@ public class Cpu extends Thread {
 					//tmp = dstValue - srcValue;
 					tmp = dstValue + srcValue;
 
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-												(tmp << 16 >> 16) == 0,
-												getOverflow(dstValue, srcValue, tmp, 16),
-												srcValue != 0 && !getCarry(dstValue, srcValue, tmp, 16));
+					Register.setCC((tmp << 16 >> 16) < 0,
+							(tmp << 16 >> 16) == 0,
+							getOverflow(dstValue, srcValue, tmp, 16),
+							srcValue != 0 && !getCarry(dstValue, srcValue, tmp, 16));
 	
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
@@ -2271,7 +2278,7 @@ class Operand{
 	
 	public int getValue(boolean flgByte,int mode){
 		if(flgRegister){
-			return Register.get(register);
+			return Register.get(register, mode);
 		}else if(flgAddress){
 			if(flgByte){
 				return Cpu.getMemory1(address, mode);

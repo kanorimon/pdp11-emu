@@ -43,7 +43,7 @@ public class Register{
 		reg[6] = 0; //spは最後尾のアドレスを指す
 		reg[7] = 0;
 
-		reg6_u = 0;
+		reg6_u = 0177760;
 		
 		PSW = 0;
 		STACK_LIMIT = 0;
@@ -65,6 +65,15 @@ public class Register{
 	//レジスタを上書き
 	static void set(int regNo,int val){
 		if(regNo == 6 && getNowMode() != 0){
+			reg6_u = val << 16 >>> 16;
+		}else{
+			reg[regNo] = val << 16 >>> 16;
+		}
+	}
+
+	//レジスタを上書き
+	static void set(int regNo,int val,int mode){
+		if(regNo == 6 && mode != 0){
 			reg6_u = val << 16 >>> 16;
 		}else{
 			reg[regNo] = val << 16 >>> 16;
@@ -232,6 +241,13 @@ public class Register{
 		}else{
 			System.out.print("-");
 		}
+
+		//System.out.printf(" %06o ", Memory.getPhyMemory2(063144));
+
+		//System.out.printf(" %06o ", Memory.getPhyMemory2(061410));
+		//System.out.printf(" %06o ", Memory.getPhyMemory2(0121600));
+		//System.out.printf(" %06o ", userPAR[0]);
+
 
 		//System.out.print(" ");
 		//System.out.print(String.format("%04x",Cpu.exeCnt));
