@@ -717,7 +717,8 @@ public class Cpu extends Thread {
 					break;
 				case MFPI:
 					//move from previous instruction space
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, false, Register.getPreMode());
+					//srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, false, Register.getPreMode());
+					srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, false, Register.getNowMode());
 					srcValue = srcOperand.getValue(Register.getPreMode());
 	
 					try{
