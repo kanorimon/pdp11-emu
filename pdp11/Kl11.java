@@ -116,6 +116,11 @@ public class Kl11 extends Thread {
 			
 			//キーボードからの入力バッファ
 			if(inputStr.length() > 0){
+
+				System.out.print("\ninputStr=");
+				System.out.print(inputStr);
+				System.out.print(" \n");
+
 				RCSR = Util.setBit(RCSR,RCSR_BUSY);
 				
 				for(int i=0;i<inputStr.length();i++){
@@ -124,7 +129,7 @@ public class Kl11 extends Thread {
 				inputByte[inputStr.length()] = 0xd;
 				inputStr = "";
 
-				RCSR = Util.setBit(RCSR,RCSR_DONE);
+				RCSR = Util.setBit(RCSR, RCSR_DONE);
 				RCSR = Util.clearBit(RCSR,RCSR_ENB);
 				RCSR = Util.clearBit(RCSR,RCSR_BUSY);
 
@@ -142,9 +147,15 @@ public class Kl11 extends Thread {
             BufferedReader reader 
                 = new BufferedReader(new InputStreamReader(System.in));
 
-			try {
-				inputStr = reader.readLine();
-			} catch (IOException e) {
+			for(;;) {
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+				}
+				try {
+					inputStr = reader.readLine();
+				} catch (IOException e) {
+				}
 			}
 
         }
