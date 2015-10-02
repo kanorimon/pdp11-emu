@@ -76,16 +76,6 @@ public class Cpu extends Thread {
 			//入出力中
 			if (Util.checkBit(Kl11.RCSR, Kl11.RCSR_ENB) == 1)
 				Kl11.RCSR = Util.clearBit(Kl11.RCSR, Kl11.RCSR_DONE);
-			//tty出力
-			if (Util.checkBit(Kl11.XCSR, Kl11.XCSR_ID) == 1 && Util.checkBit(Kl11.XCSR, Kl11.XCSR_READY) == 1) {
-				Kl11.BR_PRI = 4;
-				Kl11.BR_VEC = 064;
-			}
-			//tty入力
-			if (Util.checkBit(Kl11.RCSR, Kl11.RCSR_ID) == 1 && Util.checkBit(Kl11.RCSR, Kl11.RCSR_DONE) == 1) {
-				Kl11.BR_PRI = 4;
-				Kl11.BR_VEC = 060;
-			}
 
 			/*
 			 * CLOCK
@@ -102,6 +92,7 @@ public class Cpu extends Thread {
 			//クロック割り込み
 			if (Util.checkBit(Register.CLOCK1, 7) == 1 && Util.checkBit(Register.CLOCK1, 6) == 1) {
 				if (7 > Register.getPriority()) {
+					//System.out.println("\nCLOCK_trap");
 					trap(0100, 0102);
 					waitFlg = false;
 				}
@@ -118,6 +109,7 @@ public class Cpu extends Thread {
 				
 			} else if (Kl11.BR_PRI < Rk11.BR_PRI) {
 				if (Rk11.BR_PRI > Register.getPriority()) {
+					//System.out.println("\nRK11_trap");
 					trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
 					Rk11.BR_PRI = 0;
 					waitFlg = false;
@@ -126,6 +118,7 @@ public class Cpu extends Thread {
 				//KL11割り込み
 			} else {
 				if (Kl11.BR_PRI > Register.getPriority()) {
+					//System.out.println("\nKL11_trap");
 					trap(Kl11.BR_VEC, Kl11.BR_VEC + 2);
 					Kl11.BR_PRI = 0;
 					waitFlg = false;
@@ -139,10 +132,12 @@ public class Cpu extends Thread {
 			
 			if(Pdp11.flgDebugMode>=1) popCall(Register.get(7));		//シンボルPOP
 			if(Pdp11.flgDebugMode>1) printDebug();	//レジスタ・フラグ出力
+			/*
 			if(Register.get(7)==0x7c8 && aprPrintFlg){
 				aprPrintFlg = false;
 				Memory.printPAR(); //メモリーマップ出力
 			}
+			*/
 
 			/*
 			 * 命令解釈・実行
@@ -669,6 +664,7 @@ public class Cpu extends Thread {
 				case JMP:
 					//jump
 					if(((fetchedMem >> 3) & 7) == 0){
+						//System.out.println("\nJMP_trap");
 						trap04();
 						break;
 					}
@@ -692,6 +688,7 @@ public class Cpu extends Thread {
 				case JSR:
 					//jump to subroutine
 					if(((fetchedMem >> 3) & 7) == 0){
+						//System.out.println("\nJSR_trap");
 						trap04();
 						break;
 					}
@@ -723,6 +720,7 @@ public class Cpu extends Thread {
 	
 					try{
 						if(memoryErrorFlg){
+							//System.out.println("\nMFPI_trap");
 							trap04();
 							memoryErrorFlg = false;
 							break;
@@ -730,6 +728,7 @@ public class Cpu extends Thread {
 						pushStack(srcValue);
 	
 					}catch(ArrayIndexOutOfBoundsException e){
+						//System.out.println("\nMFPI_trap");
 						trap04();
 						break;
 					}
@@ -799,6 +798,7 @@ public class Cpu extends Thread {
 	
 						if(memoryErrorFlg){
 							pushStack(tmp);
+							//System.out.println("\nMTPI_trap");
 							trap04();
 							memoryErrorFlg = false;
 							break;
@@ -943,6 +943,7 @@ public class Cpu extends Thread {
 					
 					break;
 				case SETD:
+					//System.out.println("\nSETD_trap");
 					trap(010, 012);
 					break;
 				case SEN:
@@ -1027,6 +1028,7 @@ public class Cpu extends Thread {
 					break;
 				case TRAP:
 					//trap
+					//System.out.println("\nTRAP_trap");
 					trap(034,036);
 					break;
 				case TST:

@@ -41,6 +41,14 @@ public class Kl11 extends Thread {
 		inputByte = new byte[14];
 		Arrays.fill(inputByte, (byte)0);
 	}
+
+	static void setRCSR(int rcsr){
+		RCSR = rcsr;
+		if (Util.checkBit(RCSR, RCSR_ID) == 1 && Util.checkBit(RCSR, RCSR_DONE) == 1) {
+			BR_PRI = 4;
+			BR_VEC = 060;
+		}
+	}
 	
 	static int getRBUF(){
 		if(inputByte[0] != 0){
@@ -57,9 +65,18 @@ public class Kl11 extends Thread {
 		}
 		return RBUF;
 	}
-	
+
+	static void setXCSR(int xcsr){
+		XCSR = xcsr;
+		if (Util.checkBit(XCSR, XCSR_ID) == 1 && Util.checkBit(XCSR, XCSR_READY) == 1) {
+			BR_PRI = 4;
+			BR_VEC = 064;
+		}
+	}
+
 	static void setXBUF(int xbuf){
 		XBUF = xbuf;
+		xbuf = xbuf << 25 >>> 25;
 		switch(xbuf){
 		case 010:
 			System.out.print("");
@@ -78,10 +95,15 @@ public class Kl11 extends Thread {
 		}
 		XBUF = 0;
 		XCSR = Util.setBit(XCSR,7);
+
+		if (Util.checkBit(XCSR, XCSR_ID) == 1 && Util.checkBit(XCSR, XCSR_READY) == 1) {
+			BR_PRI = 4;
+			BR_VEC = 064;
+		}
 	}
 	
 	public void run(){
-		System.out.println("KL11 run");
+		//System.out.println("KL11 run");
 
 		CommandReceiver commandReceiver = new CommandReceiver();
         commandReceiver.start();
@@ -101,12 +123,15 @@ public class Kl11 extends Thread {
 				}
 				inputByte[inputStr.length()] = 0xd;
 				inputStr = "";
-				
+
 				RCSR = Util.setBit(RCSR,RCSR_DONE);
 				RCSR = Util.clearBit(RCSR,RCSR_ENB);
 				RCSR = Util.clearBit(RCSR,RCSR_BUSY);
-				Cpu.exeCnt = 0;
 
+				if (Util.checkBit(RCSR, RCSR_ID) == 1 && Util.checkBit(RCSR, RCSR_DONE) == 1) {
+					BR_PRI = 4;
+					BR_VEC = 060;
+				}
 			}
 		}
 	}
@@ -116,10 +141,12 @@ public class Kl11 extends Thread {
         public void run() {
             BufferedReader reader 
                 = new BufferedReader(new InputStreamReader(System.in));
-            try {
-            	inputStr = reader.readLine();
-            } catch (IOException e) {
-            }
+
+			try {
+				inputStr = reader.readLine();
+			} catch (IOException e) {
+			}
+
         }
     }
 

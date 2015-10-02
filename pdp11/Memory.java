@@ -241,8 +241,8 @@ public class Memory {
 			case RKDB:
 				return Rk11.RKDB;
 			default:
-				System.out.printf("\n#####get addr=%d#####\n",addr);
-				printPAR();
+				//System.out.printf("\n#####get addr=%d#####\n",addr);
+				//printPAR();
 				Cpu.memoryErrorFlg = true;
 				return Integer.MAX_VALUE;
 			}
@@ -368,13 +368,13 @@ public class Memory {
 				Register.userPAR[7] = src;
 				break;
 			case RCSR:
-				Kl11.RCSR = src;
+				Kl11.setRCSR(src);
 				break;
 			case RBUF:
 				Kl11.RBUF = src;
 				break;
 			case XCSR:
-				Kl11.XCSR = src;
+				Kl11.setXCSR(src);
 				break;
 			case XBUF:
 				Kl11.setXBUF(src);

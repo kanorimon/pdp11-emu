@@ -242,11 +242,15 @@ public class Register{
 			System.out.print("-");
 		}
 
-		//System.out.printf(" %06o ", Memory.getPhyMemory2(063144));
+		//System.out.printf(" %06o ", Memory.getPhyMemory2(0136432));
+		//System.out.printf(" %06o ", Memory.getPhyMemory2(0136434));
 
 		//System.out.printf(" %06o ", Memory.getPhyMemory2(061410));
 		//System.out.printf(" %06o ", Memory.getPhyMemory2(0121600));
-		//System.out.printf(" %06o ", userPAR[0]);
+		//System.out.printf(" %06o ", Kl11.XBUF);
+		//System.out.printf(" %06o ", Kl11.XCSR);
+		//System.out.printf(" %06o ", Kl11.RBUF);
+		//System.out.printf(" %06o ", Kl11.RCSR);
 
 
 		//System.out.print(" ");
@@ -256,7 +260,7 @@ public class Register{
 		//System.out.print(String.format("%08o",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(063206))));
 
 		//System.out.print(" ");
-		//System.out.print(String.format("%08o",Mmu.analyzeMemoryKernel(063206)));
+		//System.out.print(String.format(" %08o",Mmu.analyzeMemoryKernel(0141632)));
 
 		/*
 
