@@ -63,8 +63,6 @@ public class Pdp11{
 			if(flgExeMode){
 				Kl11 kl11 = new Kl11();
 				kl11.start();
-				Rk11 rk11 = new Rk11();
-				rk11.start();
 
 				Memory.load(Rk11.boot_rom, 1024);
 				Register.set(7,1024);
@@ -110,8 +108,6 @@ public class Pdp11{
 			
 			Kl11 kl11 = new Kl11();
 			kl11.start();
-			Rk11 rk11 = new Rk11();
-			rk11.start();
 			
 			Memory.fileload(bf);
 			cpu.start();

@@ -242,55 +242,10 @@ public class Register{
 			System.out.print("-");
 		}
 
-		//System.out.printf(" %06o ", Memory.getPhyMemory2(0136432));
-		//System.out.printf(" %06o ", Memory.getPhyMemory2(0136434));
-
-		//System.out.printf(" %06o ", Memory.getPhyMemory2(061410));
-		//System.out.printf(" %06o ", Memory.getPhyMemory2(0121600));
-		//System.out.printf(" %06o ", Kl11.XBUF);
-		//System.out.printf(" %06o ", Kl11.XCSR);
-		//System.out.printf(" %06o ", Kl11.RBUF);
+		//System.out.printf(" %06o", Memory.getPhyMemory2(0136432));
+		//System.out.printf(" %06o", Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(063206)));
+		//System.out.printf(" %08o", Mmu.analyzeMemoryKernel(0141632));
 		//System.out.printf(" %06o ", Kl11.RCSR);
-
-
-		//System.out.print(" ");
-		//System.out.print(String.format("%04x",Cpu.exeCnt));
-
-		//System.out.print(" ");
-		//System.out.print(String.format("%08o",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(063206))));
-
-		//System.out.print(" ");
-		//System.out.print(String.format(" %08o",Mmu.analyzeMemoryKernel(0141632)));
-
-		/*
-
-		System.out.print(" ");
-		System.out.print(String.format("%08o",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0141746))));
-
-		System.out.print(" ");
-		System.out.print(String.format("%08o",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0141774))));
-
-		System.out.print(" ");
-		System.out.print(String.format("%08o",Mmu.analyzeMemoryKernel(0141774)));
-		*/
-
-		/*
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0xC42e)));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Mmu.analyzeMemoryUser(0x2e)));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(0xb96e)));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(Register.get(6)))));
-
-		System.out.print(" ");
-		System.out.print(String.format("%04x",Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc000))));
-		System.out.print(":");
-		*/
 		
 		System.out.print(" ");
 		if(Pdp11.flgOctMode){

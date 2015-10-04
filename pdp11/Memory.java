@@ -425,8 +425,8 @@ public class Memory {
 				Rk11.RKDB = src;
 				break;
 			default:
-				System.out.printf("execnt=%d\n",Cpu.exeCnt);
-				System.out.printf("\n#####set addr=%d#####\n",addr);
+				//System.out.printf("execnt=%d\n",Cpu.exeCnt);
+				//System.out.printf("\n#####set addr=%d#####\n",addr);
 				Cpu.memoryErrorFlg = true;
 			}
 		}else{

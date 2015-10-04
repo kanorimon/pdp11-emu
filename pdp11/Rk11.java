@@ -3,7 +3,7 @@ package pdp11;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class Rk11 extends Thread {
+public class Rk11 {
 
 	static int RKDS; //RK11 Drive Status Register
 	static int RKER; //RK11 Error Register
@@ -33,35 +33,26 @@ public class Rk11 extends Thread {
 		BR_VEC = 0;
 	}
 	
-	public void run(){
-		//System.out.println("RK11 run");
-		for(;;){
-			try{
-				  Thread.sleep(1);
-			}catch (InterruptedException e){
-			}
-
-		}
-	}
-	
 	static void rk11access(){
 		RKCS = Util.clearBit(RKCS, 0);
 
 		if(RKCS << 28 >>> 29 == 1){
 
-			//System.out.print("\nRK11-Write ");
-
-			//System.out.printf("RKCS=%x ", RKCS);
-			//System.out.printf("RKER=%x ", RKER);
-			//System.out.printf("RKDS=%x ", RKDS);
-			//System.out.printf("RKDB=%x ", RKDB);
-			//System.out.printf("RKWC=%x ", RKWC);
 			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
-			//System.out.printf("cnt=%x ", datasizeWord);
-			//System.out.printf("RKBA=%x ", RKBA);
-			//System.out.printf("RKDA=%x ", RKDA);
 			int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
-			//System.out.printf("blockNo=%x\n", tmpRKDA*512);
+			
+			/*
+			System.out.print("\nRK11-Write ");
+			System.out.printf("RKCS=%x ", RKCS);
+			System.out.printf("RKER=%x ", RKER);
+			System.out.printf("RKDS=%x ", RKDS);
+			System.out.printf("RKDB=%x ", RKDB);
+			System.out.printf("RKWC=%x ", RKWC);
+			System.out.printf("cnt=%x ", datasizeWord);
+			System.out.printf("RKBA=%x ", RKBA);
+			System.out.printf("RKDA=%x ", RKDA);
+			System.out.printf("blockNo=%x\n", tmpRKDA*512);
+			*/
 
 			try {
 				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\v6root", "rw");
@@ -82,19 +73,21 @@ public class Rk11 extends Thread {
 
 		if(RKCS << 28 >>> 29 == 2){
 
-			//System.out.print("\nRK11-Read ");
-
-			//System.out.printf("RKCS=%x ", RKCS);
-			//System.out.printf("RKER=%x ", RKER);
-			//System.out.printf("RKDS=%x ", RKDS);
-			//System.out.printf("RKDB=%x ", RKDB);
-			//System.out.printf("RKWC=%x ", RKWC);
 			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
-			//System.out.printf("cnt=%x ", datasizeWord);
-			//System.out.printf("RKBA=%x ", RKBA);
-			//System.out.printf("RKDA=%x ", RKDA);
 			int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
-			//System.out.printf("blockNo=%x\n", tmpRKDA*512);
+			
+			/*
+			System.out.print("\nRK11-Read ");
+			System.out.printf("RKCS=%x ", RKCS);
+			System.out.printf("RKER=%x ", RKER);
+			System.out.printf("RKDS=%x ", RKDS);
+			System.out.printf("RKDB=%x ", RKDB);
+			System.out.printf("RKWC=%x ", RKWC);
+			System.out.printf("cnt=%x ", datasizeWord);
+			System.out.printf("RKBA=%x ", RKBA);
+			System.out.printf("RKDA=%x ", RKDA);
+			System.out.printf("blockNo=%x\n", tmpRKDA*512);
+			*/
 
 			try {
 				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\v6root", "r");
@@ -115,7 +108,6 @@ public class Rk11 extends Thread {
 		}
 
 		if(Util.checkBit(RKCS, 6) == 1){
-			//System.out.println("\nRK11INTER");
 			BR_PRI = 5;
 			BR_VEC = 0220;
 		}
@@ -129,7 +121,6 @@ public class Rk11 extends Thread {
 		}
 		
 		if(Util.checkBit(RKCS, 6) == 1){
-			//System.out.println("\nRK11INTER");
 			BR_PRI = 5;
 			BR_VEC = 0220;
 		}

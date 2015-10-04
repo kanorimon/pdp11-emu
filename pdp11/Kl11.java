@@ -44,6 +44,9 @@ public class Kl11 extends Thread {
 
 	static void setRCSR(int rcsr){
 		RCSR = rcsr;
+		if (Util.checkBit(RCSR, RCSR_ENB) == 1)
+			RCSR = Util.clearBit(RCSR, RCSR_DONE);
+		
 		if (Util.checkBit(RCSR, RCSR_ID) == 1 && Util.checkBit(RCSR, RCSR_DONE) == 1) {
 			BR_PRI = 4;
 			BR_VEC = 060;
@@ -51,18 +54,8 @@ public class Kl11 extends Thread {
 	}
 	
 	static int getRBUF(){
-		if(inputByte[0] != 0){
-			RBUF = inputByte[0];
-
-			if(RBUF == 0xd){
-				RCSR = Util.clearBit(RCSR,RCSR_DONE);
-				RCSR = Util.setBit(RCSR,RCSR_ENB);
-			}
-
-			for(int i=0;i<13;i++){
-				inputByte[i] = inputByte[i+1];
-			}
-		}
+		if(RBUF == 012)	RBUF = 04;
+		RCSR = Util.clearBit(RCSR,RCSR_DONE);
 		return RBUF;
 	}
 
@@ -103,62 +96,35 @@ public class Kl11 extends Thread {
 	}
 	
 	public void run(){
-		//System.out.println("KL11 run");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-		CommandReceiver commandReceiver = new CommandReceiver();
-        commandReceiver.start();
-        
-		for(;;){
-			try{
-				  Thread.sleep(1);
-			}catch (InterruptedException e){
+		for(;;) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
 			}
 			
-			//キーボードからの入力バッファ
-			if(inputStr.length() > 0){
+			try {
+				if(Util.checkBit(Kl11.RCSR,Kl11.RCSR_DONE) == 0){
+					Kl11.RCSR = Util.setBit(Kl11.RCSR,Kl11.RCSR_BUSY);
 
-				System.out.print("\ninputStr=");
-				System.out.print(inputStr);
-				System.out.print(" \n");
+					Kl11.RBUF = reader.read();
+					
+					Kl11.RCSR = Util.setBit(Kl11.RCSR, Kl11.RCSR_DONE);
+					Kl11.RCSR = Util.clearBit(Kl11.RCSR,Kl11.RCSR_BUSY);
 
-				RCSR = Util.setBit(RCSR,RCSR_BUSY);
-				
-				for(int i=0;i<inputStr.length();i++){
-					inputByte[i] = (byte)inputStr.charAt(i); 
+					if (Util.checkBit(Kl11.RCSR, Kl11.RCSR_ID) == 1 && Util.checkBit(Kl11.RCSR, Kl11.RCSR_DONE) == 1) {
+						Kl11.BR_PRI = 4;
+						Kl11.BR_VEC = 060;
+					}
 				}
-				inputByte[inputStr.length()] = 0xd;
-				inputStr = "";
-
-				RCSR = Util.setBit(RCSR, RCSR_DONE);
-				RCSR = Util.clearBit(RCSR,RCSR_ENB);
-				RCSR = Util.clearBit(RCSR,RCSR_BUSY);
-
-				if (Util.checkBit(RCSR, RCSR_ID) == 1 && Util.checkBit(RCSR, RCSR_DONE) == 1) {
-					BR_PRI = 4;
-					BR_VEC = 060;
-				}
+			} catch (IOException e) {
+				// TODO
+				e.printStackTrace();
 			}
 		}
+		
 	}
-	
-	// I/O処理用スレッド
-    private class CommandReceiver extends Thread {
-        public void run() {
-            BufferedReader reader 
-                = new BufferedReader(new InputStreamReader(System.in));
 
-			for(;;) {
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-				}
-				try {
-					inputStr = reader.readLine();
-				} catch (IOException e) {
-				}
-			}
-
-        }
-    }
 
 }

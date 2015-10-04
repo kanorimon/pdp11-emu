@@ -67,14 +67,7 @@ public class Cpu extends Thread {
 				Rk11.rk11access();
 			}
 			if (Rk11.RKER != 0) Rk11.rk11error();
-
-			/*
-			* KL11
-			*/
-			//入出力中
-			if (Util.checkBit(Kl11.RCSR, Kl11.RCSR_ENB) == 1)
-				Kl11.RCSR = Util.clearBit(Kl11.RCSR, Kl11.RCSR_DONE);
-
+			
 			/*
 			 * CLOCK
 			 */
@@ -90,33 +83,20 @@ public class Cpu extends Thread {
 			//クロック割り込み
 			if (Util.checkBit(Register.CLOCK1, 7) == 1 && Util.checkBit(Register.CLOCK1, 6) == 1) {
 				if (7 > Register.getPriority()) {
-					//System.out.println("\nCLOCK_trap");
 					trap(0100, 0102);
 					waitFlg = false;
 				}
-				//RK11割り込み
-				/*
-			}else if(Rk11.BR_PRI > 0 &&
-					((dbgList.indexOf(02652) > 0 && 
-					dbgList.indexOf(044420) > 0) ||
-					Register.get(7) == 030332)){
-				trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
-				Rk11.BR_PRI = 0;
-				waitFlg = false;
-				*/
-				
+			//RK11割り込み
 			} else if (Kl11.BR_PRI < Rk11.BR_PRI) {
 				if (Rk11.BR_PRI > Register.getPriority()) {
-					//System.out.println("\nRK11_trap");
 					trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
 					Rk11.BR_PRI = 0;
 					waitFlg = false;
 				}
 				
-				//KL11割り込み
+			//KL11割り込み
 			} else {
 				if (Kl11.BR_PRI > Register.getPriority()) {
-					//System.out.println("\nKL11_trap");
 					trap(Kl11.BR_VEC, Kl11.BR_VEC + 2);
 					Kl11.BR_PRI = 0;
 					waitFlg = false;
@@ -130,12 +110,6 @@ public class Cpu extends Thread {
 			
 			if(Pdp11.flgDebugMode>=1) popCall(Register.get(7));		//シンボルPOP
 			if(Pdp11.flgDebugMode>1) printDebug();	//レジスタ・フラグ出力
-			/*
-			if(Register.get(7)==0x7c8 && aprPrintFlg){
-				aprPrintFlg = false;
-				Memory.printPAR(); //メモリーマップ出力
-			}
-			*/
 
 			/*
 			 * 命令解釈・実行
@@ -501,10 +475,8 @@ public class Cpu extends Thread {
 					srcOperand = getOperand(srcOperand, (fetchedMem >> 9) & 7, (fetchedMem >> 6) & 7);
 					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
 					srcValue = srcOperand.getValue();
-					//dstValue =~ (dstOperand.getValue());
 					dstValue =(~(dstOperand.getValue()) + 1) << 16 >> 16;
 
-					//tmp = (srcValue << 16 >>> 16) - (dstValue << 16 >>> 16);
 					tmp = srcValue + dstValue;
 
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
@@ -518,10 +490,8 @@ public class Cpu extends Thread {
 					srcOperand = getOperand(srcOperand, (fetchedMem >> 9) & 7, (fetchedMem >> 6) & 7, true);
 					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, true);
 					srcValue = srcOperand.getValue(true) ;
-					//dstValue = dstOperand.getValue(true);
 					dstValue = (~(dstOperand.getValue(true)) + 1) << 16 >> 16;
 
-					//tmp = (srcValue << 24 >>> 24) - (dstValue << 24 >>> 24);		//TODO
 					tmp = srcValue + dstValue;
 
 					Register.setCC(	(tmp << 24 >> 24) < 0, 
@@ -662,7 +632,6 @@ public class Cpu extends Thread {
 				case JMP:
 					//jump
 					if(((fetchedMem >> 3) & 7) == 0){
-						//System.out.println("\nJMP_trap");
 						trap04();
 						break;
 					}
@@ -686,7 +655,6 @@ public class Cpu extends Thread {
 				case JSR:
 					//jump to subroutine
 					if(((fetchedMem >> 3) & 7) == 0){
-						//System.out.println("\nJSR_trap");
 						trap04();
 						break;
 					}
@@ -712,13 +680,11 @@ public class Cpu extends Thread {
 					break;
 				case MFPI:
 					//move from previous instruction space
-					//srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, false, Register.getPreMode());
 					srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, false, Register.getNowMode());
 					srcValue = srcOperand.getValue(Register.getPreMode());
 	
 					try{
 						if(memoryErrorFlg){
-							//System.out.println("\nMFPI_trap");
 							trap04();
 							memoryErrorFlg = false;
 							break;
@@ -726,7 +692,6 @@ public class Cpu extends Thread {
 						pushStack(srcValue);
 	
 					}catch(ArrayIndexOutOfBoundsException e){
-						//System.out.println("\nMFPI_trap");
 						trap04();
 						break;
 					}
@@ -791,12 +756,9 @@ public class Cpu extends Thread {
 						}else if(dstOperand.flgAddress){
 							setMemory2(dstOperand.address, tmp, Register.getPreMode());
 						}
-
-						//System.out.printf("\n%o,%o",tmp,dstOperand.address);
 	
 						if(memoryErrorFlg){
 							pushStack(tmp);
-							//System.out.println("\nMTPI_trap");
 							trap04();
 							memoryErrorFlg = false;
 							break;
@@ -941,7 +903,6 @@ public class Cpu extends Thread {
 					
 					break;
 				case SETD:
-					//System.out.println("\nSETD_trap");
 					trap(010, 012);
 					break;
 				case SEN:
@@ -967,11 +928,9 @@ public class Cpu extends Thread {
 					//subtract
 					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
 					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
-					//srcValue = ~(srcOperand.getValue();
 					srcValue = (~(srcOperand.getValue()) + 1) << 16 >> 16;
 					dstValue = dstOperand.getValue();
 					
-					//tmp = dstValue - srcValue;
 					tmp = dstValue + srcValue;
 
 					Register.setCC((tmp << 16 >> 16) < 0,
@@ -1026,7 +985,6 @@ public class Cpu extends Thread {
 					break;
 				case TRAP:
 					//trap
-					//System.out.println("\nTRAP_trap");
 					trap(034,036);
 					break;
 				case TST:
@@ -1077,7 +1035,6 @@ public class Cpu extends Thread {
 					System.out.print("\n");
 					System.out.println("not case");
 					System.out.println(getMemory2(Register.get(7) - 2));
-					System.out.printf("\nexeCnt=%x\n", exeCnt);
 					Memory.printPAR();
 					
 					System.exit(0);
@@ -1749,17 +1706,14 @@ public class Cpu extends Thread {
 	//レジスタ・フラグの出力
 	void printDebug(){
 		if(printCnt >= START_CNT){
-			//popCall(Register.get(7));
 			Register.printDebug();
 		}
 	}
 	
 	//関数呼び出しをpush
 	void pushCall(int pc,int nextPc){
-		//if(Util.isPush(pc)){
-			dbgList.add(pc);
-			rtnList.add(nextPc);
-		//}
+		dbgList.add(pc);
+		rtnList.add(nextPc);
 	}
 
 	//関数呼び出しをpop
@@ -1801,42 +1755,6 @@ public class Cpu extends Thread {
 		return false;
 	}
 
-	/*
-	//加算オーバーフロー判定
-	boolean getAddOverflow(int front, int back, int result){
-		if((front << 16 >>> 31) == (back << 16 >>> 31)){
-			if((front << 16 >>> 31) != (result << 16 >>> 31))	return true;
-		}
-		return false;
-	}
-	
-	//加算オーバーフロー判定
-	boolean getAddOverflowB(int front, int back, int result){
-		if((front << 24 >>> 31) == (back << 24 >>> 31)){
-			if((front << 24 >>> 31) != (result << 24 >>> 31))	return true;
-		}
-		return false;
-	}
-	*/
-
-	/*
-	//減算オーバーフロー判定
-	boolean getSubOverflow(int front, int back, int result){
-		if((front << 16 >>> 31) != (back << 16 >>> 31)){
-			if((back << 16 >>> 31) == (result << 16 >>> 31)) return true;
-		}
-		return false;
-	}
-	
-	//減算オーバーフロー判定
-	boolean getSubOverflowB(int front, int back, int result){
-		if((front << 24 >>> 31) != (back << 24 >>> 31)){
-			if((back << 24 >>> 31) == (result << 24 >>> 31)) return true;
-		}
-		return false;
-	}
-	*/
-
 	//キャリー判定
 	boolean getCarry(int front, int back, int result, int shiftCnt){
 		if((front << shiftCnt >>> 31) == 1){
@@ -1852,45 +1770,6 @@ public class Cpu extends Thread {
 		}
 		return false;
 	}
-
-	/*
-	//加算キャリー判定
-	boolean getAddCarry(int front, int back, int result){
-		return getCarry(front, back, result, 16);
-	}
-	
-	//加算キャリー判定
-	boolean getAddCarryB(int front, int back, int result){
-		return getCarry(front, back, result, 24);
-	}
-	*/
-
-	/*
-	//減算ボロー判定
-	boolean getBorrow(int front, int back, int result, int shiftCnt){
-		if((front << shiftCnt >>> 31) == 0){
-			if((back << shiftCnt >>> 31) == 1){
-				return true;
-			}else{
-				if((result << shiftCnt >>> 31) == 1) return true;
-			}
-		}else{
-			if((back << shiftCnt >>> 31) == 1){
-				if((result << shiftCnt >>> 31) == 1) return true;
-			}
-		}
-		return false;
-	}
-	//減算ボロー判定
-	boolean getSubBorrow(int front, int back, int result){
-		return getBorrow(front, back, result, 16);
-	}
-	
-	//減算ボロー判定
-	boolean getSubBorrowB(int front, int back, int result){
-		return getBorrow(front, back, result, 24);
-	}
-	*/
 	
 	/*
 	 * 逆アセンブル関数
