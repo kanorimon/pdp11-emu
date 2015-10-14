@@ -242,10 +242,11 @@ public class Register{
 			System.out.print("-");
 		}
 
-		//System.out.printf(" %06o", Memory.getPhyMemory2(0136432));
-		//System.out.printf(" %06o", Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(063206)));
-		//System.out.printf(" %08o", Mmu.analyzeMemoryKernel(0141632));
-		//System.out.printf(" %06o ", Kl11.RCSR);
+		//System.out.printf(" %06o", Memory.getPhyMemory2(063276));
+		//System.out.printf(" %06o", Memory.getPhyMemory2(0205400));
+		//System.out.printf(" %06o", Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0141714)));
+		//System.out.printf(" %06o", Mmu.analyzeMemoryKernel(063276));
+		//System.out.printf(" %06o ", Memory.getPhyMemory2(Memory.KISA6));
 		
 		System.out.print(" ");
 		if(Pdp11.flgOctMode){

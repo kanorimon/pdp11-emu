@@ -40,7 +40,7 @@ public class Rk11 {
 
 			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
 			int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
-			
+
 			/*
 			System.out.print("\nRK11-Write ");
 			System.out.printf("RKCS=%x ", RKCS);

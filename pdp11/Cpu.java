@@ -245,7 +245,7 @@ public class Cpu extends Thread {
 						Register.set(dstOperand.register, tmp);
 					}else{
 						setMemory2(dstOperand.address, tmp);
-					}				
+					}
 	
 					break;
 				case ASR:

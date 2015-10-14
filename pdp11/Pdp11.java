@@ -105,7 +105,7 @@ public class Pdp11{
 			Memory.reset();
 			Kl11.reset();
 			Rk11.reset();
-			
+
 			Kl11 kl11 = new Kl11();
 			kl11.start();
 			
