@@ -26,7 +26,9 @@ public class Kl11 extends Thread {
 	
 	static String inputStr;
 	static byte[] inputByte;
-	
+
+	static BufferedReader reader;
+
 	static void reset(){
 		consoleSwitchRegister = 1;
 		XBUF = 0;
@@ -40,6 +42,8 @@ public class Kl11 extends Thread {
 		inputStr = "";
 		inputByte = new byte[14];
 		Arrays.fill(inputByte, (byte)0);
+
+		reader = new BufferedReader(new InputStreamReader(System.in));
 	}
 
 	static void setRCSR(int rcsr){
@@ -106,7 +110,7 @@ public class Kl11 extends Thread {
 			System.out.printf("%c",xbuf);
 		}
 		XBUF = 0;
-		XCSR = Util.setBit(XCSR,7);
+		XCSR = Util.setBit(XCSR, 7);
 
 		if (Util.checkBit(XCSR, XCSR_ID) == 1 && Util.checkBit(XCSR, XCSR_READY) == 1) {
 			BR_PRI = 4;
@@ -114,39 +118,28 @@ public class Kl11 extends Thread {
 		}
 	}
 
-	public void run(){
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+	static void kl11access(){
+		Kl11.RCSR = Util.setBit(Kl11.RCSR, Kl11.RCSR_BUSY);
 
-		for(;;) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-			}
+		try {
+			if(reader.ready()){
+				Kl11.RBUF = reader.read();
 
-			try {
-				if(Util.checkBit(Kl11.RCSR,Kl11.RCSR_DONE) == 0){
-					Kl11.RCSR = Util.setBit(Kl11.RCSR, Kl11.RCSR_BUSY);
-
-					Kl11.RBUF = reader.read();
-
-					if(Kl11.RBUF == 0xa){
-						Kl11.RBUF = 0;
-						Kl11.RCSR = Util.clearBit(Kl11.RCSR, Kl11.RCSR_BUSY);
-					}else {
-						Kl11.RCSR = Util.setBit(Kl11.RCSR, Kl11.RCSR_DONE);
-						Kl11.RCSR = Util.clearBit(Kl11.RCSR, Kl11.RCSR_BUSY);
-					}
-
-					if (Util.checkBit(Kl11.RCSR, Kl11.RCSR_ID) == 1 && Util.checkBit(Kl11.RCSR, Kl11.RCSR_DONE) == 1) {
-						Kl11.BR_PRI = 4;
-						Kl11.BR_VEC = 060;
-					}
+				if(Kl11.RBUF == 0xa){
+					Kl11.RBUF = 0;
+					Kl11.RCSR = Util.clearBit(Kl11.RCSR, Kl11.RCSR_BUSY);
+				}else {
+					Kl11.RCSR = Util.setBit(Kl11.RCSR, Kl11.RCSR_DONE);
+					Kl11.RCSR = Util.clearBit(Kl11.RCSR, Kl11.RCSR_BUSY);
 				}
-			} catch (IOException e) {
-				// TODO
-				e.printStackTrace();
-			}
-		}
 
+				if (Util.checkBit(Kl11.RCSR, Kl11.RCSR_ID) == 1 && Util.checkBit(Kl11.RCSR, Kl11.RCSR_DONE) == 1) {
+					Kl11.BR_PRI = 4;
+					Kl11.BR_VEC = 060;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -12,7 +12,6 @@ public class Cpu extends Thread {
 	ArrayList<Integer> dbgList;		//スタックトレース出力用 
 	ArrayList<Integer> rtnList;		//スタックトレース出力用
 	
-	boolean aprPrintFlg;			//APR出力用 false:出力しない true:出力する
 	static boolean memoryErrorFlg;	//メモリエラー false:エラーでない true:エラー
 	boolean waitFlg;				//WAIT false:WAITしていない true:WAITしている
 	
@@ -26,7 +25,6 @@ public class Cpu extends Thread {
 		dbgList = new ArrayList<>();
 		rtnList = new ArrayList<>();
 		
-		aprPrintFlg = true;
 		waitFlg = false;
 		memoryErrorFlg = false;
 		
@@ -34,6 +32,8 @@ public class Cpu extends Thread {
 
 		prePC = 0;
 		prePSW = 0;
+
+		exeCnt = 0;
 	}
 
 	public void run(){
@@ -58,6 +58,13 @@ public class Cpu extends Thread {
 		for(;;){
 
 			exeCnt++;
+
+			/*
+			* KL11
+			 */
+			if (exeCnt % 10000 == 0 && Util.checkBit(Kl11.RCSR,Kl11.RCSR_DONE) == 0) {
+				Kl11.kl11access();
+			}
 
 			/*
 		 	* RK11
