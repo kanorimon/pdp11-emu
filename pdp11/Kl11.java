@@ -3,7 +3,6 @@ package pdp11;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 
 public class Kl11 extends Thread {
 	
@@ -24,9 +23,6 @@ public class Kl11 extends Thread {
 	static final int RCSR_ID = 6;
 	static final int RCSR_ENB = 0;
 	
-	static String inputStr;
-	static byte[] inputByte;
-
 	static BufferedReader reader;
 
 	static void reset(){
@@ -39,10 +35,6 @@ public class Kl11 extends Thread {
 		BR_PRI = 0;
 		BR_VEC = 0;
 		
-		inputStr = "";
-		inputByte = new byte[14];
-		Arrays.fill(inputByte, (byte)0);
-
 		reader = new BufferedReader(new InputStreamReader(System.in));
 	}
 
@@ -69,16 +61,16 @@ public class Kl11 extends Thread {
 		if(Util.checkBit(XCSR, XCSR_ID)  != Util.checkBit(preXCSR, XCSR_ID) &&
 				Util.checkBit(XCSR, XCSR_READY) != Util.checkBit(preXCSR, XCSR_READY)) {
 			if (Util.checkBit(XCSR, XCSR_ID) == 1 && Util.checkBit(XCSR, XCSR_READY) == 1) {
-				BR_PRI = 4;
-				BR_VEC = 064;
+				//BR_PRI = 4;
+				//BR_VEC = 064;
 			}
 		}
 	}
 
 	static void setXBUF(int xbuf){
-		XBUF = xbuf;
-		xbuf = xbuf << 25 >>> 25;
-		switch(xbuf){
+		XBUF = xbuf & 0x7F;
+		System.out.printf("\nxbuf=%x XBUF=%x\t\t\t",xbuf,XBUF);
+		switch(XBUF){
 		case 004:
 			System.out.print("");
 			break;
@@ -107,7 +99,7 @@ public class Kl11 extends Thread {
 			System.out.print("");
 			break;
 		default:
-			System.out.printf("%c",xbuf);
+			System.out.printf("%c",XBUF);
 		}
 		XBUF = 0;
 		XCSR = Util.setBit(XCSR, 7);

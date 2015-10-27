@@ -57,9 +57,10 @@ public class Rk11 {
 			try {
 				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\v6root", "rw");
 				v6root.seek(tmpRKDA * 512);
-				
+
+				int phyAddr = ((RKCS & 0x30) << 12) + RKBA;
 				for(int i=0;i<datasizeWord * 2; i++){
-					v6root.write(Memory.getPhyMemory1(RKBA + i));
+					v6root.write(Memory.getPhyMemory1(phyAddr + i));
 				}
 				
 				v6root.close();
@@ -93,9 +94,10 @@ public class Rk11 {
 				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\v6root", "r");
 				v6root.seek(tmpRKDA * 512);
 
+				int phyAddr = ((RKCS & 0x30) << 12) + RKBA;
 				for(int i=0;i<datasizeWord * 2; i++){
 					byte tmp = v6root.readByte();
-					Memory.setPhyMemory1(RKBA + i, tmp);
+					Memory.setPhyMemory1(phyAddr + i, tmp);
 				}
 
 				v6root.close();
