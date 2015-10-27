@@ -39,7 +39,7 @@ public class Rk11 {
 		if(RKCS << 28 >>> 29 == 1){
 
 			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
-			int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
+			int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
 
 			/*
 			System.out.print("\nRK11-Write ");
@@ -75,7 +75,8 @@ public class Rk11 {
 		if(RKCS << 28 >>> 29 == 2){
 
 			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
-			int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
+			//int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
+			int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
 			
 			/*
 			System.out.print("\nRK11-Read ");
