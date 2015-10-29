@@ -38,7 +38,7 @@ public class Rk11 {
 
 		if(RKCS << 28 >>> 29 == 1){
 
-			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
+			int datasizeWord = ~((RKWC & 0xFFFF) - 1 - 65535) + 1;
 			int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
 
 			/*
@@ -58,7 +58,7 @@ public class Rk11 {
 				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\v6root", "rw");
 				v6root.seek(tmpRKDA * 512);
 
-				int phyAddr = ((RKCS & 0x30) << 12) + RKBA;
+				int phyAddr = ((RKCS & 0x30) << 12) + (RKBA & 0xFFFF);
 				for(int i=0;i<datasizeWord * 2; i++){
 					v6root.write(Memory.getPhyMemory1(phyAddr + i));
 				}
@@ -74,7 +74,7 @@ public class Rk11 {
 
 		if(RKCS << 28 >>> 29 == 2){
 
-			int datasizeWord = ~(RKWC - 1 - 65535) + 1;
+			int datasizeWord = ~((RKWC & 0xFFFF) - 1 - 65535) + 1;
 			//int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
 			int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
 			
@@ -95,7 +95,7 @@ public class Rk11 {
 				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\v6root", "r");
 				v6root.seek(tmpRKDA * 512);
 
-				int phyAddr = ((RKCS & 0x30) << 12) + RKBA;
+				int phyAddr = ((RKCS & 0x30) << 12) + (RKBA & 0xFFFF);
 				for(int i=0;i<datasizeWord * 2; i++){
 					byte tmp = v6root.readByte();
 					Memory.setPhyMemory1(phyAddr + i, tmp);

@@ -368,17 +368,17 @@ public class Cpu extends Thread {
 				case BISB:
 					//bit set
 					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7,true);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7,true);
+					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, true);
 					srcValue = srcOperand.getValue(true);
 					dstValue = dstOperand.getValue(true);
-					
+
+					tmp = (srcValue | dstValue) << 24 >>> 24;	//TODO
+
 					Register.setCC(	(tmp << 24 >> 24) < 0,
 									(tmp << 24 >> 24) == 0, 
 									false, 
 									Register.getC());
-					
-					tmp = (srcValue | dstValue) << 24 >>> 24;	//TODO
-					
+
 					if(dstOperand.flgRegister){
 						Register.set(dstOperand.register, tmp);
 					}else if(dstOperand.flgAddress){
@@ -497,7 +497,7 @@ public class Cpu extends Thread {
 					srcOperand = getOperand(srcOperand, (fetchedMem >> 9) & 7, (fetchedMem >> 6) & 7, true);
 					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, true);
 					srcValue = srcOperand.getValue(true) ;
-					dstValue = (~(dstOperand.getValue(true)) + 1) << 16 >> 16;
+					dstValue = (~(dstOperand.getValue(true)) + 1) << 24 >> 24;
 
 					tmp = srcValue + dstValue;
 

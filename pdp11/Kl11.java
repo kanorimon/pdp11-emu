@@ -69,7 +69,7 @@ public class Kl11 extends Thread {
 
 	static void setXBUF(int xbuf){
 		XBUF = xbuf & 0x7F;
-		System.out.printf("\nxbuf=%x XBUF=%x\t\t\t",xbuf,XBUF);
+		//System.out.printf("\nxbuf=%x XBUF=%x\t\t\t",xbuf,XBUF);
 		switch(XBUF){
 		case 004:
 			System.out.print("");
