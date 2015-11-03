@@ -1070,7 +1070,7 @@ public class Cpu extends Thread {
 
 	//オフセット取得（PC+オフセット*2 8bit（符号付））
 	Operand getOffset(Operand operand,int mem){
-		return getOffset(operand,(mem >> 6) & 7,(mem >> 3) & 7,mem  & 7);
+		return getOffset(operand,(mem >> 6) & 3,(mem >> 3) & 7,mem  & 7);
 	}
 	
 	//オフセット取得（PC+オフセット*2 8bit（符号付））

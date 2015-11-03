@@ -43,7 +43,7 @@ public class Register{
 		reg[6] = 0; //spは最後尾のアドレスを指す
 		reg[7] = 0;
 
-		reg6_u = 0177760;
+		reg6_u = 0;
 		
 		PSW = 0;
 		STACK_LIMIT = 0;
