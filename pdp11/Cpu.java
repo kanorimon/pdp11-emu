@@ -62,7 +62,7 @@ public class Cpu extends Thread {
 			/*
 			* KL11
 			 */
-			if (exeCnt % 10000 == 0 && Util.checkBit(Kl11.RCSR,Kl11.RCSR_DONE) == 0) {
+			if (exeCnt % 1000 == 0 && Util.checkBit(Kl11.RCSR,Kl11.RCSR_DONE) == 0) {
 				Kl11.kl11access();
 			}
 
@@ -78,7 +78,7 @@ public class Cpu extends Thread {
 			/*
 			 * CLOCK
 			 */
-			if (exeCnt % 10000 == 0) {
+			if (exeCnt % 1000 == 0) {
 				Register.CLOCK1 = Util.setBit(Register.CLOCK1, 7);
 			} else {
 				Register.CLOCK1 = Util.clearBit(Register.CLOCK1, 7);
@@ -1076,7 +1076,7 @@ public class Cpu extends Thread {
 	//オフセット取得（PC+オフセット*2 8bit（符号付））
 	Operand getOffset(Operand operand,int first,int second,int third){
 		operand.reset();
-		operand.setAddress(Register.get(7) + ((byte)((first << 6) + (second << 3) + third)) * 2);
+		operand.setAddress(Register.get(7) + ((((first << 6) + (second << 3) + third)) << 24 >> 24) * 2);
 		return operand;
 	}
 
@@ -1084,13 +1084,6 @@ public class Cpu extends Thread {
 	Operand getOffset6(Operand operand,int first,int second){
 		operand.reset();
 		operand.setAddress(Register.get(7) - ((first << 3) + second) * 2);
-		return operand;
-	}
-
-	//フィールド取得（8進数 6bit）
-	Operand getNormal(Operand operand,int first,int second,int third){
-		operand.reset();
-		operand.setAddress(((first << 3) + second) * 2 + Register.get(7));
 		return operand;
 	}
 
