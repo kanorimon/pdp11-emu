@@ -526,14 +526,14 @@ public class Cpu extends Thread {
 					break;
 				case DEC:
 					//decrement
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
 					dstValue = dstOperand.getValue();
 					
 					tmp = dstValue - 1;
 					
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
 									(tmp << 16 >> 16) == 0, 
-									(dstValue << 16 >> 16) < 0, 
+									(dstValue & 0xFFFF)  == 0100000,
 									Register.getC());
 
 					if(dstOperand.flgRegister){
@@ -805,8 +805,8 @@ public class Cpu extends Thread {
 					tmp = ~dstValue + 1;
 					
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
-							(tmp << 16 >> 16) == 0, 
-							(tmp << 16 >> 16) < 0, 
+							(tmp << 16 >> 16) == 0,
+							(dstValue & 0xFFFF)  == 0100000,
 							!((tmp << 16 >> 16) == 0));
 					
 					if(dstOperand.flgRegister){
@@ -898,8 +898,8 @@ public class Cpu extends Thread {
 					if(Register.getC())	tmp = tmp - 1;
 					
 					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									(dstValue << 16 >> 16) < 0 && Register.getC(), 
+									(tmp << 16 >> 16) == 0,
+									(dstValue & 0xFFFF)  == 0100000,
 									!(dstValue==0 && Register.getC()));
 					
 					if(dstOperand.flgRegister){

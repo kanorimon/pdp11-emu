@@ -245,7 +245,8 @@ public class Register{
 		//System.out.printf(" %06o", Memory.getPhyMemory2(065310));
 		//System.out.printf(" %06o", Memory.getPhyMemory2(063240));
 		//System.out.printf(" %06o", Memory.getPhyMemory2(0205400));
-		//System.out.printf(" %06o", Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0140000)));
+		//System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryUser(0x3ba)));
+		//System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc3fa)));
 		//System.out.printf(" %06o", Mmu.analyzeMemoryKernel(065310));
 		//System.out.printf(" %06o ", Memory.getPhyMemory2(Memory.KISA6));
 		
