@@ -55,7 +55,21 @@ public class Rk11 {
 			*/
 
 			try {
-				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\v6root", "rw");
+				String driveName = "";
+				
+				switch((RKDA & 0xE000) >>> 13){
+				case 0:
+					driveName = "\\v6root";
+					break;
+				case 1:
+					driveName = "\\v6src";
+					break;
+				case 2:
+					driveName = "\\v6doc";
+					break;
+				}
+				
+				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + driveName, "rw");
 				v6root.seek(tmpRKDA * 512);
 
 				int phyAddr = ((RKCS & 0x30) << 12) + (RKBA & 0xFFFF);
@@ -92,7 +106,21 @@ public class Rk11 {
 			*/
 
 			try {
-				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\v6root", "r");
+				String driveName = "";
+				
+				switch((RKDA & 0xE000) >>> 13){
+				case 0:
+					driveName = "\\v6root";
+					break;
+				case 1:
+					driveName = "\\v6src";
+					break;
+				case 2:
+					driveName = "\\v6doc";
+					break;
+				}
+
+				RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + driveName, "r");
 				v6root.seek(tmpRKDA * 512);
 
 				int phyAddr = ((RKCS & 0x30) << 12) + (RKBA & 0xFFFF);
