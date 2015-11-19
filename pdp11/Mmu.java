@@ -30,13 +30,13 @@ public class Mmu {
 			
 			if(Util.checkBit(Register.kernelPDR[par],3) == 1){
 				if(blockcnt > blockno+offset){
-					System.out.printf("addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o",
+					System.out.printf("k1 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
 					throw new MemoryException();
 				}
 			}else{
 				if(blockcnt <= blockno+offset){
-					System.out.printf("addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o",
+					System.out.printf("k0 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
 					throw new MemoryException();
 				}
@@ -62,13 +62,13 @@ public class Mmu {
 			
 			if(Util.checkBit(Register.userPDR[par],3) == 1){
 				if(blockcnt > blockno+offset){
-					System.out.printf("addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o",
+					System.out.printf("u1 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
 					throw new MemoryException();
 				}
 			}else{
 				if(blockcnt <= blockno+offset){
-					System.out.printf("addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o",
+					System.out.printf("u0 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
 					throw new MemoryException();
 				}
