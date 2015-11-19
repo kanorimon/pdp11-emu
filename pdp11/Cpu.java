@@ -16,7 +16,7 @@ public class Cpu extends Thread {
 	boolean waitFlg;				//WAIT false:WAITしていない true:WAITしている
 	
 	static int printCnt;			//ダンプ出力フラグ START_CNT以上で出力する
-	int START_CNT = 10;
+	int START_CNT = 0;
 	
 	static int prePC;
 	static int prePSW;

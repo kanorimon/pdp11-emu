@@ -22,12 +22,11 @@ public class Mmu {
 	static int analyzeMemoryKernel(int addr){
 		if((SR0 & 1) == 1){
 			int par = getPAR(addr);
-			int blockno = addr << 19 >>> 25;
+			int blockno = addr << 19 >>> 25 << 6;
 			int offset = addr << 26 >>> 26;
 		
-			int btrblockno = (Register.getKernelBaseBlockNo(par) + blockno) << 6;
-			 
-			return btrblockno + offset;
+			return  (Register.getKernelBaseBlockNo(par) << 6) + blockno + offset;
+
 		}else if(addr >= Memory.IOADDRV){
 			return addr - Memory.IOADDRV + Memory.IOADDRP;
 		}else{
@@ -38,12 +37,27 @@ public class Mmu {
 	static int analyzeMemoryUser(int addr){
 		if((SR0 & 1) == 1){
 			int par = getPAR(addr);
-			int blockno = addr << 19 >>> 25;
+			int blockno = addr << 19 >>> 25 << 6;
 			int offset = addr << 26 >>> 26;
 			
-			int btrblockno = (Register.getUserBaseBlockNo(par) + blockno) << 6;
+			if(Util.checkBit(Register.userPDR[par],3) == 1){
+				int start_block = 128 - Register.getUserBlockCnt(par);
 
-			return btrblockno + offset;
+				System.out.printf(" user addr=%o phyaddr=%o baseblock=%o blockcnt=%o  startblock=%o blockno=%o offset=%o par=%o pdr=%o\n",
+						addr,
+						(Register.getUserBaseBlockNo(par)  << 6) + (start_block << 6) + blockno + offset,
+						(Register.getUserBaseBlockNo(par)  << 6),
+						Register.getUserBlockCnt(par),
+						start_block,
+						blockno,
+						offset,
+						Register.userPAR[par],
+						Register.userPDR[par]);
+
+				return (Register.getUserBaseBlockNo(par)  << 6) + (start_block << 6) + blockno + offset;
+			}
+
+			return (Register.getUserBaseBlockNo(par)  << 6)  + blockno + offset;
 		}else{
 			return addr;
 		}

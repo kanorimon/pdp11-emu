@@ -137,7 +137,17 @@ public class Register{
 	static int getUserBaseBlockNo(int i){
 		return Register.userPAR[i] << 20 >>> 20;
 	}
-	
+
+	//カーネルPDRブロック数取得
+	static int getKernelBlockCnt(int i){
+		return Register.kernelPDR[i] << 17 >>> 25;
+	}
+
+	//ユーザPDRブロック数取得
+	static int getUserBlockCnt(int i){
+		return Register.userPDR[i] << 17 >>> 25;
+	}
+
 	//コンディションコード設定
 	static void setCC(boolean args_n,boolean args_z,boolean args_v,boolean args_c){
 		setN(args_n);
@@ -145,7 +155,8 @@ public class Register{
 		setV(args_v);
 		setC(args_c);
 	}
-	
+
+
 	static void setN(boolean args_n){
 		if(args_n){
 			PSW = PSW | (1 << 3);
@@ -242,10 +253,19 @@ public class Register{
 			System.out.print("-");
 		}
 
-		//System.out.printf(" %06o", Memory.getPhyMemory2(065310));
+		//System.out.printf(" %06o", Memory.getPhyMemory2(07002));
 		//System.out.printf(" %06o", Memory.getPhyMemory2(063240));
 		//System.out.printf(" %06o", Memory.getPhyMemory2(0205400));
-		//System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryUser(0x3ba)));
+
+		/*
+		for(int i=0;i<8;i++) {
+			System.out.printf(" %06o-", userPAR[i]);
+			System.out.printf("%06o", userPDR[i]);
+		}
+		*/
+
+		//System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryUser(024702)));
+		//System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryUser(0173203)));
 		//System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc3fa)));
 		//System.out.printf(" %06o", Mmu.analyzeMemoryKernel(065310));
 		//System.out.printf(" %06o ", Memory.getPhyMemory2(Memory.KISA6));
