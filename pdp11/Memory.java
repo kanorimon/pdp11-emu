@@ -469,8 +469,8 @@ public class Memory {
 		for(int i=0;i<8;i++){
 			System.out.printf("PAR[%d]=%o ", i,Register.kernelPAR[i]);
 			System.out.printf("PDR[%d]=%o\n", i,Register.kernelPDR[i]);
-			System.out.printf("V[%d]=%o-%o P[%d]=%o-%o\n", i, vaddrs[i], vaddre[i], 
-					i, Mmu.analyzeMemoryKernel(vaddrs[i]), Mmu.analyzeMemoryKernel(vaddre[i]));
+			//System.out.printf("V[%d]=%o-%o P[%d]=%o-%o\n", i, vaddrs[i], vaddre[i], 
+			//		i, Mmu.analyzeMemoryKernel(vaddrs[i]), Mmu.analyzeMemoryKernel(vaddre[i]));
 		}
 		System.out.println("\nuser PAR/PDR/ADDR\n");
 		for(int i=0;i<8;i++){

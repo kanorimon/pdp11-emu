@@ -90,13 +90,21 @@ public class Cpu extends Thread {
 			//クロック割り込み
 			if (Util.checkBit(Register.CLOCK1, 7) == 1 && Util.checkBit(Register.CLOCK1, 6) == 1) {
 				if (7 > Register.getPriority()) {
-					trap(0100, 0102);
+					try {
+						trap(0100, 0102);
+					} catch (MemoryException e) {
+						e.printStackTrace();
+					}
 					waitFlg = false;
 				}
 			//RK11割り込み
 			} else if (Kl11.BR_PRI < Rk11.BR_PRI) {
 				if (Rk11.BR_PRI > Register.getPriority()) {
-					trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
+					try {
+						trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
+					} catch (MemoryException e) {
+						e.printStackTrace();
+					}
 					Rk11.BR_PRI = 0;
 					waitFlg = false;
 				}
@@ -104,7 +112,11 @@ public class Cpu extends Thread {
 			//KL11割り込み
 			} else {
 				if (Kl11.BR_PRI > Register.getPriority()) {
-					trap(Kl11.BR_VEC, Kl11.BR_VEC + 2);
+					try {
+						trap(Kl11.BR_VEC, Kl11.BR_VEC + 2);
+					} catch (MemoryException e) {
+						e.printStackTrace();
+					}
 					Kl11.BR_PRI = 0;
 					waitFlg = false;
 				}
@@ -121,943 +133,956 @@ public class Cpu extends Thread {
 			/*
 			 * 命令解釈・実行
 			 */
-			if(!waitFlg){
-
-				//Fetch
-				fetchedMem = readMemory(); //命令取得
-				
-				//Decode
-				opcode = getOpcode(fetchedMem); //ニーモニック取得
-
-				//Execute
-				switch(opcode){
-				case ADC:
-					//add carry
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem & 7);
-					dstValue = dstOperand.getValue();
-					
-					int adctmp = 0;
-					if(Register.getC()) adctmp = 1;
-					
-					tmp = dstValue + adctmp;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									((dstValue << 16 >>> 16 == 077777) && adctmp == 1), 
-									((dstValue << 16 >>> 16 == 0177777) && adctmp == 1));
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
-					}else{
-						setMemory2(dstOperand.immediate, tmp);
-					}
-					
-					break;
-				case ADD:
-					//add src to dst
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					srcValue = srcOperand.getValue();
-					dstValue = dstOperand.getValue();
-					
-					tmp = srcValue + dstValue;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0,
-									getOverflow(srcValue, dstValue, tmp, 16),
-									getCarry(srcValue, dstValue, tmp, 16));
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}				
+			try{
+				if(!waitFlg){
 	
-					break;
-				case ASH:
-					//shift arithmetically
-	                int ashReg = Register.get((fetchedMem >> 6) & 7);
-	                srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					srcValue = srcOperand.getValue();
+					//Fetch
+					fetchedMem = readMemory(); //命令取得
 					
-	                int ashInt = srcValue << 26 >> 26;
-	                
-	                if(ashInt < 0){
-	                	tmp = ashReg >> Math.abs(ashInt);
-	                }else{
-	                	tmp = ashReg << ashInt;
-                        if(ashInt == 0){
-                        	Register.setC(false);
-                        }else{
-                        	Register.setC(((ashReg << (ashInt - 1)) & 0x8000) != 0);
-                        }
-	                }
-                	
-	                Register.setCC(	(tmp << 16 >> 16) < 0,
-	                				(tmp << 16 >> 16) == 0, 
-	                                (ashReg << 16 >>> 31) != (tmp << 16 >>> 31), //TODO
-	                                Register.getC());
-	                
-                	Register.set((fetchedMem >> 6) & 7, tmp);
-	                
-					break;
-				case ASHC: //TODO
-					//arithmetic shift combined
-					int ashcReg1 = Register.get((fetchedMem >> 6) & 7);
-					int ashcReg2 = Register.get(((fetchedMem >> 6) & 7) + 1);
-					int ashcTmp = (ashcReg1 << 16) + (ashcReg2 << 16 >>> 16);
-					
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					srcValue = srcOperand.getValue();
-					
-					int ashcInt = srcValue << 26 >> 26;
-				
-					if(ashcInt < 0){
-						tmp = ashcTmp >> Math.abs(ashcInt);
-	                    Register.setC(((ashcTmp >> (Math.abs(ashcInt) - 1)) & 1) == 1);
-					}else{
-						tmp = ashcTmp << ashcInt;
-                        if(ashcInt == 0){
-                        	Register.setC(false);
-                        }else{
-                        	Register.setC(((ashcTmp << (ashcInt - 1)) & 0x80000000) != 0);
-                        }
-					}
-					
-					Register.setCC(	tmp < 0,
-									tmp == 0, 
-									(ashcTmp >>> 31) != (tmp  >>> 31),
-									Register.getC());
-					
-					Register.set((fetchedMem >> 6) & 7, tmp >>> 16);
-					Register.set(((fetchedMem >> 6) & 7)+1, tmp << 16 >>> 16);
-					
-					break;
-				case ASL:
-					//arithmetic shift left
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					dstValue= dstOperand.getValue();
-					
-					tmp = dstValue << 1;
-					
-					Register.setCC( (tmp << 16 >> 16) < 0,
-									(tmp << 16 >> 16) == 0, 
-									Register.getV(), 
-									(dstValue << 16 >>> 16) < 0);
-					Register.setN((Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()));
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}
+					//Decode
+					opcode = getOpcode(fetchedMem); //ニーモニック取得
 	
-					break;
-				case ASR:
-					//arithmetic shift right
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					dstValue= dstOperand.getValue();
-					
-					tmp = (dstValue << 16 >> 16) >> 1;
-					
-					Register.setCC( (tmp << 16 >> 16) < 0,
-									(tmp << 16 >> 16) == 0, 
-									Register.getV(), 
-									(dstValue & 1) == 1);
-					Register.setN((Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()));
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}				
-	
-					break;
-				case BCC:
-					//branch if carry clear
-					if(!Register.getC()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BCS:
-					//branch if carry set
-					if(Register.getC()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BEQ:
-					//branch if equal
-					if(Register.getZ()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BGE:
-					//branch if greater than or equal
-					if(Register.getN() == Register.getV()) 
-						Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BGT:
-					//branch if greater than
-					if(!Register.getZ() && Register.getN() == Register.getV()) 
-						Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BHI:
-					//branch if higher
-					if(!Register.getC() && !Register.getZ()) 
-						Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BIC:
-					//bit clear
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					srcValue = srcOperand.getValue();
-					dstValue = dstOperand.getValue();
-					
-					tmp = ~srcValue & dstValue;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0,
-									(tmp << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
-	
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}
-	
-					break;
-				case BICB:
-					//bit clear
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7,true);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7,true);
-					srcValue = srcOperand.getValue(true);
-					dstValue = dstOperand.getValue(true);					
-	
-					tmp = (~srcValue & dstValue) << 24 >>> 24;	//TODO
-					
-					Register.setCC(	(tmp << 24 >> 24) < 0,
-									(tmp << 24 >> 24) == 0, 
-									false, 
-									Register.getC());
-	
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory1(dstOperand.address, tmp);
-					}
-	
-					break;
-				case BIS:
-					//bit set
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					srcValue = srcOperand.getValue();
-					dstValue = dstOperand.getValue();
-					
-					tmp = srcValue | dstValue;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0,
-									(tmp << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
-
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
-					}
-	
-					break;
-				case BISB:
-					//bit set
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7,true);
-					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, true);
-					srcValue = srcOperand.getValue(true);
-					dstValue = dstOperand.getValue(true);
-
-					tmp = (srcValue | dstValue) << 24 >>> 24;	//TODO
-
-					Register.setCC(	(tmp << 24 >> 24) < 0,
-									(tmp << 24 >> 24) == 0, 
-									false, 
-									Register.getC());
-
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory1(dstOperand.address, tmp);
-					}
-	
-					break;
-				case BIT:
-					//bit test
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					srcValue = srcOperand.getValue();
-					dstValue = dstOperand.getValue();
-					
-					tmp = srcValue & dstValue;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
-					
-					break;
-				case BITB:
-					//bit test
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7,true);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7,true);
-					srcValue = srcOperand.getValue(true);
-					dstValue = dstOperand.getValue(true);
-					
-					tmp = (srcValue & dstValue) << 24 >>> 24;	//TODO
-					
-					Register.setCC(	(tmp << 24 >> 24) < 0, 
-									(tmp << 24 >> 24) == 0, 
-									false, 
-									Register.getC());
-	
-					break;
-				case BLE:
-					//branch if less than or equal to
-					if(Register.getZ() || Register.getN() != Register.getV()) 
-						Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BLOS:
-					//branch if lower or same
-					if(Register.getC() || Register.getZ()) 
-						Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BLT:
-					//branch if less than
-					if((Register.getN() || Register.getV()) && (!Register.getN() || !Register.getV())) 
-						Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BMI:
-					//branch in minus
-					if(Register.getN()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BNE:
-					//branch if not equal
-					if(!Register.getZ()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BPL:
-					//branch if plus
-					if(!Register.getN()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BR:
-					//branch
-					Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case BVS:
-					//branch if v bit clear
-					if(Register.getV()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
-					break;
-				case CLR:
-					//clear
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					
-					Register.setCC(false, true, false, false);
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, 0);
-					}else{
-						setMemory2(dstOperand.address,0);
-					}
-					
-					break;
-				case CLRB:
-					//clear
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
-					
-					Register.setCC(false, true, false, false);
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, 0);
-					}else{
-						setMemory1(dstOperand.address,0);
-					}
-					
-					break;
-				case CMP:
-					//compare
-					srcOperand = getOperand(srcOperand, (fetchedMem >> 9) & 7, (fetchedMem >> 6) & 7);
-					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
-					srcValue = srcOperand.getValue();
-					dstValue =(~(dstOperand.getValue()) + 1) << 16 >> 16;
-
-					tmp = srcValue + dstValue;
-
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-												(tmp << 16 >> 16) == 0,
-												getOverflow(srcValue, dstValue, tmp, 16),
-												dstValue != 0 && !getCarry(srcValue, dstValue, tmp, 16));
-	
-					break;
-				case CMPB:
-					//compare
-					srcOperand = getOperand(srcOperand, (fetchedMem >> 9) & 7, (fetchedMem >> 6) & 7, true);
-					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, true);
-					srcValue = srcOperand.getValue(true) ;
-					dstValue = (~(dstOperand.getValue(true)) + 1) << 24 >> 24;
-
-					tmp = srcValue + dstValue;
-
-					Register.setCC(	(tmp << 24 >> 24) < 0, 
-												(tmp << 24 >> 24) == 0,
-												getOverflow(srcValue, dstValue, tmp, 24),
-												dstValue != 0 && !getCarry(srcValue, dstValue, tmp, 24));
-	
-					break;
-				case COM:
-					//complement
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					dstValue = dstOperand.getValue();
-					
-					Register.setCC(	((~dstValue) << 16 >> 16) < 0,
-									((~dstValue) << 16 >> 16) == 0, 
-									false, 
-									true);
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, ~dstValue);
-					}else{
-						setMemory2(dstOperand.address, ~dstValue);
-					}
-					
-					break;
-				case DEC:
-					//decrement
-					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
-					dstValue = dstOperand.getValue();
-					
-					tmp = dstValue - 1;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									(dstValue & 0xFFFF)  == 0100000,
-									Register.getC());
-
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
-					}else{
-						setMemory2(dstOperand.immediate, tmp);
-					}
-					
-					break;
-				case DECB:
-					//decrement
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
-					dstValue = dstOperand.getValue(true);
-
-					tmp = (dstValue - 1) << 24 >>> 24;		//TODO
-					
-					Register.setCC(	(tmp << 24 >> 24) < 0, 
-									(tmp << 24 >> 24) == 0, 
-									(dstValue << 24 >> 24) < 0, 
-									Register.getC());
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory1(dstOperand.address, tmp);
-					}else{
-						setMemory1(dstOperand.immediate, tmp);
-					}
-					
-					break;
-				case DIV: 
-					//divide
-					int divR1 = Register.get((fetchedMem >> 6) & 7) << 16;
-					int divR2 = Register.get(((fetchedMem >> 6) & 7)+1);
-					
-					int divValue = divR1 + divR2;
-					
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem & 7);
-					srcValue = srcOperand.getValue();
-					
-					if(srcValue == 0 ||
-						((divValue / srcValue) > 0x7fff ||
-						 (divValue / srcValue) < -0x8000)){
-						Register.setCC(false, false, true, true);
-						break;
-					}
-					
-					tmp = divValue / srcValue;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-							(tmp << 16 >> 16) == 0, 
-							false,
-							false);
-					
-					Register.set((fetchedMem >> 6) & 7, tmp);
-					Register.set(((fetchedMem >> 6) & 7)+1, divValue % srcValue);
-					
-					break;
-				case INC:
-					//increment
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					dstValue = dstOperand.getValue();
-					
-					tmp = dstValue + 1;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									dstValue == 077777, 
-									Register.getC());
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
-					}else{
-						setMemory2(dstOperand.immediate, tmp);
-					}
-	
-					break;
-				case INCB:
-					//increment
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7,true);
-					dstValue = dstOperand.getValue(true);
-
-					tmp = (dstValue + 1) << 24 >>> 24;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									dstValue == 077777, 
-									Register.getC());
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory1(dstOperand.address, tmp);
-					}else{
-						setMemory1(dstOperand.immediate, tmp);
-					}
-	
-					break;
-				case JMP:
-					//jump
-					if(((fetchedMem >> 3) & 7) == 0){
-						trap04();
-						break;
-					}
-	
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-	
-					tmp = Register.get(7);
-	
-					if(dstOperand.flgRegister){
-						Register.set(7,Register.get(dstOperand.register));
-					}else if(dstOperand.flgAddress){
-						Register.set(7,dstOperand.address);
-					}else{
-						Register.set(7,dstOperand.immediate);
-					}
-	
-					pushCall(Register.get(7),tmp);
-					printCall();
-	
-					break;
-				case JSR:
-					//jump to subroutine
-					if(((fetchedMem >> 3) & 7) == 0){
-						trap04();
-						break;
-					}
-	
-					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
-					
-					tmp = Register.get(7);
-	
-					pushStack(Register.get((fetchedMem >> 6) & 7));
-					Register.set((fetchedMem >> 6) & 7,Register.get(7));
-					
-					if(dstOperand.flgRegister){
-						Register.set(7,Register.get(dstOperand.register));
-					}else if(dstOperand.flgAddress){
-						Register.set(7,dstOperand.address);
-					}else{
-						Register.set(7,dstOperand.immediate);
-					}
-					
-					pushCall(Register.get(7),tmp);
-					printCall();
-	
-					break;
-				case MFPI:
-					//move from previous instruction space
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, false, Register.getNowMode());
-					srcValue = srcOperand.getValue(Register.getPreMode());
-	
-					try{
-						if(memoryErrorFlg){
-							trap04();
-							memoryErrorFlg = false;
-							break;
-						}
-						pushStack(srcValue);
-	
-					}catch(ArrayIndexOutOfBoundsException e){
-						trap04();
-						break;
-					}
-					
-					Register.setCC(	(srcValue << 16 >> 16) < 0, 
-									(srcValue << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
-					
-					break;
-				case MOV:
-					//move
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					srcValue = srcOperand.getValue();
-
-					Register.setCC(	(srcValue << 16 >> 16) < 0, 
-									(srcValue << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, srcValue);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, srcValue);
-					}
-					
-					break;
-				case MOVB:
-					//move
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7, true);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
-					srcValue = srcOperand.getValue(true);
-
-					Register.setCC(	(srcValue << 24 >> 24) < 0, 
-									(srcValue << 24 >> 24) == 0, 
-									false, 
-									Register.getC());
-
-					if(dstOperand.flgRegister){
-						//モード0の場合、符号拡張を行う
-						Register.set(dstOperand.register, srcValue << 24 >> 24);
-					}else if(dstOperand.flgAddress){
-						setMemory1(dstOperand.address, srcValue);
-					}
-					
-					break;
-				case MTPI:
-					//move　to previous instruction space
-					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, false, Register.getPreMode());
-
-					try{
-						tmp = popStack();
-
-						Register.setCC(	(tmp << 16 >> 16) < 0,
-								(tmp << 16 >> 16) == 0,
-								false,
-								Register.getC());
-
-						if(dstOperand.flgRegister){
-							Register.set(dstOperand.register, tmp, Register.getPreMode());
-						}else if(dstOperand.flgAddress){
-							setMemory2(dstOperand.address, tmp, Register.getPreMode());
-						}
-	
-						if(memoryErrorFlg){
-							pushStack(tmp);
-							trap04();
-							memoryErrorFlg = false;
-							break;
-						}
-	
-					}catch(ArrayIndexOutOfBoundsException e){
+					//Execute
+					switch(opcode){
+					case ADC:
+						//add carry
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem & 7);
+						dstValue = dstOperand.getValue();
 						
-					}
-
-					break;
-				case MUL: //TODO
-					//multiply
-					int mulR = Register.get((fetchedMem >> 6) & 7);
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					srcValue = srcOperand.getValue();
+						int adctmp = 0;
+						if(Register.getC()) adctmp = 1;
+						
+						tmp = dstValue + adctmp;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+										(tmp << 16 >> 16) == 0, 
+										((dstValue << 16 >>> 16 == 077777) && adctmp == 1), 
+										((dstValue << 16 >>> 16 == 0177777) && adctmp == 1));
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, tmp);
+						}else{
+							setMemory2(dstOperand.immediate, tmp);
+						}
+						
+						break;
+					case ADD:
+						//add src to dst
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						srcValue = srcOperand.getValue();
+						dstValue = dstOperand.getValue();
+						
+						tmp = srcValue + dstValue;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+										(tmp << 16 >> 16) == 0,
+										getOverflow(srcValue, dstValue, tmp, 16),
+										getCarry(srcValue, dstValue, tmp, 16));
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else{
+							setMemory2(dstOperand.address, tmp);
+						}				
+		
+						break;
+					case ASH:
+						//shift arithmetically
+		                int ashReg = Register.get((fetchedMem >> 6) & 7);
+		                srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						srcValue = srcOperand.getValue();
+						
+		                int ashInt = srcValue << 26 >> 26;
+		                
+		                if(ashInt < 0){
+		                	tmp = ashReg >> Math.abs(ashInt);
+		                }else{
+		                	tmp = ashReg << ashInt;
+	                        if(ashInt == 0){
+	                        	Register.setC(false);
+	                        }else{
+	                        	Register.setC(((ashReg << (ashInt - 1)) & 0x8000) != 0);
+	                        }
+		                }
+	                	
+		                Register.setCC(	(tmp << 16 >> 16) < 0,
+		                				(tmp << 16 >> 16) == 0, 
+		                                (ashReg << 16 >>> 31) != (tmp << 16 >>> 31), //TODO
+		                                Register.getC());
+		                
+	                	Register.set((fetchedMem >> 6) & 7, tmp);
+		                
+						break;
+					case ASHC: //TODO
+						//arithmetic shift combined
+						int ashcReg1 = Register.get((fetchedMem >> 6) & 7);
+						int ashcReg2 = Register.get(((fetchedMem >> 6) & 7) + 1);
+						int ashcTmp = (ashcReg1 << 16) + (ashcReg2 << 16 >>> 16);
+						
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						srcValue = srcOperand.getValue();
+						
+						int ashcInt = srcValue << 26 >> 26;
 					
-					tmp = mulR * (srcValue << 16 >> 16);
-					
-					Register.setCC(	tmp < 0, 
-									tmp == 0, 
-									false,
-									tmp < (-1 * Math.pow(2,15))|| tmp >= (Math.pow(2,15)-1));
-					
-					if(((fetchedMem >> 6) & 7) %2 == 0){
+						if(ashcInt < 0){
+							tmp = ashcTmp >> Math.abs(ashcInt);
+		                    Register.setC(((ashcTmp >> (Math.abs(ashcInt) - 1)) & 1) == 1);
+						}else{
+							tmp = ashcTmp << ashcInt;
+	                        if(ashcInt == 0){
+	                        	Register.setC(false);
+	                        }else{
+	                        	Register.setC(((ashcTmp << (ashcInt - 1)) & 0x80000000) != 0);
+	                        }
+						}
+						
+						Register.setCC(	tmp < 0,
+										tmp == 0, 
+										(ashcTmp >>> 31) != (tmp  >>> 31),
+										Register.getC());
+						
 						Register.set((fetchedMem >> 6) & 7, tmp >>> 16);
-						Register.set(((fetchedMem >> 6) & 7) + 1, tmp << 16 >>> 16);
-					}else{
-						Register.set((fetchedMem >> 6) & 7, tmp << 16 >>> 16);
-					}
-					
-					break;
-				case NEG:
-					//negate
-					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
-					dstValue = dstOperand.getValue();
-					
-					tmp = ~dstValue + 1;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-							(tmp << 16 >> 16) == 0,
-							(dstValue & 0xFFFF)  == 0100000,
-							!((tmp << 16 >> 16) == 0));
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}				
+						Register.set(((fetchedMem >> 6) & 7)+1, tmp << 16 >>> 16);
+						
+						break;
+					case ASL:
+						//arithmetic shift left
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						dstValue= dstOperand.getValue();
+						
+						tmp = dstValue << 1;
+						
+						Register.setCC( (tmp << 16 >> 16) < 0,
+										(tmp << 16 >> 16) == 0, 
+										Register.getV(), 
+										(dstValue << 16 >>> 16) < 0);
+						Register.setN((Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()));
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else{
+							setMemory2(dstOperand.address, tmp);
+						}
+		
+						break;
+					case ASR:
+						//arithmetic shift right
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						dstValue= dstOperand.getValue();
+						
+						tmp = (dstValue << 16 >> 16) >> 1;
+						
+						Register.setCC( (tmp << 16 >> 16) < 0,
+										(tmp << 16 >> 16) == 0, 
+										Register.getV(), 
+										(dstValue & 1) == 1);
+						Register.setN((Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()));
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else{
+							setMemory2(dstOperand.address, tmp);
+						}				
+		
+						break;
+					case BCC:
+						//branch if carry clear
+						if(!Register.getC()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BCS:
+						//branch if carry set
+						if(Register.getC()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BEQ:
+						//branch if equal
+						if(Register.getZ()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BGE:
+						//branch if greater than or equal
+						if(Register.getN() == Register.getV()) 
+							Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BGT:
+						//branch if greater than
+						if(!Register.getZ() && Register.getN() == Register.getV()) 
+							Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BHI:
+						//branch if higher
+						if(!Register.getC() && !Register.getZ()) 
+							Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BIC:
+						//bit clear
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						srcValue = srcOperand.getValue();
+						dstValue = dstOperand.getValue();
+						
+						tmp = ~srcValue & dstValue;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0,
+										(tmp << 16 >> 16) == 0, 
+										false, 
+										Register.getC());
+		
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else{
+							setMemory2(dstOperand.address, tmp);
+						}
+		
+						break;
+					case BICB:
+						//bit clear
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7,true);
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7,true);
+						srcValue = srcOperand.getValue(true);
+						dstValue = dstOperand.getValue(true);					
+		
+						tmp = (~srcValue & dstValue) << 24 >>> 24;	//TODO
+						
+						Register.setCC(	(tmp << 24 >> 24) < 0,
+										(tmp << 24 >> 24) == 0, 
+										false, 
+										Register.getC());
+		
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else{
+							setMemory1(dstOperand.address, tmp);
+						}
+		
+						break;
+					case BIS:
+						//bit set
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						srcValue = srcOperand.getValue();
+						dstValue = dstOperand.getValue();
+						
+						tmp = srcValue | dstValue;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0,
+										(tmp << 16 >> 16) == 0, 
+										false, 
+										Register.getC());
 	
-					break;
-				case RESET:
-					//reset external bus
-					Kl11.reset();
-					Rk11.reset();
-					Register.PSW = 0;
-					break;
-				case ROL:
-					//rotate left
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					dstValue = dstOperand.getValue();
-					
-					int roltmp = 0;
-					if(Register.getC()) roltmp = 1;
-
-					tmp = (dstValue << 1) + roltmp;
-					
-					if(dstValue << 16 >>> 31 == 1) Register.setC(true);
-					if(dstValue << 16 >>> 31 == 0) Register.setC(false);
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, tmp);
+						}
+		
+						break;
+					case BISB:
+						//bit set
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7,true);
+						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, true);
+						srcValue = srcOperand.getValue(true);
+						dstValue = dstOperand.getValue(true);
 	
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									(Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()), 
-									Register.getC());
+						tmp = (srcValue | dstValue) << 24 >>> 24;	//TODO
 	
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
-					}else{
-						setMemory2(dstOperand.immediate, tmp);
-					}
-					
-					break;
-				case ROR:
-					//rotate right
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					dstValue = dstOperand.getValue();
-					
-					int rortmp = 0;
-					if(Register.getC()) rortmp = 1;
-					
-					tmp = (dstValue << 16 >>> 16 >> 1) | (rortmp << 15);
-
-					if(dstValue << 31 >>> 31 == 1) Register.setC(true);
-					if(dstValue << 31 >>> 31 == 0) Register.setC(false);
-
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									(Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()), 
-									Register.getC());
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
-					}else{
-						setMemory2(dstOperand.immediate, tmp);
-					}
+						Register.setCC(	(tmp << 24 >> 24) < 0,
+										(tmp << 24 >> 24) == 0, 
+										false, 
+										Register.getC());
 	
-					break;
-				case RTS:
-					//return from subroutine
-					Register.set(7,Register.get(fetchedMem & 7));
-					Register.set(fetchedMem & 7,popStack());
-					
-					break;
-				case RTI:
-				case RTT:
-					//return from interrupt
-					Register.set(7, popStack());
-					Register.PSW = popStack();
-					
-					break;
-				case SBC:
-					//subtract carry
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					dstValue = dstOperand.getValue();
-					
-					tmp = dstValue;
-					if(Register.getC())	tmp = tmp - 1;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory1(dstOperand.address, tmp);
+						}
+		
+						break;
+					case BIT:
+						//bit test
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						srcValue = srcOperand.getValue();
+						dstValue = dstOperand.getValue();
+						
+						tmp = srcValue & dstValue;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+										(tmp << 16 >> 16) == 0, 
+										false, 
+										Register.getC());
+						
+						break;
+					case BITB:
+						//bit test
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7,true);
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7,true);
+						srcValue = srcOperand.getValue(true);
+						dstValue = dstOperand.getValue(true);
+						
+						tmp = (srcValue & dstValue) << 24 >>> 24;	//TODO
+						
+						Register.setCC(	(tmp << 24 >> 24) < 0, 
+										(tmp << 24 >> 24) == 0, 
+										false, 
+										Register.getC());
+		
+						break;
+					case BLE:
+						//branch if less than or equal to
+						if(Register.getZ() || Register.getN() != Register.getV()) 
+							Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BLOS:
+						//branch if lower or same
+						if(Register.getC() || Register.getZ()) 
+							Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BLT:
+						//branch if less than
+						if((Register.getN() || Register.getV()) && (!Register.getN() || !Register.getV())) 
+							Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BMI:
+						//branch in minus
+						if(Register.getN()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BNE:
+						//branch if not equal
+						if(!Register.getZ()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BPL:
+						//branch if plus
+						if(!Register.getN()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BR:
+						//branch
+						Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case BVS:
+						//branch if v bit clear
+						if(Register.getV()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
+						break;
+					case CLR:
+						//clear
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						
+						Register.setCC(false, true, false, false);
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, 0);
+						}else{
+							setMemory2(dstOperand.address,0);
+						}
+						
+						break;
+					case CLRB:
+						//clear
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
+						
+						Register.setCC(false, true, false, false);
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, 0);
+						}else{
+							setMemory1(dstOperand.address,0);
+						}
+						
+						break;
+					case CMP:
+						//compare
+						srcOperand = getOperand(srcOperand, (fetchedMem >> 9) & 7, (fetchedMem >> 6) & 7);
+						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
+						srcValue = srcOperand.getValue();
+						dstValue =(~(dstOperand.getValue()) + 1) << 16 >> 16;
+	
+						tmp = srcValue + dstValue;
+	
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+													(tmp << 16 >> 16) == 0,
+													getOverflow(srcValue, dstValue, tmp, 16),
+													dstValue != 0 && !getCarry(srcValue, dstValue, tmp, 16));
+		
+						break;
+					case CMPB:
+						//compare
+						srcOperand = getOperand(srcOperand, (fetchedMem >> 9) & 7, (fetchedMem >> 6) & 7, true);
+						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, true);
+						srcValue = srcOperand.getValue(true) ;
+						dstValue = (~(dstOperand.getValue(true)) + 1) << 24 >> 24;
+	
+						tmp = srcValue + dstValue;
+	
+						Register.setCC(	(tmp << 24 >> 24) < 0, 
+													(tmp << 24 >> 24) == 0,
+													getOverflow(srcValue, dstValue, tmp, 24),
+													dstValue != 0 && !getCarry(srcValue, dstValue, tmp, 24));
+		
+						break;
+					case COM:
+						//complement
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						dstValue = dstOperand.getValue();
+						
+						Register.setCC(	((~dstValue) << 16 >> 16) < 0,
+										((~dstValue) << 16 >> 16) == 0, 
+										false, 
+										true);
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, ~dstValue);
+						}else{
+							setMemory2(dstOperand.address, ~dstValue);
+						}
+						
+						break;
+					case DEC:
+						//decrement
+						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
+						dstValue = dstOperand.getValue();
+						
+						tmp = dstValue - 1;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+										(tmp << 16 >> 16) == 0, 
+										(dstValue & 0xFFFF)  == 0100000,
+										Register.getC());
+	
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, tmp);
+						}else{
+							setMemory2(dstOperand.immediate, tmp);
+						}
+						
+						break;
+					case DECB:
+						//decrement
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
+						dstValue = dstOperand.getValue(true);
+	
+						tmp = (dstValue - 1) << 24 >>> 24;		//TODO
+						
+						Register.setCC(	(tmp << 24 >> 24) < 0, 
+										(tmp << 24 >> 24) == 0, 
+										(dstValue << 24 >> 24) < 0, 
+										Register.getC());
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory1(dstOperand.address, tmp);
+						}else{
+							setMemory1(dstOperand.immediate, tmp);
+						}
+						
+						break;
+					case DIV: 
+						//divide
+						int divR1 = Register.get((fetchedMem >> 6) & 7) << 16;
+						int divR2 = Register.get(((fetchedMem >> 6) & 7)+1);
+						
+						int divValue = divR1 + divR2;
+						
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem & 7);
+						srcValue = srcOperand.getValue();
+						
+						if(srcValue == 0 ||
+							((divValue / srcValue) > 0x7fff ||
+							 (divValue / srcValue) < -0x8000)){
+							Register.setCC(false, false, true, true);
+							break;
+						}
+						
+						tmp = divValue / srcValue;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+								(tmp << 16 >> 16) == 0, 
+								false,
+								false);
+						
+						Register.set((fetchedMem >> 6) & 7, tmp);
+						Register.set(((fetchedMem >> 6) & 7)+1, divValue % srcValue);
+						
+						break;
+					case INC:
+						//increment
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						dstValue = dstOperand.getValue();
+						
+						tmp = dstValue + 1;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+										(tmp << 16 >> 16) == 0, 
+										dstValue == 077777, 
+										Register.getC());
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, tmp);
+						}else{
+							setMemory2(dstOperand.immediate, tmp);
+						}
+		
+						break;
+					case INCB:
+						//increment
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7,true);
+						dstValue = dstOperand.getValue(true);
+	
+						tmp = (dstValue + 1) << 24 >>> 24;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+										(tmp << 16 >> 16) == 0, 
+										dstValue == 077777, 
+										Register.getC());
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory1(dstOperand.address, tmp);
+						}else{
+							setMemory1(dstOperand.immediate, tmp);
+						}
+		
+						break;
+					case JMP:
+						//jump
+						if(((fetchedMem >> 3) & 7) == 0){
+							trap04();
+							break;
+						}
+		
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+		
+						tmp = Register.get(7);
+		
+						if(dstOperand.flgRegister){
+							Register.set(7,Register.get(dstOperand.register));
+						}else if(dstOperand.flgAddress){
+							Register.set(7,dstOperand.address);
+						}else{
+							Register.set(7,dstOperand.immediate);
+						}
+		
+						pushCall(Register.get(7),tmp);
+						printCall();
+		
+						break;
+					case JSR:
+						//jump to subroutine
+						if(((fetchedMem >> 3) & 7) == 0){
+							trap04();
+							break;
+						}
+		
+						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
+						
+						tmp = Register.get(7);
+		
+						pushStack(Register.get((fetchedMem >> 6) & 7));
+						Register.set((fetchedMem >> 6) & 7,Register.get(7));
+						
+						if(dstOperand.flgRegister){
+							Register.set(7,Register.get(dstOperand.register));
+						}else if(dstOperand.flgAddress){
+							Register.set(7,dstOperand.address);
+						}else{
+							Register.set(7,dstOperand.immediate);
+						}
+						
+						pushCall(Register.get(7),tmp);
+						printCall();
+		
+						break;
+					case MFPI:
+						//move from previous instruction space
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, false, Register.getNowMode());
+						srcValue = srcOperand.getValue(Register.getPreMode());
+		
+						try{
+							if(memoryErrorFlg){
+								trap04();
+								memoryErrorFlg = false;
+								break;
+							}
+							pushStack(srcValue);
+		
+						}catch(ArrayIndexOutOfBoundsException e){
+							trap04();
+							break;
+						}
+						
+						Register.setCC(	(srcValue << 16 >> 16) < 0, 
+										(srcValue << 16 >> 16) == 0, 
+										false, 
+										Register.getC());
+						
+						break;
+					case MOV:
+						//move
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						srcValue = srcOperand.getValue();
+	
+						Register.setCC(	(srcValue << 16 >> 16) < 0, 
+										(srcValue << 16 >> 16) == 0, 
+										false, 
+										Register.getC());
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, srcValue);
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, srcValue);
+						}
+						
+						break;
+					case MOVB:
+						//move
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7, true);
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
+						srcValue = srcOperand.getValue(true);
+	
+						Register.setCC(	(srcValue << 24 >> 24) < 0, 
+										(srcValue << 24 >> 24) == 0, 
+										false, 
+										Register.getC());
+	
+						if(dstOperand.flgRegister){
+							//モード0の場合、符号拡張を行う
+							Register.set(dstOperand.register, srcValue << 24 >> 24);
+						}else if(dstOperand.flgAddress){
+							setMemory1(dstOperand.address, srcValue);
+						}
+						
+						break;
+					case MTPI:
+						//move　to previous instruction space
+						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, false, Register.getPreMode());
+	
+						try{
+							tmp = popStack();
+	
+							Register.setCC(	(tmp << 16 >> 16) < 0,
 									(tmp << 16 >> 16) == 0,
-									(dstValue & 0xFFFF)  == 0100000,
-									!(dstValue==0 && Register.getC()));
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}
-					
-					break;
-				case SETD:
-					trap(010, 012);
-					break;
-				case SEN:
-					//set n
-					Register.setN(true);
-					break;
-				case SENZ:
-					//set n z
-					Register.setN(true);
-					Register.setZ(true);
-					break;
-				case SEV:
-					//set v
-					Register.setV(true);
-					break;
-				case SOB:
-					//subtract one and branch if not equal to 0
-					tmp = Register.get((fetchedMem >> 6) & 7) - 1;
-					Register.set((fetchedMem >> 6) & 7,tmp);
-					if(tmp != 0) Register.set(7,getOffset6(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7).address);
-					break;
-				case SUB:
-					//subtract
-					srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
-					dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
-					srcValue = (~(srcOperand.getValue()) + 1) << 16 >> 16;
-					dstValue = dstOperand.getValue();
-					
-					tmp = dstValue + srcValue;
-
-					Register.setCC((tmp << 16 >> 16) < 0,
-							(tmp << 16 >> 16) == 0,
-							getOverflow(dstValue, srcValue, tmp, 16),
-							srcValue != 0 && !getCarry(dstValue, srcValue, tmp, 16));
-	
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else{
-						setMemory2(dstOperand.address, tmp);
-					}
-
-					break;
-				case SWAB:
-					//swap byte
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					dstValue = dstOperand.getValue();
-					
-					tmp = (dstValue << 16 >>> 24 ) + (dstValue << 24 >>> 16);
-					
-					Register.setCC(	(tmp << 24 >> 24) < 0, 
-									(tmp << 24 >> 24) == 0, 
-									false, 
-									false);
-	
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
-					}
-	
-					break;
-				case SXT:
-					//sign extend
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					
-					tmp = 0;
-					if(Register.getN())	tmp = 0xffff;
-					
-					Register.setCC(	Register.getN(),
-									!Register.getN(), 
-									false, 
+									false,
 									Register.getC());
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
-					}
 	
-					break;
-				case TRAP:
-					//trap
-					trap(034,036);
-					break;
-				case TST:
-					//test
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					dstValue = dstOperand.getValue();
-					
-					Register.setCC(	(dstValue << 16 >> 16) < 0, 
-									(dstValue << 16 >> 16) == 0, 
-									false, 
-									false);
-					break;
-				case TSTB:
-					//test
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
-					dstValue = dstOperand.getValue();
-					
-					Register.setCC(	(dstValue << 24 >> 24) < 0, 
-									(dstValue << 24 >> 24) == 0, 
-									false, 
-									false);
-					break;
-				case WAIT:
-					//wait
-					waitFlg = true; 
-					break;
-				case XOR:
-					//exclusive
-					int srcreg = Register.get((fetchedMem >> 6) & 7);
-					dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
-					dstValue = dstOperand.getValue();
-					
-					tmp = srcreg^dstValue;
-					
-					Register.setCC(	(tmp << 16 >> 16) < 0, 
-									(tmp << 16 >> 16) == 0, 
-									false, 
-									Register.getC());
-					
-					if(dstOperand.flgRegister){
-						Register.set(dstOperand.register, tmp);
-					}else if(dstOperand.flgAddress){
-						setMemory2(dstOperand.address, tmp);
+							if(dstOperand.flgRegister){
+								Register.set(dstOperand.register, tmp, Register.getPreMode());
+							}else if(dstOperand.flgAddress){
+								setMemory2(dstOperand.address, tmp, Register.getPreMode());
+							}
+		
+							if(memoryErrorFlg){
+								pushStack(tmp);
+								trap04();
+								memoryErrorFlg = false;
+								break;
+							}
+		
+						}catch(ArrayIndexOutOfBoundsException e){
+							
+						}
+	
+						break;
+					case MUL: //TODO
+						//multiply
+						int mulR = Register.get((fetchedMem >> 6) & 7);
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						srcValue = srcOperand.getValue();
+						
+						tmp = mulR * (srcValue << 16 >> 16);
+						
+						Register.setCC(	tmp < 0, 
+										tmp == 0, 
+										false,
+										tmp < (-1 * Math.pow(2,15))|| tmp >= (Math.pow(2,15)-1));
+						
+						if(((fetchedMem >> 6) & 7) %2 == 0){
+							Register.set((fetchedMem >> 6) & 7, tmp >>> 16);
+							Register.set(((fetchedMem >> 6) & 7) + 1, tmp << 16 >>> 16);
+						}else{
+							Register.set((fetchedMem >> 6) & 7, tmp << 16 >>> 16);
+						}
+						
+						break;
+					case NEG:
+						//negate
+						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
+						dstValue = dstOperand.getValue();
+						
+						tmp = ~dstValue + 1;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+								(tmp << 16 >> 16) == 0,
+								(dstValue & 0xFFFF)  == 0100000,
+								!((tmp << 16 >> 16) == 0));
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else{
+							setMemory2(dstOperand.address, tmp);
+						}				
+		
+						break;
+					case RESET:
+						//reset external bus
+						Kl11.reset();
+						Rk11.reset();
+						Register.PSW = 0;
+						break;
+					case ROL:
+						//rotate left
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						dstValue = dstOperand.getValue();
+						
+						int roltmp = 0;
+						if(Register.getC()) roltmp = 1;
+	
+						tmp = (dstValue << 1) + roltmp;
+						
+						if(dstValue << 16 >>> 31 == 1) Register.setC(true);
+						if(dstValue << 16 >>> 31 == 0) Register.setC(false);
+		
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+										(tmp << 16 >> 16) == 0, 
+										(Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()), 
+										Register.getC());
+		
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, tmp);
+						}else{
+							setMemory2(dstOperand.immediate, tmp);
+						}
+						
+						break;
+					case ROR:
+						//rotate right
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						dstValue = dstOperand.getValue();
+						
+						int rortmp = 0;
+						if(Register.getC()) rortmp = 1;
+						
+						tmp = (dstValue << 16 >>> 16 >> 1) | (rortmp << 15);
+	
+						if(dstValue << 31 >>> 31 == 1) Register.setC(true);
+						if(dstValue << 31 >>> 31 == 0) Register.setC(false);
+	
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+										(tmp << 16 >> 16) == 0, 
+										(Register.getN() || Register.getC()) && (!Register.getN() || !Register.getC()), 
+										Register.getC());
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, tmp);
+						}else{
+							setMemory2(dstOperand.immediate, tmp);
+						}
+		
+						break;
+					case RTS:
+						//return from subroutine
+						Register.set(7,Register.get(fetchedMem & 7));
+						Register.set(fetchedMem & 7,popStack());
+						
+						break;
+					case RTI:
+					case RTT:
+						//return from interrupt
+						Register.set(7, popStack());
+						Register.PSW = popStack();
+						
+						break;
+					case SBC:
+						//subtract carry
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						dstValue = dstOperand.getValue();
+						
+						tmp = dstValue;
+						if(Register.getC())	tmp = tmp - 1;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+										(tmp << 16 >> 16) == 0,
+										(dstValue & 0xFFFF)  == 0100000,
+										!(dstValue==0 && Register.getC()));
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else{
+							setMemory2(dstOperand.address, tmp);
+						}
+						
+						break;
+					case SETD:
+						trap(010, 012);
+						break;
+					case SEN:
+						//set n
+						Register.setN(true);
+						break;
+					case SENZ:
+						//set n z
+						Register.setN(true);
+						Register.setZ(true);
+						break;
+					case SEV:
+						//set v
+						Register.setV(true);
+						break;
+					case SOB:
+						//subtract one and branch if not equal to 0
+						tmp = Register.get((fetchedMem >> 6) & 7) - 1;
+						Register.set((fetchedMem >> 6) & 7,tmp);
+						if(tmp != 0) Register.set(7,getOffset6(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7).address);
+						break;
+					case SUB:
+						//subtract
+						srcOperand = getOperand(srcOperand,(fetchedMem >> 9) & 7,(fetchedMem >> 6) & 7);
+						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7);
+						srcValue = (~(srcOperand.getValue()) + 1) << 16 >> 16;
+						dstValue = dstOperand.getValue();
+						
+						tmp = dstValue + srcValue;
+	
+						Register.setCC((tmp << 16 >> 16) < 0,
+								(tmp << 16 >> 16) == 0,
+								getOverflow(dstValue, srcValue, tmp, 16),
+								srcValue != 0 && !getCarry(dstValue, srcValue, tmp, 16));
+		
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else{
+							setMemory2(dstOperand.address, tmp);
+						}
+	
+						break;
+					case SWAB:
+						//swap byte
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						dstValue = dstOperand.getValue();
+						
+						tmp = (dstValue << 16 >>> 24 ) + (dstValue << 24 >>> 16);
+						
+						Register.setCC(	(tmp << 24 >> 24) < 0, 
+										(tmp << 24 >> 24) == 0, 
+										false, 
+										false);
+		
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, tmp);
+						}
+		
+						break;
+					case SXT:
+						//sign extend
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						
+						tmp = 0;
+						if(Register.getN())	tmp = 0xffff;
+						
+						Register.setCC(	Register.getN(),
+										!Register.getN(), 
+										false, 
+										Register.getC());
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, tmp);
+						}
+		
+						break;
+					case TRAP:
+						//trap
+						trap(034,036);
+						break;
+					case TST:
+						//test
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						dstValue = dstOperand.getValue();
+						
+						Register.setCC(	(dstValue << 16 >> 16) < 0, 
+										(dstValue << 16 >> 16) == 0, 
+										false, 
+										false);
+						break;
+					case TSTB:
+						//test
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
+						dstValue = dstOperand.getValue();
+						
+						Register.setCC(	(dstValue << 24 >> 24) < 0, 
+										(dstValue << 24 >> 24) == 0, 
+										false, 
+										false);
+						break;
+					case WAIT:
+						//wait
+						waitFlg = true; 
+						break;
+					case XOR:
+						//exclusive
+						int srcreg = Register.get((fetchedMem >> 6) & 7);
+						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
+						dstValue = dstOperand.getValue();
+						
+						tmp = srcreg^dstValue;
+						
+						Register.setCC(	(tmp << 16 >> 16) < 0, 
+										(tmp << 16 >> 16) == 0, 
+										false, 
+										Register.getC());
+						
+						if(dstOperand.flgRegister){
+							Register.set(dstOperand.register, tmp);
+						}else if(dstOperand.flgAddress){
+							setMemory2(dstOperand.address, tmp);
+						}
+						
+						break;
+					case WORD:
+						System.out.print("\n");
+						System.out.println("not case");
+						System.out.println(getMemory2(Register.get(7) - 2));
+						Memory.printPAR();
+						
+						System.exit(0);
+						break;
 					}
-					
-					break;
-				case WORD:
-					System.out.print("\n");
-					System.out.println("not case");
-					System.out.println(getMemory2(Register.get(7) - 2));
-					Memory.printPAR();
-					
-					System.exit(0);
-					break;
+				}
+			}catch(MemoryException e){
+				try {
+					trap(0250,0252);
+				} catch (MemoryException e1) {
+					e1.printStackTrace();
 				}
 			}
 		}
+
 	}
 
 	//トラップ
 	void trap04(){
-		trap(04, 06);
+		try {
+			trap(04, 06);
+		} catch (MemoryException e) {
+			e.printStackTrace();
+		}
 	}
 
 	//割り込み・トラップ
-	void trap(int newPC,int newPSW){
+	void trap(int newPC,int newPSW) throws MemoryException{
 		prePSW = Register.PSW;
 		prePC = Register.get(7);
 
@@ -1088,17 +1113,17 @@ public class Cpu extends Thread {
 	}
 
 	//オペランド取得（operand,mode,regNo）
-	Operand getOperand(Operand operand,int mode, int regNo){
+	Operand getOperand(Operand operand,int mode, int regNo) throws MemoryException{
 		return getOperand(operand, mode, regNo, false);
 	}
 
 	//フィールド取得（operand,mode,regNo,byteFlg）
-	Operand getOperand(Operand operand,int mode, int regNo,boolean byteFlg){
+	Operand getOperand(Operand operand,int mode, int regNo,boolean byteFlg) throws MemoryException{
 		return getOperand(operand, mode, regNo, byteFlg, Register.getNowMode());
 	}
 
 	//オペランド取得（operand,mode,regNo,byteFlg,mmuMode）
-	Operand getOperand(Operand operand,int mode, int regNo, boolean byteFlg,int mmuMode){
+	Operand getOperand(Operand operand,int mode, int regNo, boolean byteFlg,int mmuMode) throws MemoryException{
 		operand.reset();
 
 		switch(regNo){
@@ -1597,43 +1622,43 @@ public class Cpu extends Thread {
 	 * メモリアクセス関数
 	 */
 	//2バイト単位でリトルエンディアンを反転して10進数で取得
-	static int getMemory2(int addr) {
+	static int getMemory2(int addr) throws MemoryException{
 		return getMemory2(addr, Register.getNowMode());
 	}
-	static int getMemory2(int addr, int mode){
+	static int getMemory2(int addr, int mode) throws MemoryException{
 		addr = addr << 16 >>> 16;
 		return Memory.getPhyMemory2(Mmu.analyzeMemory(addr, mode));
 	}	
 	
 	//1バイト単位で指定箇所のメモリを取得
-	static int getMemory1(int addr) {
+	static int getMemory1(int addr) throws MemoryException{
 		return getMemory1(addr, Register.getNowMode());
 	}
-	static int getMemory1(int addr,int mode){
+	static int getMemory1(int addr,int mode) throws MemoryException{
 		addr = addr << 16 >>> 16;
 		return Memory.getPhyMemory1(Mmu.analyzeMemory(addr, mode));
 	}
 
 	//2バイト単位で指定箇所のメモリを更新
-	void setMemory2(int addr, int src) {
+	void setMemory2(int addr, int src) throws MemoryException{
 		setMemory2(addr, src, Register.getNowMode());
 	}
-	void setMemory2(int addr,int src,int mode){
+	void setMemory2(int addr,int src,int mode) throws MemoryException{
 		addr = addr << 16 >>> 16;
 		Memory.setPhyMemory2(Mmu.analyzeMemory(addr, mode), src);
 	}
 
 	//1バイト単位で指定箇所のメモリを更新
-	void setMemory1(int addr, int src) {
+	void setMemory1(int addr, int src) throws MemoryException{
 		setMemory1(addr, src, Register.getNowMode());
 	}
-	void setMemory1(int addr,int src,int mode){
+	void setMemory1(int addr,int src,int mode) throws MemoryException{
 		addr = addr << 16 >>> 16;
 		Memory.setPhyMemory1(Mmu.analyzeMemory(addr, mode), src);
 	}
 	
 	//メモリ上のデータを取得して、PC+2する
-	int readMemory(){
+	int readMemory() throws MemoryException{
 		int opcode = getMemory2(Register.get(7)) << 16 >>> 16;
 
 		//逆アセンブル/デバッグモード（すべて）の場合は出力
@@ -1651,19 +1676,19 @@ public class Cpu extends Thread {
 	}
 
 	//スタックプッシュ
-	void pushStack(int n){
+	void pushStack(int n) throws MemoryException{
 		Register.add(6, -2);
 		setMemory2(Register.get(6), n);
 	}
 
 	//カーネルスタックプッシュ
-	void pushKernelStack(int n){
+	void pushKernelStack(int n) throws MemoryException{
 		Register.addKernelStack(-2);
 		setMemory2(Register.getKernelStack(), n);
 	}
 	
 	//スタックポップ
-	int popStack(){
+	int popStack() throws MemoryException{
 		int tmp = getMemory2(Register.get(6));
 		Register.add(6, 2);
 		return tmp;
@@ -1774,7 +1799,7 @@ public class Cpu extends Thread {
 	/*
 	 * 逆アセンブル関数
 	 */ 
-	void dissAssemble(){
+	void dissAssemble() throws MemoryException{
 		Pdp11.flgExeMode = false; //実行モードオフ
 		
 		//逆アセンブル
@@ -2024,7 +2049,7 @@ public class Cpu extends Thread {
 	}
 
 	//オペランド文字列取得（dst,src）
-	String getOperandStr(int mode, int regNo){
+	String getOperandStr(int mode, int regNo) throws MemoryException{
 		//ワーク
 		int opcodeInt;
 		int tmp;
@@ -2144,19 +2169,19 @@ class Operand{
 		flgRegister = false;
 	}
 	
-	public int getValue(){
+	public int getValue() throws MemoryException{
 		return getValue(false,Register.getNowMode());
 	}
 	
-	public int getValue(boolean flgByte){
+	public int getValue(boolean flgByte) throws MemoryException{
 		return getValue(flgByte,Register.getNowMode());
 	}
 	
-	public int getValue(int mode){
+	public int getValue(int mode) throws MemoryException{
 		return getValue(false,mode);
 	}
 	
-	public int getValue(boolean flgByte,int mode){
+	public int getValue(boolean flgByte,int mode) throws MemoryException{
 		if(flgRegister){
 			return Register.get(register, mode);
 		}else if(flgAddress){

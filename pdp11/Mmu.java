@@ -10,7 +10,7 @@ public class Mmu {
 		SR2 = 0;
 	}
 	
-	static int analyzeMemory(int addr, int mode){
+	static int analyzeMemory(int addr, int mode) throws MemoryException{
 		if(mode == 0){
 			addr = analyzeMemoryKernel(addr);
 		}else{
@@ -19,13 +19,30 @@ public class Mmu {
 		return addr;
 	}
 	
-	static int analyzeMemoryKernel(int addr){
+	static int analyzeMemoryKernel(int addr) throws MemoryException{
 		if((SR0 & 1) == 1){
 			int par = getPAR(addr);
 			int blockno = addr << 19 >>> 25 << 6;
 			int offset = addr << 26 >>> 26;
 		
-			return  (Register.getKernelBaseBlockNo(par) << 6) + blockno + offset;
+			int baseblockno = Register.getKernelBaseBlockNo(par)  << 6;
+			int blockcnt = (Register.getKernelBlockCnt(par) + 1) << 6 ;
+			
+			if(Util.checkBit(Register.kernelPDR[par],3) == 1){
+				if(blockcnt > blockno+offset){
+					System.out.printf("addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o",
+							addr,blockcnt,blockno,offset,baseblockno);
+					throw new MemoryException();
+				}
+			}else{
+				if(blockcnt <= blockno+offset){
+					System.out.printf("addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o",
+							addr,blockcnt,blockno,offset,baseblockno);
+					throw new MemoryException();
+				}
+			}
+
+			return baseblockno + blockno + offset;
 
 		}else if(addr >= Memory.IOADDRV){
 			return addr - Memory.IOADDRV + Memory.IOADDRP;
@@ -34,30 +51,30 @@ public class Mmu {
 		}
 	}
 	
-	static int analyzeMemoryUser(int addr){
+	static int analyzeMemoryUser(int addr) throws MemoryException{
 		if((SR0 & 1) == 1){
 			int par = getPAR(addr);
 			int blockno = addr << 19 >>> 25 << 6;
 			int offset = addr << 26 >>> 26;
 			
+			int baseblockno = Register.getUserBaseBlockNo(par)  << 6;
+			int blockcnt = (Register.getUserBlockCnt(par) + 1) << 6 ;
+			
 			if(Util.checkBit(Register.userPDR[par],3) == 1){
-				int start_block = 128 - Register.getUserBlockCnt(par);
-
-				System.out.printf(" user addr=%o phyaddr=%o baseblock=%o blockcnt=%o  startblock=%o blockno=%o offset=%o par=%o pdr=%o\n",
-						addr,
-						(Register.getUserBaseBlockNo(par)  << 6) + (start_block << 6) + blockno + offset,
-						(Register.getUserBaseBlockNo(par)  << 6),
-						Register.getUserBlockCnt(par),
-						start_block,
-						blockno,
-						offset,
-						Register.userPAR[par],
-						Register.userPDR[par]);
-
-				return (Register.getUserBaseBlockNo(par)  << 6) + (start_block << 6) + blockno + offset;
+				if(blockcnt > blockno+offset){
+					System.out.printf("addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o",
+							addr,blockcnt,blockno,offset,baseblockno);
+					throw new MemoryException();
+				}
+			}else{
+				if(blockcnt <= blockno+offset){
+					System.out.printf("addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o",
+							addr,blockcnt,blockno,offset,baseblockno);
+					throw new MemoryException();
+				}
 			}
 
-			return (Register.getUserBaseBlockNo(par)  << 6)  + blockno + offset;
+			return baseblockno + blockno + offset;
 		}else{
 			return addr;
 		}
@@ -67,4 +84,10 @@ public class Mmu {
 		return addr << 16 >>> 29;
 	}
 	
+}
+
+class MemoryException extends Exception{
+	public MemoryException() {
+		super("アクセス不可領域にアクセスしました");
+	}
 }

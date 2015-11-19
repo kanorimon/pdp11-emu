@@ -94,7 +94,11 @@ public class Pdp11{
 			Memory.reset();
 			
 			Memory.load(bf, 0);
-			cpu.dissAssemble();
+			try {
+				cpu.dissAssemble();
+			} catch (MemoryException e) {
+				e.printStackTrace();
+			}
 		}
 
 		if(flgExeMode){
