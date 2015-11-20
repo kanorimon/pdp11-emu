@@ -16,7 +16,7 @@ public class Cpu extends Thread {
 	boolean waitFlg;				//WAIT false:WAITしていない true:WAITしている
 	
 	static int printCnt;			//ダンプ出力フラグ START_CNT以上で出力する
-	int START_CNT = 0;
+	int START_CNT = 10;
 	
 	static int prePC;
 	static int prePSW;
@@ -90,21 +90,13 @@ public class Cpu extends Thread {
 			//クロック割り込み
 			if (Util.checkBit(Register.CLOCK1, 7) == 1 && Util.checkBit(Register.CLOCK1, 6) == 1) {
 				if (7 > Register.getPriority()) {
-					try {
-						trap(0100, 0102);
-					} catch (MemoryException e) {
-						e.printStackTrace();
-					}
+					trap(0100, 0102);
 					waitFlg = false;
 				}
 			//RK11割り込み
 			} else if (Kl11.BR_PRI < Rk11.BR_PRI) {
 				if (Rk11.BR_PRI > Register.getPriority()) {
-					try {
-						trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
-					} catch (MemoryException e) {
-						e.printStackTrace();
-					}
+					trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
 					Rk11.BR_PRI = 0;
 					waitFlg = false;
 				}
@@ -112,11 +104,7 @@ public class Cpu extends Thread {
 			//KL11割り込み
 			} else {
 				if (Kl11.BR_PRI > Register.getPriority()) {
-					try {
-						trap(Kl11.BR_VEC, Kl11.BR_VEC + 2);
-					} catch (MemoryException e) {
-						e.printStackTrace();
-					}
+					trap(Kl11.BR_VEC, Kl11.BR_VEC + 2);
 					Kl11.BR_PRI = 0;
 					waitFlg = false;
 				}
@@ -1062,11 +1050,7 @@ public class Cpu extends Thread {
 					}
 				}
 			}catch(MemoryException e){
-				try {
-					trap(0250,0252);
-				} catch (MemoryException e1) {
-					e1.printStackTrace();
-				}
+				trap(0250,0252);
 			}
 		}
 
@@ -1074,23 +1058,23 @@ public class Cpu extends Thread {
 
 	//トラップ
 	void trap04(){
-		try {
-			trap(04, 06);
-		} catch (MemoryException e) {
-			e.printStackTrace();
-		}
+		trap(04, 06);
 	}
 
 	//割り込み・トラップ
-	void trap(int newPC,int newPSW) throws MemoryException{
+	void trap(int newPC,int newPSW){
 		prePSW = Register.PSW;
 		prePC = Register.get(7);
 
 		Register.set(7, Memory.getPhyMemory2(newPC));
 		Register.PSW = (Register.getNowMode() << 12) | Memory.getPhyMemory2(newPSW);
 
-		pushStack(prePSW);
-		pushStack(prePC);
+		try {
+			pushStack(prePSW);
+			pushStack(prePC);
+		} catch (MemoryException e) {
+			e.printStackTrace();
+		}
 	}
 
 	//オフセット取得（PC+オフセット*2 8bit（符号付））

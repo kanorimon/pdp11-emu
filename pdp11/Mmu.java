@@ -27,16 +27,20 @@ public class Mmu {
 		
 			int baseblockno = Register.getKernelBaseBlockNo(par)  << 6;
 			int blockcnt = (Register.getKernelBlockCnt(par) + 1) << 6 ;
-			
+
+			if(Util.checkBit(Register.kernelPDR[par],1) == 0 && Util.checkBit(Register.kernelPDR[par],2) == 0) {
+				System.out.print("\n00kerror\n");
+				throw new MemoryException();
+			}
 			if(Util.checkBit(Register.kernelPDR[par],3) == 1){
 				if(blockcnt > blockno+offset){
-					System.out.printf("k1 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
+					System.out.printf("\nk1 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
 					throw new MemoryException();
 				}
 			}else{
 				if(blockcnt <= blockno+offset){
-					System.out.printf("k0 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
+					System.out.printf("\nk0 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
 					throw new MemoryException();
 				}
@@ -59,16 +63,20 @@ public class Mmu {
 			
 			int baseblockno = Register.getUserBaseBlockNo(par)  << 6;
 			int blockcnt = (Register.getUserBlockCnt(par) + 1) << 6 ;
-			
+
+			if(Util.checkBit(Register.userPDR[par],1) == 0 && Util.checkBit(Register.userPDR[par],2) == 0) {
+				System.out.print("\n00uerror\n");
+				throw new MemoryException();
+			}
 			if(Util.checkBit(Register.userPDR[par],3) == 1){
 				if(blockcnt > blockno+offset){
-					System.out.printf("u1 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
+					System.out.printf("\nu1 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
 					throw new MemoryException();
 				}
 			}else{
 				if(blockcnt <= blockno+offset){
-					System.out.printf("u0 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
+					System.out.printf("\nu0 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
 					throw new MemoryException();
 				}
