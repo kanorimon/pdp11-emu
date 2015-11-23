@@ -1653,7 +1653,11 @@ public class Cpu extends Thread {
 			strnum++;
 		}
 
-		Mmu.SR2 = Register.get(7);
+		if(Util.checkBit(Mmu.SR0, 13) != 1 &&
+			Util.checkBit(Mmu.SR0, 14) != 1 &&
+			Util.checkBit(Mmu.SR0, 15) != 1){
+			Mmu.SR2 = Register.get(7);
+		}
 		Register.add(7, 2); //PC+2
 		
 		return opcode;

@@ -30,18 +30,21 @@ public class Mmu {
 
 			if(Util.checkBit(Register.kernelPDR[par],1) == 0 && Util.checkBit(Register.kernelPDR[par],2) == 0) {
 				System.out.print("\n00kerror\n");
+				Util.setBit(SR0, 15);
 				throw new MemoryException();
 			}
 			if(Util.checkBit(Register.kernelPDR[par],3) == 1){
 				if(blockcnt > blockno+offset){
 					System.out.printf("\nk1 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
+					Util.setBit(SR0, 14);
 					throw new MemoryException();
 				}
 			}else{
 				if(blockcnt <= blockno+offset){
 					System.out.printf("\nk0 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
+					Util.setBit(SR0, 14);
 					throw new MemoryException();
 				}
 			}
@@ -66,18 +69,21 @@ public class Mmu {
 
 			if(Util.checkBit(Register.userPDR[par],1) == 0 && Util.checkBit(Register.userPDR[par],2) == 0) {
 				System.out.print("\n00uerror\n");
+				Util.setBit(SR0, 15);
 				throw new MemoryException();
 			}
 			if(Util.checkBit(Register.userPDR[par],3) == 1){
 				if(blockcnt > blockno+offset){
 					System.out.printf("\nu1 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
+					Util.setBit(SR0, 14);
 					throw new MemoryException();
 				}
 			}else{
 				if(blockcnt <= blockno+offset){
 					System.out.printf("\nu0 addr=%o blockcnt=%o blockno=%o offset=%o baseblockno=%o\n",
 							addr,blockcnt,blockno,offset,baseblockno);
+					Util.setBit(SR0, 14);
 					throw new MemoryException();
 				}
 			}

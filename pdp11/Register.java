@@ -257,12 +257,23 @@ public class Register{
 		//System.out.printf(" %06o", Memory.getPhyMemory2(063240));
 		//System.out.printf(" %06o", Memory.getPhyMemory2(0205400));
 
-
+		/*
 		for(int i=0;i<8;i++) {
 			System.out.printf(" %06o-", userPAR[i]);
 			System.out.printf("%06o", userPDR[i]);
 		}
+		*/
 
+		
+		/*try {
+			System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc3d4)));
+			System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc3d6)));
+			System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0xc3d8)));
+		} catch (MemoryException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		*/
 
 		//System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryUser(024702)));
 		//System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryUser(0173203)));
