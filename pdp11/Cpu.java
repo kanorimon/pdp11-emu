@@ -653,9 +653,11 @@ public class Cpu {
 						}else{
 							Register.set(7,dstOperand.immediate);
 						}
-		
-						//pushCall(Register.get(7),tmp);
-						//printCall();
+
+						if(Pdp11.flgDebugMode>1) {
+							pushCall(Register.get(7),tmp);
+							printCall();
+						}
 		
 						break;
 					case JSR:
@@ -679,10 +681,12 @@ public class Cpu {
 						}else{
 							Register.set(7,dstOperand.immediate);
 						}
-						
-						//pushCall(Register.get(7),tmp);
-						//printCall();
-		
+
+						if(Pdp11.flgDebugMode>1) {
+							pushCall(Register.get(7),tmp);
+							printCall();
+						}
+
 						break;
 					case MFPI:
 						//move from previous instruction space
@@ -1226,12 +1230,12 @@ public class Cpu {
 			case 6:
 				//相対
 				//命令に続くワードの内容 a を PC+2 に加算したものをアドレスとして使用する。
-				operand.setAddress((readMemory() + Register.get(7)) << 16 >>> 16); //TODO
+				operand.setAddress((readMemory() + Register.get(7)) << 16 >>> 16);
 				break;
 			case 7:
 				//相対間接
 				//命令に続くワードの内容 a を PC+2 に加算したものをアドレスのアドレスとして使用する。
-				operand.setAddress(getMemory2((readMemory() + Register.get(7)) << 16 >>> 16,mmuMode)); //TODO
+				operand.setAddress(getMemory2((readMemory() + Register.get(7)) << 16 >>> 16,mmuMode));
 				break;
 			}
 			break;
