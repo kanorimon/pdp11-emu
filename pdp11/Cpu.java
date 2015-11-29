@@ -2,7 +2,7 @@ package pdp11;
 
 import java.util.ArrayList;
 
-public class Cpu extends Thread {
+public class Cpu {
 
 	/*
 	 * 変数定義
@@ -36,10 +36,6 @@ public class Cpu extends Thread {
 		prePSW = 0;
 
 		exeCnt = 0;
-	}
-
-	public void run(){
-		if(Pdp11.flgExeMode) execute();
 	}
 
 	/*

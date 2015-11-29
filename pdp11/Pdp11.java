@@ -61,13 +61,10 @@ public class Pdp11{
 			Rk11.reset();
 
 			if(flgExeMode){
-				Kl11 kl11 = new Kl11();
-				kl11.start();
-
 				Memory.load(Rk11.boot_rom, 1024);
 				Register.set(7,1024);
 
-				cpu.start();
+				cpu.execute();
 			}
 			return;
 		}
@@ -109,12 +106,9 @@ public class Pdp11{
 			Memory.reset();
 			Kl11.reset();
 			Rk11.reset();
-
-			Kl11 kl11 = new Kl11();
-			kl11.start();
 			
 			Memory.fileload(bf);
-			cpu.start();
+			cpu.execute();
 		}
 	}
 }

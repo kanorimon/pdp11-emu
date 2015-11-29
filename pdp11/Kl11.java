@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class Kl11 extends Thread {
+public class Kl11{
 	
 	static int consoleSwitchRegister; //コンソールスイッチレジスタ
 	static int XBUF; //出力バッファ
