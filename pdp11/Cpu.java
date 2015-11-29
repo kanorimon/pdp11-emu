@@ -654,8 +654,8 @@ public class Cpu {
 							Register.set(7,dstOperand.immediate);
 						}
 		
-						pushCall(Register.get(7),tmp);
-						printCall();
+						//pushCall(Register.get(7),tmp);
+						//printCall();
 		
 						break;
 					case JSR:
@@ -680,8 +680,8 @@ public class Cpu {
 							Register.set(7,dstOperand.immediate);
 						}
 						
-						pushCall(Register.get(7),tmp);
-						printCall();
+						//pushCall(Register.get(7),tmp);
+						//printCall();
 		
 						break;
 					case MFPI:
