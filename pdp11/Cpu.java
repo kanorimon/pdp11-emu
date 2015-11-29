@@ -20,6 +20,8 @@ public class Cpu extends Thread {
 	
 	static int prePC;
 	static int prePSW;
+	
+	static int pc = 0;
 
 	Cpu(){
 		dbgList = new ArrayList<>();
@@ -62,7 +64,7 @@ public class Cpu extends Thread {
 			/*
 			* KL11
 			 */
-			if (exeCnt % 1000 == 0 && Util.checkBit(Kl11.RCSR,Kl11.RCSR_DONE) == 0) {
+			if (exeCnt % 1000 == 500 && Util.checkBit(Kl11.RCSR,Kl11.RCSR_DONE) == 0) {
 				Kl11.kl11access();
 			}
 
@@ -125,7 +127,7 @@ public class Cpu extends Thread {
 				if(!waitFlg){
 	
 					//Fetch
-					fetchedMem = readMemory(); //命令取得
+					fetchedMem = fetchMemory(); //命令取得
 					
 					//Decode
 					opcode = getOpcode(fetchedMem); //ニーモニック取得
@@ -381,7 +383,7 @@ public class Cpu extends Thread {
 										Register.getC());
 	
 						if(dstOperand.flgRegister){
-							Register.set(dstOperand.register, tmp);
+							Register.set(dstOperand.register, (dstValue & 0xFF00) + tmp);
 						}else if(dstOperand.flgAddress){
 							setMemory1(dstOperand.address, tmp);
 						}
@@ -1641,8 +1643,8 @@ public class Cpu extends Thread {
 		Memory.setPhyMemory1(Mmu.analyzeMemory(addr, mode), src);
 	}
 	
-	//メモリ上のデータを取得して、PC+2する
-	int readMemory() throws MemoryException{
+	//メモリ上の命令を取得して、PC+2する
+	int fetchMemory() throws MemoryException{
 		int opcode = getMemory2(Register.get(7)) << 16 >>> 16;
 
 		//逆アセンブル/デバッグモード（すべて）の場合は出力
@@ -1656,8 +1658,25 @@ public class Cpu extends Thread {
 		if(Util.checkBit(Mmu.SR0, 13) != 1 &&
 			Util.checkBit(Mmu.SR0, 14) != 1 &&
 			Util.checkBit(Mmu.SR0, 15) != 1){
-			Mmu.SR2 = Register.get(7);
+			pc = Register.get(7);
 		}
+		Register.add(7, 2); //PC+2
+		
+		return opcode;
+	}
+	
+	//メモリ上のデータを取得して、PC+2する
+	int readMemory() throws MemoryException{
+		int opcode = getMemory2(Register.get(7)) << 16 >>> 16;
+
+		//逆アセンブル/デバッグモード（すべて）の場合は出力
+		if(Pdp11.flgExeMode){
+			if(Pdp11.flgDebugMode>1) printOpcode(opcode);
+		}else{
+			printOpcode(opcode);
+			strnum++;
+		}
+		
 		Register.add(7, 2); //PC+2
 		
 		return opcode;

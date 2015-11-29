@@ -253,12 +253,7 @@ public class Register{
 			System.out.print("-");
 		}
 
-		try {
-			System.out.printf(" %04x", Memory.getPhyMemory2(Mmu.analyzeMemoryKernel(0140074)));
-		} catch (MemoryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		//System.out.printf(" %06o", Memory.getPhyMemory2(07002));
 		//System.out.printf(" %06o", Memory.getPhyMemory2(063240));
 		//System.out.printf(" %06o", Memory.getPhyMemory2(0205400));
