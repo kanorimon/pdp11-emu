@@ -59,6 +59,13 @@ public class Memory {
 	final static int RKER = 0777402;
 	final static int RKDS = 0777400;
 	
+	final static int LRC = 0772532;
+	final static int DBR = 0772530;
+	final static int BUS_ADDRESS = 0772526;
+	final static int BYTE_COUNT = 0772524;
+	final static int CONTROL = 0772522;
+	final static int STATUS = 0772520;
+	
 	final static int KISA7 = 0772356;
 	final static int KISA6 = 0772354;
 	final static int KISA5 = 0772352;
@@ -224,6 +231,18 @@ public class Memory {
 				return Register.PSW;
 			case CLOCK1:
 				return Register.CLOCK1;
+			case LRC:
+				return Tm11.LRC;
+			case DBR:
+				return Tm11.DBR;
+			case BUS_ADDRESS:
+				return Tm11.BUS_ADDRESS;
+			case BYTE_COUNT:
+				return Tm11.BYTE_COUNT;
+			case CONTROL:
+				return Tm11.CONTROL;
+			case STATUS:
+				return Tm11.STATUS;
 			case RKDS:
 				return Rk11.RKDS;
 			case RKER:
@@ -399,6 +418,24 @@ public class Memory {
 				break;
 			case CLOCK1:
 				Register.CLOCK1 = src;
+				break;
+			case LRC:
+				Tm11.LRC = src;
+				break;
+			case DBR:
+				Tm11.DBR = src;
+				break;
+			case BUS_ADDRESS:
+				Tm11.BUS_ADDRESS = src;
+				break;
+			case BYTE_COUNT:
+				Tm11.BYTE_COUNT = src;
+				break;
+			case CONTROL:
+				Tm11.CONTROL = src;
+				break;
+			case STATUS:
+				Tm11.STATUS = src;
 				break;
 			case RKDS:
 				Rk11.RKDS = src;
