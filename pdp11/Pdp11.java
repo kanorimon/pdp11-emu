@@ -6,6 +6,13 @@ import java.nio.file.Path;
 
 public class Pdp11{
 	/*
+	 * ディスク設定
+	 */
+	static final String RK0="v6root";
+	static final String RK1="v6src";
+	static final String RK2="v6doc";
+
+	/*
 	 * モード設定
 	 */
 	static int flgDebugMode = 0;
