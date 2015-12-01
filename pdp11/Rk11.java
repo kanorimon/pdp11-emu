@@ -17,7 +17,7 @@ public class Rk11 {
 	static int BR_PRI; //割り込み優先度
 	static int BR_VEC; //割り込みベクタ
 	
-	static final int BOOT_START = 1024; //BOOT_ROMの読込先アドレス
+	static final int BOOT_START = 02000; //BOOT_ROMの読込先アドレス
 	
 	static void reset(){
 		RKDS = 0;

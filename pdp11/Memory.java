@@ -59,12 +59,12 @@ public class Memory {
 	final static int RKER = 0777402;
 	final static int RKDS = 0777400;
 	
-	final static int LRC = 0772532;
-	final static int DBR = 0772530;
-	final static int BUS_ADDRESS = 0772526;
-	final static int BYTE_COUNT = 0772524;
-	final static int CONTROL = 0772522;
-	final static int STATUS = 0772520;
+	final static int MTRD = 0772532;
+	final static int MTD = 0772530;
+	final static int MTCMA = 0772526;
+	final static int MTBRC = 0772524;
+	final static int MTC = 0772522;
+	final static int MTS = 0772520;
 	
 	final static int KISA7 = 0772356;
 	final static int KISA6 = 0772354;
@@ -231,18 +231,18 @@ public class Memory {
 				return Register.PSW;
 			case CLOCK1:
 				return Register.CLOCK1;
-			case LRC:
-				return Tm11.LRC;
-			case DBR:
-				return Tm11.DBR;
-			case BUS_ADDRESS:
-				return Tm11.BUS_ADDRESS;
-			case BYTE_COUNT:
-				return Tm11.BYTE_COUNT;
-			case CONTROL:
-				return Tm11.CONTROL;
-			case STATUS:
-				return Tm11.STATUS;
+			case MTRD:
+				return Tm11.MTRD;
+			case MTD:
+				return Tm11.MTD;
+			case MTCMA:
+				return Tm11.MTCMA;
+			case MTBRC:
+				return Tm11.MTBRC;
+			case MTC:
+				return Tm11.MTC;
+			case MTS:
+				return Tm11.MTS;
 			case RKDS:
 				return Rk11.RKDS;
 			case RKER:
@@ -419,23 +419,23 @@ public class Memory {
 			case CLOCK1:
 				Register.CLOCK1 = src;
 				break;
-			case LRC:
-				Tm11.LRC = src;
+			case MTRD:
+				Tm11.MTRD = src;
 				break;
-			case DBR:
-				Tm11.DBR = src;
+			case MTD:
+				Tm11.MTD = src;
 				break;
-			case BUS_ADDRESS:
-				Tm11.BUS_ADDRESS = src;
+			case MTCMA:
+				Tm11.MTCMA = src;
 				break;
-			case BYTE_COUNT:
-				Tm11.BYTE_COUNT = src;
+			case MTBRC:
+				Tm11.MTBRC = src;
 				break;
-			case CONTROL:
-				Tm11.CONTROL = src;
+			case MTC:
+				Tm11.MTC = src;
 				break;
-			case STATUS:
-				Tm11.STATUS = src;
+			case MTS:
+				Tm11.MTS = src;
 				break;
 			case RKDS:
 				Rk11.RKDS = src;

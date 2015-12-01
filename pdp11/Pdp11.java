@@ -13,6 +13,11 @@ public class Pdp11{
 	static final String RK2="v6doc";
 
 	/*
+	 * テープ設定
+	 */
+	static final String TM0="dist.tap";
+
+	/*
 	 * モード設定
 	 */
 	static int flgDebugMode = 0;
