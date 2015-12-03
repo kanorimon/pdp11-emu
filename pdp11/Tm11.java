@@ -24,7 +24,8 @@ public class Tm11 {
 	}
 
 	static void tm11access(){
-		MTC = Util.clearBit(MTC, 0);
+
+		System.out.println("tm11access");
 
 		if(MTC << 28 >>> 29 == 1){
 
@@ -56,9 +57,30 @@ public class Tm11 {
 			} catch (IOException e) {
 			}
 
-			//RKCS = Util.setBit(RKCS, 7);
+
+			MTC = Util.clearBit(MTC, 0);
+			MTC = Util.setBit(MTC, 7);
+			MTS = Util.setBit(MTS, 0);
 
 		}
+
+		if(MTC << 28 >>> 29 == 7){
+
+			System.out.print("\nRK11-Read ");
+			System.out.printf("MTS=%x ", MTS);
+			System.out.printf("MTC=%x ", MTC);
+			System.out.printf("MTBRC=%x ", MTBRC);
+			System.out.printf("MTCMA=%x ", MTCMA);
+			System.out.printf("MTD=%x ", MTD);
+			System.out.printf("MTRD=%x ", MTRD);
+
+			MTC = Util.clearBit(MTC, 0);
+			MTC = Util.setBit(MTC, 7);
+			MTS = Util.setBit(MTS, 0);
+
+		}
+
+
 
 		/*
 		if(Util.checkBit(RKCS, 6) == 1){
