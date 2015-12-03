@@ -23,6 +23,7 @@ public class Pdp11{
 	static int flgDebugMode = 0;
 	static boolean flgDismMode = false;
 	static boolean flgExeMode = false;
+	static boolean flgTapeMode = false;
 	static boolean flgOctMode = false;
 	
 	/*
@@ -36,7 +37,7 @@ public class Pdp11{
 	public static void main(String[] args){
 		//モード設定
 		if(args.length < 1 || !(args[0].substring(0,1).equals("-"))){
-			System.out.println("オプションを指定してください。\n-e:実行 -v:デバッグモードで実行 -o:デバッグモード（8進数表示）で実行 -s:シンボルを出力して実行 -d:逆アセンブル");
+			System.out.println("オプションを指定してください。\n-e:実行 -t:テープからインストール -v:デバッグモードで実行 -o:デバッグモード（8進数表示）で実行 -s:シンボルを出力して実行 -d:逆アセンブル");
 			return;
 		}
 
@@ -55,12 +56,17 @@ public class Pdp11{
 		}
 		if(args[0].equals("-d")) flgDismMode = true; //逆アセンブルモード
 		if(args[0].equals("-e")) flgExeMode = true; //実行モード
-		
+		if(args[0].equals("-t")){
+			flgTapeMode = true; //インストールモード
+			//flgDebugMode = 2; //デバッグモード（すべて）
+			//flgExeMode = true; //実行モード
+		}
+
 		try{
 			argsFileName = args[1];
 		}catch(Exception e){
 			/*
-			 * RK11のBOOTROMからブート
+			 * BOOTROMからブート
 			 */
 			//CPUを生成
 			Cpu cpu = new Cpu();
@@ -71,13 +77,25 @@ public class Pdp11{
 			Memory.reset();
 			Kl11.reset();
 			Rk11.reset();
+			Tm11.reset();
 
-			if(flgExeMode){
-				Memory.load(Rk11.boot_rom, 1024);
-				Register.set(7,1024);
+			if(flgTapeMode) {
+				System.out.println("tape load start");
+				Memory.load(Tm11.boot_rom, Tm11.BOOT_START);
+				System.out.println("tape start");
+				Register.set(7,Tm11.BOOT_START);
 
 				cpu.execute();
 			}
+
+			if(flgExeMode){
+				Memory.load(Rk11.boot_rom, Rk11.BOOT_START);
+				Register.set(7,Rk11.BOOT_START);
+
+				cpu.execute();
+			}
+
+
 			return;
 		}
 		

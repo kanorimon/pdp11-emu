@@ -16,7 +16,7 @@ public class Cpu {
 	boolean waitFlg;				//WAIT false:WAITしていない true:WAITしている
 	
 	static int printCnt;			//ダンプ出力フラグ START_CNT以上で出力する
-	int START_CNT = 10;
+	int START_CNT = 0;
 	
 	static int prePC;
 	static int prePSW;
@@ -72,7 +72,15 @@ public class Cpu {
 				Rk11.rk11access();
 			}
 			if (Rk11.RKER != 0) Rk11.rk11error();
-			
+
+			/*
+		 	* TM11
+		 	*/
+			//テープアクセス
+			if (Util.checkBit(Tm11.MTC, 0) == 1) {
+				Tm11.tm11access();
+			}
+
 			/*
 			 * CLOCK
 			 */
@@ -121,7 +129,6 @@ public class Cpu {
 			 */
 			try{
 				if(!waitFlg){
-	
 					//Fetch
 					fetchedMem = fetchMemory(); //命令取得
 					
@@ -1648,7 +1655,7 @@ public class Cpu {
 		int opcode = getMemory2(Register.get(7)) << 16 >>> 16;
 
 		//逆アセンブル/デバッグモード（すべて）の場合は出力
-		if(Pdp11.flgExeMode){
+		if(Pdp11.flgExeMode || Pdp11.flgTapeMode){
 			if(Pdp11.flgDebugMode>1) printOpcode(opcode);
 		}else{
 			printOpcode(opcode);
@@ -1670,7 +1677,7 @@ public class Cpu {
 		int opcode = getMemory2(Register.get(7)) << 16 >>> 16;
 
 		//逆アセンブル/デバッグモード（すべて）の場合は出力
-		if(Pdp11.flgExeMode){
+		if(Pdp11.flgExeMode || Pdp11.flgTapeMode){
 			if(Pdp11.flgDebugMode>1) printOpcode(opcode);
 		}else{
 			printOpcode(opcode);

@@ -92,6 +92,7 @@ public class Memory {
 	static void load(int[] rom,int startNo){
 		for(int i=0;i<rom.length;i++){
 			setPhyMemory2(startNo + i * 2, rom[i]);
+			System.out.printf("%o ", getPhyMemory2(startNo + i * 2));
 		}
 	}
 

@@ -1,5 +1,8 @@
 package pdp11;
 
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
 public class Tm11 {
 	
 	static int MTRD;
@@ -15,13 +18,59 @@ public class Tm11 {
 		MTRD = 0;
 		MTD = 0;
 		MTCMA = 0;
-		MTBRC = 0172526;
-		MTC = 060003;
+		MTBRC = 0;
+		MTC = 0;
 		MTS = 0;
 	}
 
+	static void tm11access(){
+		MTC = Util.clearBit(MTC, 0);
+
+		if(MTC << 28 >>> 29 == 1){
+
+			int datasizeWord = ~((MTBRC & 0xFFFF) - 1 - 65535) + 1;
+			//int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
+			//int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
+
+			System.out.print("\nRK11-Read ");
+			System.out.printf("MTS=%x ", MTS);
+			System.out.printf("MTC=%x ", MTC);
+			System.out.printf("MTBRC=%x ", MTBRC);
+			System.out.printf("MTCMA=%x ", MTCMA);
+			System.out.printf("MTD=%x ", MTD);
+			System.out.printf("cnt=%x ", datasizeWord);
+			System.out.printf("MTRD=%x ", MTRD);
+
+			try {
+				RandomAccessFile tm0 = new RandomAccessFile( System.getProperty("user.dir") + "\\" +  Pdp11.TM0, "r");
+				tm0.seek(MTD * 512 + 4);
+
+				int phyAddr = ((MTC & 0x30) << 12) + (MTCMA & 0xFFFF);
+				for(int i=0;i<datasizeWord * 2; i++){
+					byte tmp = tm0.readByte();
+					Memory.setPhyMemory1(phyAddr + i, tmp);
+				}
+
+				tm0.close();
+
+			} catch (IOException e) {
+			}
+
+			//RKCS = Util.setBit(RKCS, 7);
+
+		}
+
+		/*
+		if(Util.checkBit(RKCS, 6) == 1){
+			BR_PRI = 5;
+			BR_VEC = 0220;
+		}
+		*/
+
+	}
+
 	static int boot_rom[] = {
-			0046524,                        /* boot_start: "TM" */
+			//0046524,                        /* boot_start: "TM" */
 			0012706, BOOT_START,            /* mov #boot_start, sp */
 			0012700, 0000000,               /* mov #unit_num, r0 */
 			0012701, 0172526,               /* mov #172526, r1      ; mtcma */
@@ -31,6 +80,32 @@ public class Tm11 {
 			0000302,                        /* swab r2 */
 			0062702, 0060003,               /* add #60003, r2 */
 			0010241,                        /* mov r2, -(r1)        ; read + go */
+			//0105711,                        /* tstb (r1)            ; mtc */
+			//0100376,                        /* bpl .-2 */
+			0005002,                        /* clr r2 */
+			0005003,                        /* clr r3 */
+			0012704, BOOT_START+020,        /* mov #boot_start+20, r4 */
+			0005005,                        /* clr r5 */
+			0005007                         /* clr r7 */
+	};
+
+	static int boot2_rom[] = {
+			0046524,                        /* boot_start: "TM" */
+			0012706, BOOT_START,            /* mov #boot_start, sp */
+			0012700, 0000000,               /* mov #unit_num, r0 */
+			0012701, 0172526,               /* mov #172526, r1      ; mtcma */
+			0005011,                        /* clr (r1) */
+			0012741, 0177777,               /* mov #-1, -(r1)       ; mtbrc */
+			0010002,                        /* mov r0,r2 */
+			0000302,                        /* swab r2 */
+			0062702, 0060011,               /* add #60011, r2 */
+			0010241,                        /* mov r2, -(r1)        ; space + go */
+			0105711,                        /* tstb (r1)            ; mtc */
+			0100376,                        /* bpl .-2 */
+			0010002,                        /* mov r0,r2 */
+			0000302,                        /* swab r2 */
+			0062702, 0060003,               /* add #60003, r2 */
+			0010211,                        /* mov r2, (r1)         ; read + go */
 			0105711,                        /* tstb (r1)            ; mtc */
 			0100376,                        /* bpl .-2 */
 			0005002,                        /* clr r2 */
