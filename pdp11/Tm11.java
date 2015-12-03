@@ -12,7 +12,7 @@ public class Tm11 {
 	static int MTC;
 	static int MTS;
 
-	static final int BOOT_START = 016000; //BOOT_ROMÇÃì«çûêÊÉAÉhÉåÉX
+	static final int BOOT_START = 016000; //BOOT_ROM
 
 	static void reset(){
 		MTRD = 0;
@@ -33,18 +33,19 @@ public class Tm11 {
 			//int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
 			//int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
 
-			System.out.print("\nRK11-Read ");
+			System.out.print("\nTM11-Read ");
 			System.out.printf("MTS=%x ", MTS);
 			System.out.printf("MTC=%x ", MTC);
 			System.out.printf("MTBRC=%x ", MTBRC);
 			System.out.printf("MTCMA=%x ", MTCMA);
 			System.out.printf("MTD=%x ", MTD);
 			System.out.printf("cnt=%x ", datasizeWord);
-			System.out.printf("MTRD=%x ", MTRD);
+			System.out.printf("MTRD=%x \n", MTRD);
 
 			try {
 				RandomAccessFile tm0 = new RandomAccessFile( System.getProperty("user.dir") + "\\" +  Pdp11.TM0, "r");
-				tm0.seek(MTD * 512 + 4);
+				//tm0.seek(MTD * 512 + 4);
+				tm0.seek(MTCMA + 4);
 
 				int phyAddr = ((MTC & 0x30) << 12) + (MTCMA & 0xFFFF);
 				for(int i=0;i<datasizeWord * 2; i++){
@@ -66,13 +67,13 @@ public class Tm11 {
 
 		if(MTC << 28 >>> 29 == 7){
 
-			System.out.print("\nRK11-Read ");
+			System.out.print("\nTM11-Rewind ");
 			System.out.printf("MTS=%x ", MTS);
 			System.out.printf("MTC=%x ", MTC);
 			System.out.printf("MTBRC=%x ", MTBRC);
 			System.out.printf("MTCMA=%x ", MTCMA);
 			System.out.printf("MTD=%x ", MTD);
-			System.out.printf("MTRD=%x ", MTRD);
+			System.out.printf("MTRD=%x \n", MTRD);
 
 			MTC = Util.clearBit(MTC, 0);
 			MTC = Util.setBit(MTC, 7);
@@ -144,7 +145,7 @@ public class Tm11 {
 		0010040, //mov r0, -(r0)  #MTCMA->MTBRC
 		0012740, //mov #060003, -(r0)  #060003->MTC
 		0060003, //
-		0000777, //br $-2 ñ≥å¿ÉãÅ[Év
+		0000777, //br $-2 ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ[ÔøΩv
 	    };
 	*/
 }

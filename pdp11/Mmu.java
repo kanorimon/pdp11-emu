@@ -32,7 +32,7 @@ public class Mmu {
 				//System.out.print("\n00kerror\n");
 				Util.setBit(SR0, 15);
 				SR2 = Cpu.pc;
-				throw new MemoryException();
+				if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 			}
 			if(Util.checkBit(Register.kernelPDR[par],3) == 1){
 				if(blockcnt > blockno+offset){
@@ -40,7 +40,7 @@ public class Mmu {
 					//		addr,blockcnt,blockno,offset,baseblockno);
 					Util.setBit(SR0, 14);
 					SR2 = Cpu.pc;
-					throw new MemoryException();
+					if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 				}
 			}else{
 				if(blockcnt <= blockno+offset){
@@ -48,7 +48,7 @@ public class Mmu {
 					//		addr,blockcnt,blockno,offset,baseblockno);
 					Util.setBit(SR0, 14);
 					SR2 = Cpu.pc;
-					throw new MemoryException();
+					if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 				}
 			}
 
@@ -74,7 +74,7 @@ public class Mmu {
 				//System.out.print("\n00uerror\n");
 				Util.setBit(SR0, 15);
 				SR2 = Cpu.pc;
-				throw new MemoryException();
+				if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 			}
 			if(Util.checkBit(Register.userPDR[par],3) == 1){
 				if(blockcnt > blockno+offset){
@@ -82,7 +82,7 @@ public class Mmu {
 					//		addr,blockcnt,blockno,offset,baseblockno);
 					Util.setBit(SR0, 14);
 					SR2 = Cpu.pc;
-					throw new MemoryException();
+					if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 				}
 			}else{
 				if(blockcnt <= blockno+offset){
@@ -90,7 +90,7 @@ public class Mmu {
 					//		addr,blockcnt,blockno,offset,baseblockno);
 					Util.setBit(SR0, 14);
 					SR2 = Cpu.pc;
-					throw new MemoryException();
+					if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 				}
 			}
 

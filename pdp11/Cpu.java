@@ -1056,6 +1056,8 @@ public class Cpu {
 						
 						System.exit(0);
 						break;
+					case HALT:
+						break;
 					}
 				}
 			}catch(MemoryException e){
@@ -1269,7 +1271,7 @@ public class Cpu {
 		RESET,
 		MFPI,MTPI,
 		WAIT,
-		WORD
+		WORD,HALT
 	}
 	
 	Opcode getOpcode(int opnum){
@@ -1286,6 +1288,9 @@ public class Cpu {
 						switch((opnum >> 3) & 7){
 						case 0:
 							switch(opnum  & 7){
+							case 0:
+								opcode = Opcode.HALT;
+								break;
 							case 1:
 								opcode = Opcode.WAIT;
 								break;
