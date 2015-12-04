@@ -14,6 +14,9 @@ public class Tm11 {
 
 	static final int BOOT_START = 016000; //BOOT_ROM
 
+	static int p;
+	static int psub;
+
 	static void reset(){
 		MTRD = 0;
 		MTD = 0;
@@ -21,11 +24,23 @@ public class Tm11 {
 		MTBRC = 0;
 		MTC = 0;
 		MTS = 0;
+
+		p = 0;
+		psub = 0;
 	}
 
 	static void tm11access(){
 
 		System.out.println("tm11access");
+
+		System.out.print("\nTM11-xxx ");
+		System.out.printf("MTS=%x ", MTS);
+		System.out.printf("MTC=%x ", MTC);
+		System.out.printf("MTBRC=%x ", MTBRC);
+		System.out.printf("MTCMA=%x ", MTCMA);
+		System.out.printf("MTD=%x ", MTD);
+		System.out.printf("MTRD=%x \n", MTRD);
+
 
 		if(MTC << 28 >>> 29 == 1){
 
@@ -45,12 +60,22 @@ public class Tm11 {
 			try {
 				RandomAccessFile tm0 = new RandomAccessFile( System.getProperty("user.dir") + "\\" +  Pdp11.TM0, "r");
 				//tm0.seek(MTD * 512 + 4);
-				tm0.seek(MTCMA + 4);
+				//tm0.seek(MTCMA + 4);
 
 				int phyAddr = ((MTC & 0x30) << 12) + (MTCMA & 0xFFFF);
 				for(int i=0;i<datasizeWord * 2; i++){
+					if(p == 0 && psub == 0) p = p + 4;
+					if(psub == 512){
+						p = p + 8;
+						psub = 0;
+						System.out.printf("\np=%x\n", p);
+					}
+
+					tm0.seek(p);
 					byte tmp = tm0.readByte();
 					Memory.setPhyMemory1(phyAddr + i, tmp);
+					p++;
+					psub++;
 				}
 
 				tm0.close();
@@ -74,6 +99,9 @@ public class Tm11 {
 			System.out.printf("MTCMA=%x ", MTCMA);
 			System.out.printf("MTD=%x ", MTD);
 			System.out.printf("MTRD=%x \n", MTRD);
+
+			p = 0;
+			psub = 0;
 
 			MTC = Util.clearBit(MTC, 0);
 			MTC = Util.setBit(MTC, 7);
@@ -103,8 +131,8 @@ public class Tm11 {
 			0000302,                        /* swab r2 */
 			0062702, 0060003,               /* add #60003, r2 */
 			0010241,                        /* mov r2, -(r1)        ; read + go */
-			//0105711,                        /* tstb (r1)            ; mtc */
-			//0100376,                        /* bpl .-2 */
+			0105711,                        /* tstb (r1)            ; mtc */
+			0100376,                        /* bpl .-2 */
 			0005002,                        /* clr r2 */
 			0005003,                        /* clr r3 */
 			0012704, BOOT_START+020,        /* mov #boot_start+20, r4 */

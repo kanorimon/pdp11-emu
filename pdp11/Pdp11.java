@@ -58,9 +58,9 @@ public class Pdp11{
 		if(args[0].equals("-e")) flgExeMode = true; //実行モード
 		if(args[0].equals("-t")){
 			flgTapeMode = true; //インストールモード
-			flgDebugMode = 2; //デバッグモード（すべて）
-			flgOctMode = true; //8進数モード
-			flgExeMode = true; //実行モード
+			//flgDebugMode = 2; //デバッグモード（すべて）
+			//flgOctMode = true; //8進数モード
+			//flgExeMode = true; //実行モード
 		}
 
 		try{
@@ -81,9 +81,7 @@ public class Pdp11{
 			Tm11.reset();
 
 			if(flgTapeMode) {
-				System.out.println("tape load start");
 				Memory.load(Tm11.boot_rom, Tm11.BOOT_START);
-				System.out.println("tape start");
 				Register.set(7,Tm11.BOOT_START);
 
 				cpu.execute();
