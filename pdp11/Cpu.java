@@ -457,6 +457,10 @@ public class Cpu {
 						//branch if v bit clear
 						if(Register.getV()) Register.set(7,getOffset(dstOperand,fetchedMem).address);
 						break;
+					case CLC:
+						//clear c
+						Register.setC(false);
+						break;
 					case CLR:
 						//clear
 						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
@@ -919,6 +923,10 @@ public class Cpu {
 						}
 						
 						break;
+					case SCC:
+						//set all cc's
+						Register.setCC(true,true,true,true);
+						break;
 					case SETD:
 						trap(010, 012);
 						break;
@@ -1265,12 +1273,13 @@ public class Cpu {
 	    ROR, ROL, RTT, RTS, RTI,
 		MOV, MOVB, MUL,
 		NEG,
-		SBC, SETD, SEN, SEV, SENZ, SOB, SUB, SWAB, SXT, TRAP,
+		SBC, SETD,  SOB, SUB, SWAB, SXT, TRAP,
 		TST, TSTB,
 		XOR,
 		RESET,
 		MFPI,MTPI,
 		WAIT,
+		CLC,SEN, SEV, SENZ, SCC,
 		WORD,HALT
 	}
 	
@@ -1315,6 +1324,13 @@ public class Cpu {
 						case 0:
 							opcode = Opcode.RTS;
 							break;
+						case 4:
+							switch(opnum  & 7){
+								case 1:
+									opcode = Opcode.CLC;
+									break;
+							}
+							break;
 						case 6:
 							switch(opnum  & 7){
 							case 2:
@@ -1329,6 +1345,9 @@ public class Cpu {
 								break;
 							case 4:
 								opcode = Opcode.SENZ;
+								break;
+							case 7:
+								opcode = Opcode.SCC;
 								break;
 							}
 							break;
