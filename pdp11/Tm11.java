@@ -31,8 +31,7 @@ public class Tm11 {
 
 	static void tm11access(){
 
-		System.out.println("tm11access");
-
+		/*
 		System.out.print("\nTM11-xxx ");
 		System.out.printf("MTS=%x ", MTS);
 		System.out.printf("MTC=%x ", MTC);
@@ -40,7 +39,7 @@ public class Tm11 {
 		System.out.printf("MTCMA=%x ", MTCMA);
 		System.out.printf("MTD=%x ", MTD);
 		System.out.printf("MTRD=%x \n", MTRD);
-
+		*/
 
 		if(MTC << 28 >>> 29 == 1){
 
@@ -48,6 +47,7 @@ public class Tm11 {
 			//int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
 			//int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
 
+			/*
 			System.out.print("\nTM11-Read ");
 			System.out.printf("MTS=%x ", MTS);
 			System.out.printf("MTC=%x ", MTC);
@@ -56,6 +56,7 @@ public class Tm11 {
 			System.out.printf("MTD=%x ", MTD);
 			System.out.printf("cnt=%x ", datasizeWord);
 			System.out.printf("MTRD=%x \n", MTRD);
+			*/
 
 			try {
 				RandomAccessFile tm0 = new RandomAccessFile( System.getProperty("user.dir") + "\\" +  Pdp11.TM0, "r");
@@ -63,20 +64,22 @@ public class Tm11 {
 				//tm0.seek(MTCMA + 4);
 
 				int phyAddr = ((MTC & 0x30) << 12) + (MTCMA & 0xFFFF);
-				for(int i=0;i<datasizeWord * 2; i++){
+				//System.out.printf("\nstart_p=%x\n", p);
+				for(int i=0;i<datasizeWord; i++){
 					if(p == 0 && psub == 0) p = p + 4;
 					if(psub == 512){
 						p = p + 8;
 						psub = 0;
-						System.out.printf("\np=%x\n", p);
 					}
 
 					tm0.seek(p);
 					byte tmp = tm0.readByte();
+					//System.out.printf("%02x ",tmp);
 					Memory.setPhyMemory1(phyAddr + i, tmp);
 					p++;
 					psub++;
 				}
+				//System.out.printf("\nend_p=%x\n", p);
 
 				tm0.close();
 
@@ -92,6 +95,7 @@ public class Tm11 {
 
 		if(MTC << 28 >>> 29 == 7){
 
+			/*
 			System.out.print("\nTM11-Rewind ");
 			System.out.printf("MTS=%x ", MTS);
 			System.out.printf("MTC=%x ", MTC);
@@ -99,6 +103,7 @@ public class Tm11 {
 			System.out.printf("MTCMA=%x ", MTCMA);
 			System.out.printf("MTD=%x ", MTD);
 			System.out.printf("MTRD=%x \n", MTRD);
+			*/
 
 			p = 0;
 			psub = 0;

@@ -58,9 +58,9 @@ public class Pdp11{
 		if(args[0].equals("-e")) flgExeMode = true; //実行モード
 		if(args[0].equals("-t")){
 			flgTapeMode = true; //インストールモード
-			flgDebugMode = 2; //デバッグモード（すべて）
-			flgOctMode = true; //8進数モード
-			flgExeMode = true; //実行モード
+			//flgDebugMode = 2; //デバッグモード（すべて）
+			//flgOctMode = true; //8進数モード
+			//flgExeMode = true; //実行モード
 		}
 
 		try{
@@ -81,6 +81,17 @@ public class Pdp11{
 			Tm11.reset();
 
 			if(flgTapeMode) {
+				File rk0 = new File(System.getProperty("user.dir") + "\\" + RK0);
+				File rk1 = new File(System.getProperty("user.dir") + "\\" + RK1);
+				File rk2 = new File(System.getProperty("user.dir") + "\\" + RK2);
+				try {
+					rk0.createNewFile();
+					rk1.createNewFile();
+					rk2.createNewFile();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				
 				Memory.load(Tm11.boot_rom, Tm11.BOOT_START);
 				Register.set(7,Tm11.BOOT_START);
 

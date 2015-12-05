@@ -508,9 +508,13 @@ public class Cpu {
 						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, true);
 						srcValue = srcOperand.getValue(true) ;
 						dstValue = (~(dstOperand.getValue(true)) + 1) << 24 >> 24;
-	
+
+						//System.out.printf("\naddress src=%o dst=%o\n",srcOperand.address,dstOperand.address);
+						//System.out.printf("\nvalue_w src=%o dst=%o\n",srcOperand.getValue(),dstOperand.getValue(true));
+						//System.out.printf("\nvalue_b src=%o dst=%o\n",srcOperand.getValue(true),dstOperand.getValue(true));
+						
 						tmp = srcValue + dstValue;
-	
+						
 						Register.setCC(	(tmp << 24 >> 24) < 0, 
 													(tmp << 24 >> 24) == 0,
 													getOverflow(srcValue, dstValue, tmp, 24),
