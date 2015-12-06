@@ -14,6 +14,9 @@ public class Tm11 {
 
 	static final int BOOT_START = 016000; //BOOT_ROM
 
+	static int BR_PRI; //割り込み優先度
+	static int BR_VEC; //割り込みベクタ
+	
 	static int p;
 	static int psub;
 
@@ -22,8 +25,11 @@ public class Tm11 {
 		MTD = 0;
 		MTCMA = 0;
 		MTBRC = 0;
-		MTC = 0;
+		MTC = 0200;
 		MTS = 0;
+
+		BR_PRI = 0;
+		BR_VEC = 0;
 
 		p = 0;
 		psub = 0;
@@ -115,13 +121,10 @@ public class Tm11 {
 		}
 
 
-
-		/*
-		if(Util.checkBit(RKCS, 6) == 1){
+		if(Util.checkBit(MTC, 6) == 1){
 			BR_PRI = 5;
-			BR_VEC = 0220;
+			BR_VEC = 0224;
 		}
-		*/
 
 	}
 

@@ -255,7 +255,7 @@ public class Register{
 
 
 
-		//System.out.printf(" %06o", Tm11.MTC);
+		System.out.printf(" %06o", Tm11.MTC);
 		//System.out.printf(" %06o", Memory.getPhyMemory2(0136740));
 		//System.out.printf(" %06o", Memory.getPhyMemory2(01000));
 

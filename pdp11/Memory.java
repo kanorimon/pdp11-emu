@@ -240,8 +240,10 @@ public class Memory {
 			case MTBRC:
 				return Tm11.MTBRC;
 			case MTC:
+				//System.out.println("getMTC");
 				return Tm11.MTC;
 			case MTS:
+				//System.out.println("getMTS");
 				return Tm11.MTS;
 			case RKDS:
 				return Rk11.RKDS;
@@ -432,9 +434,11 @@ public class Memory {
 				Tm11.MTBRC = src;
 				break;
 			case MTC:
+				//System.out.println("setMTC");
 				Tm11.MTC = src;
 				break;
 			case MTS:
+				//System.out.println("setMTS");
 				Tm11.MTS = src;
 				break;
 			case RKDS:

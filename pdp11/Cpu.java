@@ -16,7 +16,7 @@ public class Cpu {
 	boolean waitFlg;				//WAIT false:WAITしていない true:WAITしている
 	
 	static int printCnt;			//ダンプ出力フラグ START_CNT以上で出力する
-	int START_CNT = 0;
+	int START_CNT = 10;
 	
 	static int prePC;
 	static int prePSW;
@@ -100,13 +100,43 @@ public class Cpu {
 					waitFlg = false;
 				}
 			//RK11割り込み
-			} else if (Kl11.BR_PRI < Rk11.BR_PRI) {
+			} else if (Rk11.BR_PRI > Register.getPriority()) {
+				trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
+				Rk11.BR_PRI = 0;
+				waitFlg = false;
+			//TM11割り込み
+			} else if (Tm11.BR_PRI > Register.getPriority()) {
+				//System.out.printf("\ntm11 inter %o %o\n",Tm11.BR_VEC,Memory.getPhyMemory2(Tm11.BR_VEC));
+				trap(Tm11.BR_VEC, Tm11.BR_VEC + 2);
+				Tm11.BR_PRI = 0;
+				waitFlg = false;
+			//KL11割り込み
+			} else if (Kl11.BR_PRI > Register.getPriority()) {
+				trap(Kl11.BR_VEC, Kl11.BR_VEC + 2);
+				Kl11.BR_PRI = 0;
+				waitFlg = false;
+			}
+			/*
+			//クロック割り込み
+			if (Util.checkBit(Register.CLOCK1, 7) == 1 && Util.checkBit(Register.CLOCK1, 6) == 1) {
+				if (7 > Register.getPriority()) {
+					trap(0100, 0102);
+					waitFlg = false;
+				}
+			//RK11割り込み
+			} else if (Tm11.BR_PRI < Rk11.BR_PRI) {
 				if (Rk11.BR_PRI > Register.getPriority()) {
 					trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
 					Rk11.BR_PRI = 0;
 					waitFlg = false;
 				}
-				
+			//TM11割り込み
+			} else if (Kl11.BR_PRI <= Tm11.BR_PRI) {
+				if (Tm11.BR_PRI > Register.getPriority()) {
+					trap(Tm11.BR_VEC, Tm11.BR_VEC + 2);
+					Tm11.BR_PRI = 0;
+					waitFlg = false;
+				}
 			//KL11割り込み
 			} else {
 				if (Kl11.BR_PRI > Register.getPriority()) {
@@ -115,6 +145,7 @@ public class Cpu {
 					waitFlg = false;
 				}
 			}
+			*/
 
 			/*
 			 * デバッグ出力
