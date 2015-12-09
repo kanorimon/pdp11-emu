@@ -41,19 +41,6 @@ public class Rk11 {
 			int datasizeWord = ~((RKWC & 0xFFFF) - 1 - 65535) + 1;
 			int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
 
-			/*
-			System.out.print("\nRK11-Write ");
-			System.out.printf("RKCS=%x ", RKCS);
-			System.out.printf("RKER=%x ", RKER);
-			System.out.printf("RKDS=%x ", RKDS);
-			System.out.printf("RKDB=%x ", RKDB);
-			System.out.printf("RKWC=%x ", RKWC);
-			System.out.printf("cnt=%x ", datasizeWord);
-			System.out.printf("RKBA=%x ", RKBA);
-			System.out.printf("RKDA=%x ", RKDA);
-			System.out.printf("blockNo=%x\n", tmpRKDA*512);
-			*/
-
 			try {
 				String driveName = "";
 				
@@ -89,21 +76,7 @@ public class Rk11 {
 		if(RKCS << 28 >>> 29 == 2){
 
 			int datasizeWord = ~((RKWC & 0xFFFF) - 1 - 65535) + 1;
-			//int tmpRKDA = ((((RKDA << 19 >>> 24) << 1) | (RKDA << 27 >>> 31)) * 12) + (RKDA << 28 >>> 28);
 			int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
-			
-			/*
-			System.out.print("\nRK11-Read ");
-			System.out.printf("RKCS=%x ", RKCS);
-			System.out.printf("RKER=%x ", RKER);
-			System.out.printf("RKDS=%x ", RKDS);
-			System.out.printf("RKDB=%x ", RKDB);
-			System.out.printf("RKWC=%x ", RKWC);
-			System.out.printf("cnt=%x ", datasizeWord);
-			System.out.printf("RKBA=%x ", RKBA);
-			System.out.printf("RKDA=%x ", RKDA);
-			System.out.printf("blockNo=%x\n", tmpRKDA*512);
-			*/
 
 			try {
 				String driveName = "";
@@ -182,19 +155,5 @@ public class Rk11 {
 	    0105011,                        /* CLRB (R1) */
 	    0005007                         /* CLR PC */
 	};
-
-	/*
-	static int boot_rom[] = {
-		0012700, //mov #rkda, r0
-		0177412, //
-		0005040, //clr -(r0)
-		0010040, //mov r0, -(r0)
-		0012740, //mov #5, -(r0)
-		0000005, //
-		0105710, //1: tstb (r0)
-		0002376, //bge 1b
-		0005007  //clr pc
-	    };
-    */
 
 }

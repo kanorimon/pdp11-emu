@@ -240,10 +240,8 @@ public class Memory {
 			case MTBRC:
 				return Tm11.MTBRC;
 			case MTC:
-				//System.out.println("getMTC");
 				return Tm11.MTC;
 			case MTS:
-				//System.out.println("getMTS");
 				return Tm11.MTS;
 			case RKDS:
 				return Rk11.RKDS;
@@ -262,8 +260,6 @@ public class Memory {
 			case RKDB:
 				return Rk11.RKDB;
 			default:
-				//System.out.printf("\n#####get addr=%d#####\n",addr);
-				//printPAR();
 				Cpu.memoryErrorFlg = true;
 				return Integer.MAX_VALUE;
 			}
@@ -434,11 +430,9 @@ public class Memory {
 				Tm11.MTBRC = src;
 				break;
 			case MTC:
-				//System.out.println("setMTC");
 				Tm11.MTC = src;
 				break;
 			case MTS:
-				//System.out.println("setMTS");
 				Tm11.MTS = src;
 				break;
 			case RKDS:
@@ -466,8 +460,6 @@ public class Memory {
 				Rk11.RKDB = src;
 				break;
 			default:
-				//System.out.printf("execnt=%d\n",Cpu.exeCnt);
-				//System.out.printf("\n#####set addr=%d#####\n",addr);
 				Cpu.memoryErrorFlg = true;
 			}
 		}else{
@@ -510,8 +502,6 @@ public class Memory {
 		for(int i=0;i<8;i++){
 			System.out.printf("PAR[%d]=%o ", i,Register.kernelPAR[i]);
 			System.out.printf("PDR[%d]=%o\n", i,Register.kernelPDR[i]);
-			//System.out.printf("V[%d]=%o-%o P[%d]=%o-%o\n", i, vaddrs[i], vaddre[i], 
-			//		i, Mmu.analyzeMemoryKernel(vaddrs[i]), Mmu.analyzeMemoryKernel(vaddre[i]));
 		}
 		System.out.println("\nuser PAR/PDR/ADDR\n");
 		for(int i=0;i<8;i++){

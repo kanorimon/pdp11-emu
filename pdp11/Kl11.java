@@ -58,18 +58,10 @@ public class Kl11{
 	static void setXCSR(int xcsr){
 		int preXCSR = XCSR;
 		XCSR = xcsr;
-		if(Util.checkBit(XCSR, XCSR_ID)  != Util.checkBit(preXCSR, XCSR_ID) &&
-				Util.checkBit(XCSR, XCSR_READY) != Util.checkBit(preXCSR, XCSR_READY)) {
-			if (Util.checkBit(XCSR, XCSR_ID) == 1 && Util.checkBit(XCSR, XCSR_READY) == 1) {
-				//BR_PRI = 4;
-				//BR_VEC = 064;
-			}
-		}
 	}
 
 	static void setXBUF(int xbuf){
 		XBUF = xbuf & 0x7F;
-		//System.out.printf("\nxbuf=%x XBUF=%x\t\t\t",xbuf,XBUF);
 		switch(XBUF){
 		case 004:
 			System.out.print("");
