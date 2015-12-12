@@ -4,17 +4,20 @@ import java.util.Arrays;
 
 public class Memory {
 
+	/*
+	 * 物理メモリ
+	 */
 	static byte[] mem;
 
 	final static int MEMORY_SIZE = 0760000;
 	final static int HEADER_SIZE = 16;
 
+	/*
+	 * メモリマップドIO
+	 */
 	final static int IOADDRV = 0160000;
 	final static int IOADDRP = 0760000;
 	
-	/*
-	 * メモリマップドIO定義
-	 */
 	final static int PSW = 0777776;
 	final static int STACK_LIMIT = 0777774;
 	final static int PIRQ = 0777772;
@@ -84,23 +87,36 @@ public class Memory {
 	final static int KISD0 = 0772300;
 
 	static void reset(){
-		//メモリ初期化
 		mem = new byte[MEMORY_SIZE];
 		Arrays.fill(mem, (byte)0);
 	}
 
+	/*
+	 * メモリにROMをロード
+	 */
 	static void load(int[] rom,int startNo){
 		for(int i=0;i<rom.length;i++){
-			setPhyMemory2(startNo + i * 2, rom[i]);
+			try {
+				setPhyMemory2(startNo + i * 2, rom[i]);
+			} catch (MemoryUndefinedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
-
 	static void load(byte[] rom,int startNo){
 		for(int i=0;i<rom.length;i++){
-			setPhyMemory1(startNo + i, rom[i]);
+			try {
+				setPhyMemory1(startNo + i, rom[i]);
+			} catch (MemoryUndefinedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
+	/*
+	 * メモリにバイナリファイルをロード
+	 */
 	static void fileload(byte[] bf){
 		//マジックナンバーを取得
 		int magicNo = ((int)bf[0] & 0xFF)|(((int)bf[1] & 0xFF) << 8);
@@ -139,7 +155,7 @@ public class Memory {
 	/*
 	 * 2バイト単位でリトルエンディアンを反転して指定箇所のメモリを取得
 	 */
-	static int getPhyMemory2(int addr){
+	static int getPhyMemory2(int addr) throws MemoryUndefinedException{
 		
 		if(addr >= IOADDRP){
 			switch(addr){
@@ -262,8 +278,7 @@ public class Memory {
 			case RKDB:
 				return Rk11.RKDB;
 			default:
-				Cpu.memoryErrorFlg = true;
-				return Integer.MAX_VALUE;
+				throw new MemoryUndefinedException();
 			}
 		}else{
 			return  ((int)(mem[addr]) & 0xFF) |  ((mem[addr+1] & 0xFF) << 8);
@@ -273,7 +288,7 @@ public class Memory {
 	/*
 	 * 1バイト単位で指定箇所のメモリを取得
 	 */
-	static int getPhyMemory1(int addr){
+	static int getPhyMemory1(int addr) throws MemoryUndefinedException{
 		if(addr >= IOADDRP){
 			return getPhyMemory2(addr) & 0xff;
 		}else{
@@ -284,7 +299,7 @@ public class Memory {
 	/*
 	 * 2バイト単位でリトルエンディアンに変換して指定箇所のメモリを更新
 	 */
-	static void setPhyMemory2(int addr, int src){
+	static void setPhyMemory2(int addr, int src) throws MemoryUndefinedException{
 
 		if(addr >= IOADDRP){
 			switch(addr){
@@ -466,7 +481,7 @@ public class Memory {
 				Rk11.RKDB = src;
 				break;
 			default:
-				Cpu.memoryErrorFlg = true;
+				throw new MemoryUndefinedException();
 			}
 		}else{
 			mem[addr] = (byte)src;
@@ -477,11 +492,29 @@ public class Memory {
 	/*
 	 * 1バイト単位で指定箇所のメモリを更新
 	 */
-	static void setPhyMemory1(int addr, int src){
+	static void setPhyMemory1(int addr, int src) throws MemoryUndefinedException{
 		if(addr >= IOADDRP){
 			setPhyMemory2(addr, (src & 0xFF) |  (getPhyMemory2(addr) & 0xFF00));
 		}else{
 			mem[addr] = (byte)src;
 		}
+	}
+}
+
+class MemoryException extends Exception{
+	public MemoryException(String string) {
+		super(string);
+	}
+}
+
+class MemoryUndefinedException extends MemoryException{
+	public MemoryUndefinedException() {
+		super("未定義領域にアクセスしました");
+	}
+}
+
+class MemoryRangeException extends MemoryException{
+	public MemoryRangeException() {
+		super("アクセス不可領域にアクセスしました");
 	}
 }

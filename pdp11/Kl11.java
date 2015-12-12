@@ -6,22 +6,30 @@ import java.io.InputStreamReader;
 
 public class Kl11{
 	
+	/*
+	 * 制御レジスタ
+	 */
 	static int consoleSwitchRegister; //コンソールスイッチレジスタ
 	static int XBUF; //出力バッファ
 	static int XCSR; //出力レジスタ
 	static int RBUF; //入力バッファ
 	static int RCSR; //入力レジスタ
 	
-	static int BR_PRI; //割り込み優先度
-	static int BR_VEC; //割り込みベクタ
-	
+	/*
+	 * 制御レジスタビット
+	 */
 	static final int XCSR_READY = 7;
 	static final int XCSR_ID = 6;
-
 	static final int RCSR_BUSY = 11;
 	static final int RCSR_DONE = 7;
 	static final int RCSR_ID = 6;
 	static final int RCSR_ENB = 0;
+	
+	/*
+	 * 割り込み設定
+	 */
+	static int BR_PRI; //割り込み優先度
+	static int BR_VEC; //割り込みベクタ
 	
 	static BufferedReader reader;
 
@@ -93,7 +101,7 @@ public class Kl11{
 			System.out.printf("%c",XBUF);
 		}
 		XBUF = 0;
-		XCSR = Util.setBit(XCSR, 7);
+		XCSR = Util.setBit(XCSR, XCSR_READY);
 
 		if (Util.checkBit(XCSR, XCSR_ID) == 1 && Util.checkBit(XCSR, XCSR_READY) == 1) {
 			BR_PRI = 4;
@@ -102,23 +110,23 @@ public class Kl11{
 	}
 
 	static void kl11access(){
-		Kl11.RCSR = Util.setBit(Kl11.RCSR, Kl11.RCSR_BUSY);
+		RCSR = Util.setBit(RCSR, RCSR_BUSY);
 
 		try {
 			if(reader.ready()){
-				Kl11.RBUF = reader.read();
+				RBUF = reader.read();
 
-				if(Kl11.RBUF == 0xa){
-					Kl11.RBUF = 0;
-					Kl11.RCSR = Util.clearBit(Kl11.RCSR, Kl11.RCSR_BUSY);
+				if(RBUF == 0xa){
+					RBUF = 0;
+					RCSR = Util.clearBit(RCSR, RCSR_BUSY);
 				}else {
-					Kl11.RCSR = Util.setBit(Kl11.RCSR, Kl11.RCSR_DONE);
-					Kl11.RCSR = Util.clearBit(Kl11.RCSR, Kl11.RCSR_BUSY);
+					RCSR = Util.setBit(RCSR, RCSR_DONE);
+					RCSR = Util.clearBit(RCSR, RCSR_BUSY);
 				}
 
-				if (Util.checkBit(Kl11.RCSR, Kl11.RCSR_ID) == 1 && Util.checkBit(Kl11.RCSR, Kl11.RCSR_DONE) == 1) {
-					Kl11.BR_PRI = 4;
-					Kl11.BR_VEC = 060;
+				if (Util.checkBit(RCSR, RCSR_ID) == 1 && Util.checkBit(RCSR, RCSR_DONE) == 1) {
+					BR_PRI = 4;
+					BR_VEC = 060;
 				}
 			}
 		} catch (IOException e) {

@@ -5,17 +5,25 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class Tm11 {
-	
 	/*
 	 * 制御レジスタ
 	 */
-	static int MTRD;
-	static int MTD;
-	static int MTCMA;
-	static int MTBRC;
-	static int MTC;
-	static int MTS;
+	static int MTRD;	//TM11 TU10 Read Lines
+	static int MTD; 	//TM11 Data Buffer
+	static int MTCMA; 	//TM11 Current Memory Address Register
+	static int MTBRC; 	//TM11 Byte Record Counter
+	static int MTC; 	//TM11 Command Register
+	static int MTS; 	//TM11 Status Register
 
+	/*
+	 * 制御レジスタビット
+	 */
+	static final int MTS_EOF = 14;
+	static final int MTS_READY = 0;
+	static final int MTC_READY = 7;
+	static final int MTC_INTERRUPT = 6;
+	static final int MTC_GO = 0;
+	
 	/*
 	 * 割り込み設定
 	 */
@@ -25,7 +33,7 @@ public class Tm11 {
 	/*
 	 * BOOTROM
 	 */
-	static final int BOOT_START = 016000; //BOOT_ROM
+	static final int BOOT_START = 016000; //BOOT_ROMの読込先アドレス
 	static int boot_rom[] = {
 		//0046524,                      /* boot_start: "TM" */
 		0012706, BOOT_START,            /* mov #boot_start, sp */
@@ -87,7 +95,11 @@ public class Tm11 {
 
 					tm0.seek(p);
 					byte tmp = tm0.readByte();
-					Memory.setPhyMemory1(phyAddr + i, tmp);
+					try {
+						Memory.setPhyMemory1(phyAddr + i, tmp);
+					} catch (MemoryUndefinedException e) {
+						e.printStackTrace();
+					}
 					p++;
 					psub++;
 				}
@@ -95,15 +107,15 @@ public class Tm11 {
 				tm0.close();
 
 			} catch (EOFException e) {
-				MTS = Util.setBit(MTS, 14);
+				MTS = Util.setBit(MTS, MTS_EOF);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
 
-			MTC = Util.clearBit(MTC, 0);
-			MTC = Util.setBit(MTC, 7);
-			MTS = Util.setBit(MTS, 0);
+			MTC = Util.clearBit(MTC, MTC_GO);
+			MTC = Util.setBit(MTC, MTC_READY);
+			MTS = Util.setBit(MTS, MTS_READY);
 		}
 
 		//REWIND
@@ -112,12 +124,13 @@ public class Tm11 {
 			p = 0;
 			psub = 0;
 
-			MTC = Util.clearBit(MTC, 0);
-			MTC = Util.setBit(MTC, 7);
-			MTS = Util.setBit(MTS, 0);
+			MTC = Util.clearBit(MTC, MTC_GO);
+			MTC = Util.setBit(MTC, MTC_READY);
+			MTS = Util.setBit(MTS, MTS_READY);
 		}
 
-		if(Util.checkBit(MTC, 6) == 1){
+		//割込み制御ビットが1の場合は割込みを設定する
+		if(Util.checkBit(MTC, MTC_INTERRUPT) == 1){
 			BR_PRI = 5;
 			BR_VEC = 0224;
 		}

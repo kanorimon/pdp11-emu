@@ -9,7 +9,6 @@ public class Cpu {
 	 */
 	int exeCnt;						//実行回数
 	static int instAddr;			//実行中の命令のアドレス
-	static boolean memoryErrorFlg;	//メモリエラー false:エラーでない true:エラー
 	boolean waitFlg;				//WAIT false:WAITしていない true:WAITしている
 	
 	/*
@@ -31,7 +30,6 @@ public class Cpu {
 		 */
 		exeCnt = 0;
 		instAddr = 0;
-		memoryErrorFlg = false;
 		waitFlg = false;
 		
 		dbgList = new ArrayList<>();
@@ -70,7 +68,7 @@ public class Cpu {
 		 	* RK11
 		 	*/
 			//ディスクアクセス
-			if (Util.checkBit(Rk11.RKCS, 0) == 1) {
+			if (Util.checkBit(Rk11.RKCS, Rk11.RKCS_GO) == 1) {
 				Rk11.rk11access();
 			}
 			//エラー発生時
@@ -80,7 +78,7 @@ public class Cpu {
 		 	* TM11
 		 	*/
 			//テープアクセス
-			if (Util.checkBit(Tm11.MTC, 0) == 1) {
+			if (Util.checkBit(Tm11.MTC, Tm11.MTC_GO) == 1) {
 				Tm11.tm11access();
 			}
 
@@ -709,17 +707,16 @@ public class Cpu {
 						break;
 					case MFPI:
 						//move from previous instruction space
-						srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, false, Register.getNowMode());
-						srcValue = srcOperand.getValue(Register.getPreMode());
-		
 						try{
-							if(memoryErrorFlg){
-								trap04();
-								memoryErrorFlg = false;
-								break;
-							}
+							srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, false, Register.getNowMode());
+							srcValue = srcOperand.getValue(Register.getPreMode());
+						}catch(MemoryUndefinedException e){
+							trap04();
+							break;
+						}
+					
+						try{
 							pushStack(srcValue);
-		
 						}catch(ArrayIndexOutOfBoundsException e){
 							trap04();
 							break;
@@ -770,11 +767,10 @@ public class Cpu {
 						break;
 					case MTPI:
 						//move　to previous instruction space
-						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, false, Register.getPreMode());
-	
 						try{
+							dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, false, Register.getPreMode());
 							tmp = popStack();
-	
+							
 							Register.setCC(	(tmp << 16 >> 16) < 0,
 									(tmp << 16 >> 16) == 0,
 									false,
@@ -785,16 +781,12 @@ public class Cpu {
 							}else if(dstOperand.flgAddress){
 								setMemory2(dstOperand.address, tmp, Register.getPreMode());
 							}
-		
-							if(memoryErrorFlg){
-								pushStack(tmp);
-								trap04();
-								memoryErrorFlg = false;
-								break;
-							}
-		
+						}catch(MemoryUndefinedException e){
+							pushStack(tmp);
+							trap04();
+							break;
 						}catch(ArrayIndexOutOfBoundsException e){
-							
+							e.printStackTrace();
 						}
 	
 						break;
@@ -1073,6 +1065,7 @@ public class Cpu {
 						break;
 					}
 				}
+			}catch(MemoryUndefinedException e){
 			}catch(MemoryException e){
 				trap(0250,0252);
 			}
@@ -1093,10 +1086,10 @@ public class Cpu {
 		int prePSW = Register.PSW;
 		int prePC = Register.get(7);
 
-		Register.set(7, Memory.getPhyMemory2(newPC));
-		Register.PSW = (Register.getNowMode() << 12) | Memory.getPhyMemory2(newPSW);
-
 		try {
+			Register.set(7, Memory.getPhyMemory2(newPC));
+			Register.PSW = (Register.getNowMode() << 12) | Memory.getPhyMemory2(newPSW);
+
 			pushStack(prePSW);
 			pushStack(prePC);
 		} catch (MemoryException e) {
@@ -2045,7 +2038,6 @@ public class Cpu {
 			}
 		}
 	}
-	
 	
 	/*
 	 * フィールド関数

@@ -4,6 +4,9 @@ package pdp11;
  * レジスタ
  */
 public class Register{
+	/*
+	 * レジスタ
+	 */
 	static int[] reg; //汎用レジスタ
 	static int reg6_u; //ユーザモードR6
 	
@@ -22,9 +25,6 @@ public class Register{
 	
 	static int CLOCK1;	//CLOCK1
 
-	/*
-	 * レジスタ初期化
-	 */
 	static void reset(){
 		reg = new int[8];
 		
