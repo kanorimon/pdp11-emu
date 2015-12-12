@@ -1,5 +1,6 @@
 package pdp11;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -93,6 +94,8 @@ public class Tm11 {
 
 				tm0.close();
 
+			} catch (EOFException e) {
+				MTS = Util.setBit(MTS, 14);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

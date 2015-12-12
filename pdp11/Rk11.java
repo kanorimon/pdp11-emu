@@ -36,6 +36,7 @@ public class Rk11 {
 	static void rk11access(){
 		RKCS = Util.clearBit(RKCS, 0);
 
+		//READ
 		if(RKCS << 28 >>> 29 == 1){
 
 			int datasizeWord = ~((RKWC & 0xFFFF) - 1 - 65535) + 1;
@@ -72,7 +73,7 @@ public class Rk11 {
 			RKCS = Util.setBit(RKCS, 7);
 		}
 
-
+		//WRITE
 		if(RKCS << 28 >>> 29 == 2){
 
 			int datasizeWord = ~((RKWC & 0xFFFF) - 1 - 65535) + 1;

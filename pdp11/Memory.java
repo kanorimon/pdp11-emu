@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class Memory {
 
-	static byte[] mem; //物理メモリ本体
+	static byte[] mem;
 
 	final static int MEMORY_SIZE = 0760000;
 	final static int HEADER_SIZE = 16;
@@ -136,7 +136,9 @@ public class Memory {
 	}
 	
 	
-	//2バイト単位でリトルエンディアンを反転して10進数で取得
+	/*
+	 * 2バイト単位でリトルエンディアンを反転して指定箇所のメモリを取得
+	 */
 	static int getPhyMemory2(int addr){
 		
 		if(addr >= IOADDRP){
@@ -268,7 +270,9 @@ public class Memory {
 		}
 	}
 
-	//1バイト単位で指定箇所のメモリを取得
+	/*
+	 * 1バイト単位で指定箇所のメモリを取得
+	 */
 	static int getPhyMemory1(int addr){
 		if(addr >= IOADDRP){
 			return getPhyMemory2(addr) & 0xff;
@@ -277,7 +281,9 @@ public class Memory {
 		}
 	}
 	
-	//2バイト単位で指定箇所のメモリを更新
+	/*
+	 * 2バイト単位でリトルエンディアンに変換して指定箇所のメモリを更新
+	 */
 	static void setPhyMemory2(int addr, int src){
 
 		if(addr >= IOADDRP){
@@ -468,7 +474,9 @@ public class Memory {
 		}
 	}
 
-	//1バイト単位で指定箇所のメモリを更新
+	/*
+	 * 1バイト単位で指定箇所のメモリを更新
+	 */
 	static void setPhyMemory1(int addr, int src){
 		if(addr >= IOADDRP){
 			setPhyMemory2(addr, (src & 0xFF) |  (getPhyMemory2(addr) & 0xFF00));
@@ -476,39 +484,4 @@ public class Memory {
 			mem[addr] = (byte)src;
 		}
 	}
-	
-	//PAR出力
-	static void printPAR(){
-		int[] vaddrs = new int[8];
-		int[] vaddre = new int[8];
-		vaddrs[0] = 0;
-		vaddre[0] = 017777;
-		vaddrs[1] = 020000;
-		vaddre[1] = 037777;
-		vaddrs[2] = 040000;
-		vaddre[2] = 057777;
-		vaddrs[3] = 060000;
-		vaddre[3] = 077777;
-		vaddrs[4] = 0100000;
-		vaddre[4] = 0117777;
-		vaddrs[5] = 0120000;
-		vaddre[5] = 0137777;
-		vaddrs[6] = 0140000;
-		vaddre[6] = 0141777;
-		vaddrs[7] = 0160000;
-		vaddre[7] = 0177777;
-		
-		System.out.println("\nkernel PAR/PDR/ADDR\n");
-		for(int i=0;i<8;i++){
-			System.out.printf("PAR[%d]=%o ", i,Register.kernelPAR[i]);
-			System.out.printf("PDR[%d]=%o\n", i,Register.kernelPDR[i]);
-		}
-		System.out.println("\nuser PAR/PDR/ADDR\n");
-		for(int i=0;i<8;i++){
-			System.out.printf("PAR[%d]=%o ", i,Register.userPAR[i]);
-			System.out.printf("PDR[%d]=%o\n", i,Register.userPDR[i]);
-		}
-	}
-
-	
 }

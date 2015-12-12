@@ -1,10 +1,7 @@
 package pdp11;
 
 /*
- * レジスタクラス
- * R1-R5:汎用レジスタ
- * R6:スタックポインタSP
- * R7:プログラムカウンタPC
+ * レジスタ
  */
 public class Register{
 	static int[] reg; //汎用レジスタ
@@ -23,9 +20,11 @@ public class Register{
 	static int[] kernelPDR; //カーネルPDR
 	static int[] userPDR; //ユーザーPDR
 	
-	static int CLOCK1;
+	static int CLOCK1;	//CLOCK1
 
-	//レジスタ初期化
+	/*
+	 * レジスタ初期化
+	 */
 	static void reset(){
 		reg = new int[8];
 		
@@ -40,7 +39,7 @@ public class Register{
 		reg[3] = 0;
 		reg[4] = 0;
 		reg[5] = 0;
-		reg[6] = 0; //spは最後尾のアドレスを指す
+		reg[6] = 0;
 		reg[7] = 0;
 
 		reg6_u = 0;
@@ -59,34 +58,28 @@ public class Register{
 		}
 		
 		CLOCK1 = 0;
-
 	}
 
-	//レジスタを上書き
+	/*
+	 * レジスタ設定
+	 */
 	static void set(int regNo,int val){
-		if(regNo == 6 && getNowMode() != 0){
-			reg6_u = val << 16 >>> 16;
-		}else{
-			reg[regNo] = val << 16 >>> 16;
-		}
+		set(regNo,val,getNowMode());
 	}
-
-	//レジスタを上書き
 	static void set(int regNo,int val,int mode){
+		//R6(SP)はユーザモードとカーネルモードで別のレジスタを持つ
 		if(regNo == 6 && mode != 0){
 			reg6_u = val << 16 >>> 16;
 		}else{
 			reg[regNo] = val << 16 >>> 16;
 		}
 	}
-
-	//カーネルスタックに加算
-	static void addKernelStack(int val){
-			reg[6] = (reg[6]+val) << 16 >>> 16;
-	}
 	
-	//レジスタに加算
+	/*
+	 * レジスタ加算
+	 */
 	static void add(int regNo,int val){
+		//R6(SP)はユーザモードとカーネルモードで別のレジスタを持つ
 		if(regNo == 6 && getNowMode() != 0){
 			reg6_u = (reg6_u+val) << 16 >>> 16;
 		}else{
@@ -94,17 +87,12 @@ public class Register{
 		}
 	}
 
-	//カーネルスタックを取得
-	static int getKernelStack(){
-		return reg[6];
-	}
-
-	//レジスタを取得
+	/*
+	 * レジスタ取得
+	 */
 	static int get(int regNo){
 		return get(regNo,getNowMode());
 	}
-
-	//レジスタを取得
 	static int get(int regNo,int mode){
 		if(regNo == 6 && mode != 0){
 			return reg6_u;
@@ -113,6 +101,9 @@ public class Register{
 		}
 	}
 	
+	/*
+	 * PSW取得
+	 */
 	//現モード取得
 	static int getNowMode(){
 		return PSW << 16 >>> 30;
@@ -127,7 +118,10 @@ public class Register{
 	static int getPriority(){
 		return PSW << 24 >>> 29;
 	}
-	
+
+	/*
+	 * PAR/PDR取得
+	 */
 	//カーネルPARブロックアドレス取得
 	static int getKernelBaseBlockNo(int i){
 		return Register.kernelPAR[i] << 20 >>> 20;
@@ -148,15 +142,15 @@ public class Register{
 		return Register.userPDR[i] << 17 >>> 25;
 	}
 
-	//コンディションコード設定
+	/*
+	 * CC設定
+	 */
 	static void setCC(boolean args_n,boolean args_z,boolean args_v,boolean args_c){
 		setN(args_n);
 		setZ(args_z);
 		setV(args_v);
 		setC(args_c);
 	}
-
-
 	static void setN(boolean args_n){
 		if(args_n){
 			PSW = PSW | (1 << 3);
@@ -185,6 +179,10 @@ public class Register{
 			if((PSW & 1) != 0)	PSW = PSW - 1;
 		}
 	}
+	
+	/*
+	 * CC取得
+	 */
 	static boolean getN(){
 		return !((PSW & (1 << 3)) == 0);
 	}
@@ -198,7 +196,9 @@ public class Register{
 		return !((PSW & (1)) == 0);
 	}
 	
-	//デバッグ用出力
+	/*
+	 * デバッグ用出力
+	 */
 	static void printDebug(){
 
 		System.out.print("\n");
@@ -228,7 +228,6 @@ public class Register{
 		}else{
 			System.out.printf(" %04x ", PSW);
 		}
-
 		System.out.print(String.format("%x",(getNowMode())));
 		System.out.print(String.format("%x",(getPreMode())));
 		System.out.print(String.format("%x",(getPriority())));
@@ -253,6 +252,7 @@ public class Register{
 			System.out.print("-");
 		}
 
+		//PC
 		System.out.print(" ");
 		if(Pdp11.flgOctMode){
 			System.out.print(String.format("%06o",Register.get(7),Register.get(7)));
@@ -260,7 +260,6 @@ public class Register{
 			System.out.print(String.format("%04x",Register.get(7),Register.get(7)));
 		}
 		System.out.print(":");
-		
 	}
 }
 

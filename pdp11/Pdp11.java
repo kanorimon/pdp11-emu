@@ -32,32 +32,43 @@ public class Pdp11{
 	static String argsFileName = "";
 	
 	public static void main(String[] args){
-		//モード設定
+		/*
+		 * 実行モード設定
+		 */
 		if(args.length < 1 || !(args[0].substring(0,1).equals("-"))){
 			System.out.println("オプションを指定してください。\n-e:ディスクから実行 -t:テープから実行 -v:デバッグモード（16進数）で実行 -o:デバッグモード（8進数）で実行 -s:シンボルを出力して実行 -d:逆アセンブル");
 			return;
 		}
-
-		if(args[0].equals("-s")){
-			flgDebugMode = 1; //デバッグモード（システムコールのみ）
-			flgExeMode = true; //ディスクから実行モード
-		}
+		
+		//ディスクから実行
+		if(args[0].equals("-e")) flgExeMode = true; 
+		//テープから実行
+		if(args[0].equals("-t")) flgTapeMode = true;
+		//デバッグモード（16進数）で実行
 		if(args[0].equals("-v")){
-			flgDebugMode = 2; //デバッグモード（すべて）
-			flgExeMode = true; //ディスクから実行モード
+			flgDebugMode = 2; //デバッグ（すべて）
+			flgExeMode = true; //ディスクから実行
 		}
+		//デバッグモード（8進数）で実行
 		if(args[0].equals("-o")){
-			flgDebugMode = 2; //デバッグモード（すべて）
-			flgExeMode = true; //ディスクから実行モード
-			flgOctMode = true; //8進数モード
+			flgDebugMode = 2; //デバッグ（すべて）
+			flgExeMode = true; //ディスクから実行
+			flgOctMode = true; //8進数
 		}
-		if(args[0].equals("-d")) flgDismMode = true; //逆アセンブルモード
-		if(args[0].equals("-e")) flgExeMode = true; //ディスクから実行モード
-		if(args[0].equals("-t")) flgTapeMode = true; //テープから実行モード
+		//シンボルを出力して実行
+		if(args[0].equals("-s")){
+			flgDebugMode = 1; //デバッグ（シンボルのみ）
+			flgExeMode = true; //ディスクから実行
+		}
+		//逆アセンブル
+		if(args[0].equals("-d")) flgDismMode = true;
 
+		/*
+		 * ファイル名を設定して実行
+		 */
 		try{
 			//ファイル名を指定して実行する場合にファイル名を設定
-			argsFileName = args[1];		
+			argsFileName = args[1];
 		}catch(Exception e){
 			//ファイル名が指定されていない場合はディスクまたはテープから実行する
 			//CPUを生成
@@ -75,6 +86,7 @@ public class Pdp11{
 			 * テープから実行
 			 */
 			if(flgTapeMode) {
+				//ディスクファイルを作成
 				File rk0 = new File(System.getProperty("user.dir") + "\\" + RK0);
 				File rk1 = new File(System.getProperty("user.dir") + "\\" + RK1);
 				File rk2 = new File(System.getProperty("user.dir") + "\\" + RK2);

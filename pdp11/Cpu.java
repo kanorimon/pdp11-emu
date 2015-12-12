@@ -5,56 +5,58 @@ import java.util.ArrayList;
 public class Cpu {
 
 	/*
-	 * 変数定義
+	 * 変数定義（実行用）
 	 */
-	int strnum;						//逆アセンブラ出力用
-	static int exeCnt;				//実行回数制御
-	ArrayList<Integer> dbgList;		//スタックトレース出力用 
-	ArrayList<Integer> rtnList;		//スタックトレース出力用
-	
+	int exeCnt;						//実行回数
+	static int instAddr;			//実行中の命令のアドレス
 	static boolean memoryErrorFlg;	//メモリエラー false:エラーでない true:エラー
 	boolean waitFlg;				//WAIT false:WAITしていない true:WAITしている
 	
-	static int printCnt;			//ダンプ出力フラグ START_CNT以上で出力する
-	int START_CNT = 10;
+	/*
+	 * 変数定義（デバッグ用）
+	 */
+	ArrayList<Integer> dbgList;		//シンボル出力（呼び先）
+	ArrayList<Integer> rtnList;		//シンボル出力（戻り先）
+	int printCnt;					//0000番地の命令をSTART_CNT以上実行した時にダンプを出力する
+	int START_CNT;					//0000番地の命令をSTART_CNT以上実行した時にダンプを出力する
 	
-	static int prePC;
-	static int prePSW;
-	
-	static int pc = 0;
+	/*
+	 * 変数定義（逆アセンブラ用）
+	 */
+	int strnum;						//出力時の空白制御
 
 	Cpu(){
+		/*
+		 * 変数初期化
+		 */
+		exeCnt = 0;
+		instAddr = 0;
+		memoryErrorFlg = false;
+		waitFlg = false;
+		
 		dbgList = new ArrayList<>();
 		rtnList = new ArrayList<>();
-		
-		waitFlg = false;
-		memoryErrorFlg = false;
-		
 		printCnt = 0;
-
-		prePC = 0;
-		prePSW = 0;
-
-		exeCnt = 0;
+		START_CNT = 0;
 	}
 
 	/*
 	 * CPUエミュレータ実行
 	 */
 	public void execute(){
-
-		int tmp = 0;
-		int fetchedMem;
-		Opcode opcode;
-		
-		Operand srcOperand = new Operand();
-		Operand dstOperand = new Operand();
-		
-		int srcValue;
-		int dstValue;
+		/*
+		 * 変数定義
+		 */
+		int tmp = 0;							//一時保存領域
+		int fetchedMem;							//フェッチしたメモリの内容
+		Opcode opcode;							//オペコード
+		Operand srcOperand = new Operand();		//srcオペランド
+		Operand dstOperand = new Operand();		//dstオペランド
+		int srcValue;							//srcの値
+		int dstValue;							//dstの値
 
 		for(;;){
-
+			//実行回数をインクリメント
 			exeCnt++;
 
 			/*
@@ -71,6 +73,7 @@ public class Cpu {
 			if (Util.checkBit(Rk11.RKCS, 0) == 1) {
 				Rk11.rk11access();
 			}
+			//エラー発生時
 			if (Rk11.RKER != 0) Rk11.rk11error();
 
 			/*
@@ -106,7 +109,6 @@ public class Cpu {
 				waitFlg = false;
 			//TM11割り込み
 			} else if (Tm11.BR_PRI > Register.getPriority()) {
-				//System.out.printf("\ntm11 inter %o %o\n",Tm11.BR_VEC,Memory.getPhyMemory2(Tm11.BR_VEC));
 				trap(Tm11.BR_VEC, Tm11.BR_VEC + 2);
 				Tm11.BR_PRI = 0;
 				waitFlg = false;
@@ -116,55 +118,27 @@ public class Cpu {
 				Kl11.BR_PRI = 0;
 				waitFlg = false;
 			}
-			/*
-			//クロック割り込み
-			if (Util.checkBit(Register.CLOCK1, 7) == 1 && Util.checkBit(Register.CLOCK1, 6) == 1) {
-				if (7 > Register.getPriority()) {
-					trap(0100, 0102);
-					waitFlg = false;
-				}
-			//RK11割り込み
-			} else if (Tm11.BR_PRI < Rk11.BR_PRI) {
-				if (Rk11.BR_PRI > Register.getPriority()) {
-					trap(Rk11.BR_VEC, Rk11.BR_VEC + 2);
-					Rk11.BR_PRI = 0;
-					waitFlg = false;
-				}
-			//TM11割り込み
-			} else if (Kl11.BR_PRI <= Tm11.BR_PRI) {
-				if (Tm11.BR_PRI > Register.getPriority()) {
-					trap(Tm11.BR_VEC, Tm11.BR_VEC + 2);
-					Tm11.BR_PRI = 0;
-					waitFlg = false;
-				}
-			//KL11割り込み
-			} else {
-				if (Kl11.BR_PRI > Register.getPriority()) {
-					trap(Kl11.BR_VEC, Kl11.BR_VEC + 2);
-					Kl11.BR_PRI = 0;
-					waitFlg = false;
-				}
-			}
-			*/
 
 			/*
-			 * デバッグ出力
+			 * デバッグ用出力
 			 */
 			if(Register.get(7) == 0) printCnt++;
-			
-			if(Pdp11.flgDebugMode>=1) popCall(Register.get(7));		//シンボルPOP
-			if(Pdp11.flgDebugMode>1) printDebug();	//レジスタ・フラグ出力
+			//シンボルをPOP
+			if(Pdp11.flgDebugMode>=1) popCall(Register.get(7));
+			//レジスタ・フラグを出力
+			if(Pdp11.flgDebugMode>1) printDebug();
 
 			/*
 			 * 命令解釈・実行
 			 */
 			try{
+				//WAIT中は次の命令の取得はせず、WAIT命令を繰り返す
 				if(!waitFlg){
 					//Fetch
-					fetchedMem = fetchMemory(); //命令取得
+					fetchedMem = fetchMemory();
 					
 					//Decode
-					opcode = getOpcode(fetchedMem); //ニーモニック取得
+					opcode = getOpcode(fetchedMem);
 	
 					//Execute
 					switch(opcode){
@@ -234,13 +208,13 @@ public class Cpu {
 	                	
 		                Register.setCC(	(tmp << 16 >> 16) < 0,
 		                				(tmp << 16 >> 16) == 0, 
-		                                (ashReg << 16 >>> 31) != (tmp << 16 >>> 31), //TODO
+		                                (ashReg << 16 >>> 31) != (tmp << 16 >>> 31),
 		                                Register.getC());
 		                
 	                	Register.set((fetchedMem >> 6) & 7, tmp);
 		                
 						break;
-					case ASHC: //TODO
+					case ASHC:
 						//arithmetic shift combined
 						int ashcReg1 = Register.get((fetchedMem >> 6) & 7);
 						int ashcReg2 = Register.get(((fetchedMem >> 6) & 7) + 1);
@@ -367,7 +341,7 @@ public class Cpu {
 						srcValue = srcOperand.getValue(true);
 						dstValue = dstOperand.getValue(true);					
 		
-						tmp = (~srcValue & dstValue) << 24 >>> 24;	//TODO
+						tmp = (~srcValue & dstValue) << 24 >>> 24;
 						
 						Register.setCC(	(tmp << 24 >> 24) < 0,
 										(tmp << 24 >> 24) == 0, 
@@ -409,7 +383,7 @@ public class Cpu {
 						srcValue = srcOperand.getValue(true);
 						dstValue = dstOperand.getValue(true);
 	
-						tmp = (srcValue | dstValue) << 24 >>> 24;	//TODO
+						tmp = (srcValue | dstValue) << 24 >>> 24;
 	
 						Register.setCC(	(tmp << 24 >> 24) < 0,
 										(tmp << 24 >> 24) == 0, 
@@ -445,7 +419,7 @@ public class Cpu {
 						srcValue = srcOperand.getValue(true);
 						dstValue = dstOperand.getValue(true);
 						
-						tmp = (srcValue & dstValue) << 24 >>> 24;	//TODO
+						tmp = (srcValue & dstValue) << 24 >>> 24;
 						
 						Register.setCC(	(tmp << 24 >> 24) < 0, 
 										(tmp << 24 >> 24) == 0, 
@@ -539,10 +513,6 @@ public class Cpu {
 						dstOperand = getOperand(dstOperand, (fetchedMem >> 3) & 7, fetchedMem & 7, true);
 						srcValue = srcOperand.getValue(true) ;
 						dstValue = (~(dstOperand.getValue(true)) + 1) << 24 >> 24;
-
-						//System.out.printf("\naddress src=%o dst=%o\n",srcOperand.address,dstOperand.address);
-						//System.out.printf("\nvalue_w src=%o dst=%o\n",srcOperand.getValue(),dstOperand.getValue(true));
-						//System.out.printf("\nvalue_b src=%o dst=%o\n",srcOperand.getValue(true),dstOperand.getValue(true));
 						
 						tmp = srcValue + dstValue;
 						
@@ -595,7 +565,7 @@ public class Cpu {
 						dstOperand = getOperand(dstOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7, true);
 						dstValue = dstOperand.getValue(true);
 	
-						tmp = (dstValue - 1) << 24 >>> 24;		//TODO
+						tmp = (dstValue - 1) << 24 >>> 24;
 						
 						Register.setCC(	(tmp << 24 >> 24) < 0, 
 										(tmp << 24 >> 24) == 0, 
@@ -638,6 +608,9 @@ public class Cpu {
 						Register.set((fetchedMem >> 6) & 7, tmp);
 						Register.set(((fetchedMem >> 6) & 7)+1, divValue % srcValue);
 						
+						break;
+					case HALT:
+						//halt
 						break;
 					case INC:
 						//increment
@@ -825,7 +798,7 @@ public class Cpu {
 						}
 	
 						break;
-					case MUL: //TODO
+					case MUL:
 						//multiply
 						int mulR = Register.get((fetchedMem >> 6) & 7);
 						srcOperand = getOperand(srcOperand,(fetchedMem >> 3) & 7,fetchedMem  & 7);
@@ -1093,13 +1066,10 @@ public class Cpu {
 						break;
 					case WORD:
 						System.out.print("\n");
-						System.out.println("not case");
+						System.out.println("undefined case");
 						System.out.println(getMemory2(Register.get(7) - 2));
-						Memory.printPAR();
 						
 						System.exit(0);
-						break;
-					case HALT:
 						break;
 					}
 				}
@@ -1110,6 +1080,9 @@ public class Cpu {
 
 	}
 
+	/*
+	 * TRAP
+	 */
 	//トラップ
 	void trap04(){
 		trap(04, 06);
@@ -1117,8 +1090,8 @@ public class Cpu {
 
 	//割り込み・トラップ
 	void trap(int newPC,int newPSW){
-		prePSW = Register.PSW;
-		prePC = Register.get(7);
+		int prePSW = Register.PSW;
+		int prePC = Register.get(7);
 
 		Register.set(7, Memory.getPhyMemory2(newPC));
 		Register.PSW = (Register.getNowMode() << 12) | Memory.getPhyMemory2(newPSW);
@@ -1131,12 +1104,13 @@ public class Cpu {
 		}
 	}
 
+	/*
+	 * オフセット取得
+	 */
 	//オフセット取得（PC+オフセット*2 8bit（符号付））
 	Operand getOffset(Operand operand,int mem){
 		return getOffset(operand,(mem >> 6) & 3,(mem >> 3) & 7,mem  & 7);
 	}
-	
-	//オフセット取得（PC+オフセット*2 8bit（符号付））
 	Operand getOffset(Operand operand,int first,int second,int third){
 		operand.reset();
 		operand.setAddress(Register.get(7) + ((((first << 6) + (second << 3) + third)) << 24 >> 24) * 2);
@@ -1149,18 +1123,16 @@ public class Cpu {
 		operand.setAddress(Register.get(7) - ((first << 3) + second) * 2);
 		return operand;
 	}
-
-	//オペランド取得（operand,mode,regNo）
+	
+	/*
+	 * オペランド取得
+	 */
 	Operand getOperand(Operand operand,int mode, int regNo) throws MemoryException{
 		return getOperand(operand, mode, regNo, false);
 	}
-
-	//フィールド取得（operand,mode,regNo,byteFlg）
 	Operand getOperand(Operand operand,int mode, int regNo,boolean byteFlg) throws MemoryException{
 		return getOperand(operand, mode, regNo, byteFlg, Register.getNowMode());
 	}
-
-	//オペランド取得（operand,mode,regNo,byteFlg,mmuMode）
 	Operand getOperand(Operand operand,int mode, int regNo, boolean byteFlg,int mmuMode) throws MemoryException{
 		operand.reset();
 
@@ -1275,7 +1247,6 @@ public class Cpu {
 			case 5:
 				//自動デクリメント間接
 				//命令実行前にregisterを2だけデクリメントし、それをオペランドへのポインタのアドレスとして使用する。
-				//Register.add(regNo,-4);
 				Register.add(regNo,-2);
 				operand.setAddress(getMemory2(Register.get(regNo),mmuMode));
 				break;
@@ -1296,8 +1267,9 @@ public class Cpu {
 	}
 
 	/*
-	 * ニーモニック
+	 * オペコード取得
 	 */
+	//オペコード（ニーモニック）
 	enum Opcode {
 		ADC, ADD, ASH, ASHC, ASL, ASR,
 		BCC, BCS, BEQ, BGE, BGT, BHI, BICB, BIC, BIT, BITB, BIS, BISB, BLE, BLOS, BLT, BMI, BNE, BPL, BR, BVS,
@@ -1318,6 +1290,7 @@ public class Cpu {
 		WORD,HALT
 	}
 	
+	//機械語からオペコード（ニーモニック）取得
 	Opcode getOpcode(int opnum){
 		Opcode opcode = null;
 
@@ -1671,8 +1644,47 @@ public class Cpu {
 	}
 
 	/*
-	 * メモリアクセス関数
+	 * メモリアクセス
 	 */
+	//メモリ上の命令を取得してPC+2する（命令取得の場合に使用する）
+	int fetchMemory() throws MemoryException{
+		int opcode = getMemory2(Register.get(7)) << 16 >>> 16;
+
+		//逆アセンブル/デバッグモード（すべて）の場合は出力
+		if(Pdp11.flgExeMode || Pdp11.flgTapeMode){
+			if(Pdp11.flgDebugMode>1) printOpcode(opcode);
+		}else{
+			printOpcode(opcode);
+			strnum++;
+		}
+
+		if(Util.checkBit(Mmu.SR0, 13) != 1 &&
+			Util.checkBit(Mmu.SR0, 14) != 1 &&
+			Util.checkBit(Mmu.SR0, 15) != 1){
+			instAddr = Register.get(7);
+		}
+		Register.add(7, 2);
+		
+		return opcode;
+	}
+	
+	//メモリ上のデータを取得してPC+2する（オペランド取得の場合に使用する）
+	int readMemory() throws MemoryException{
+		int opcode = getMemory2(Register.get(7)) << 16 >>> 16;
+
+		//逆アセンブル/デバッグモード（すべて）の場合は出力
+		if(Pdp11.flgExeMode || Pdp11.flgTapeMode){
+			if(Pdp11.flgDebugMode>1) printOpcode(opcode);
+		}else{
+			printOpcode(opcode);
+			strnum++;
+		}
+		
+		Register.add(7, 2);
+		
+		return opcode;
+	}
+	
 	//2バイト単位でリトルエンディアンを反転して10進数で取得
 	static int getMemory2(int addr) throws MemoryException{
 		return getMemory2(addr, Register.getNowMode());
@@ -1708,56 +1720,11 @@ public class Cpu {
 		addr = addr << 16 >>> 16;
 		Memory.setPhyMemory1(Mmu.analyzeMemory(addr, mode), src);
 	}
-	
-	//メモリ上の命令を取得して、PC+2する
-	int fetchMemory() throws MemoryException{
-		int opcode = getMemory2(Register.get(7)) << 16 >>> 16;
-
-		//逆アセンブル/デバッグモード（すべて）の場合は出力
-		if(Pdp11.flgExeMode || Pdp11.flgTapeMode){
-			if(Pdp11.flgDebugMode>1) printOpcode(opcode);
-		}else{
-			printOpcode(opcode);
-			strnum++;
-		}
-
-		if(Util.checkBit(Mmu.SR0, 13) != 1 &&
-			Util.checkBit(Mmu.SR0, 14) != 1 &&
-			Util.checkBit(Mmu.SR0, 15) != 1){
-			pc = Register.get(7);
-		}
-		Register.add(7, 2); //PC+2
-		
-		return opcode;
-	}
-	
-	//メモリ上のデータを取得して、PC+2する
-	int readMemory() throws MemoryException{
-		int opcode = getMemory2(Register.get(7)) << 16 >>> 16;
-
-		//逆アセンブル/デバッグモード（すべて）の場合は出力
-		if(Pdp11.flgExeMode || Pdp11.flgTapeMode){
-			if(Pdp11.flgDebugMode>1) printOpcode(opcode);
-		}else{
-			printOpcode(opcode);
-			strnum++;
-		}
-		
-		Register.add(7, 2); //PC+2
-		
-		return opcode;
-	}
 
 	//スタックプッシュ
 	void pushStack(int n) throws MemoryException{
 		Register.add(6, -2);
 		setMemory2(Register.get(6), n);
-	}
-
-	//カーネルスタックプッシュ
-	void pushKernelStack(int n) throws MemoryException{
-		Register.addKernelStack(-2);
-		setMemory2(Register.getKernelStack(), n);
 	}
 	
 	//スタックポップ
@@ -1766,30 +1733,11 @@ public class Cpu {
 		Register.add(6, 2);
 		return tmp;
 	}
-
-	/*
-	 * データ編集関数
-	 */
-	//8進数から10進数に変換
-	int getDex(int first,int second){
-		return Integer.parseInt(Integer.toString(first * 10 + second), 8);
-	}
 	
 	/*
-	 * データ出力関数
+	 * データ出力
 	 */
-	//レジスタ名称取得
-	String getRegisterName(int no){
-		if(no == 7){
-			return "pc";
-		}else if(no == 6){
-			return "sp";
-		}else{
-			return "r" + no;
-		}
-	}
-	
-	//指定した命令を出力
+	//機械語を出力
 	void printOpcode(int opcode){
 		if(printCnt >= START_CNT || Pdp11.flgDismMode){
 			if(Pdp11.flgOctMode){
@@ -1808,13 +1756,16 @@ public class Cpu {
 		}
 	}
 	
-	//関数呼び出しをpush
+	/*
+	 * デバッグ用
+	 */
+	//シンボルリストにPUSH
 	void pushCall(int pc,int nextPc){
 		dbgList.add(pc);
 		rtnList.add(nextPc);
 	}
 
-	//関数呼び出しをpop
+	//シンボルリストをPOP
 	void popCall(int pc){
 		int lastIndex = rtnList.lastIndexOf(pc);
 		if( lastIndex > -1){
@@ -1823,20 +1774,15 @@ public class Cpu {
 		}
 	}
 	
-	//関数呼び出しをprint
+	//シンボルを出力
 	void printCall(){
 		if(Pdp11.flgDebugMode>=1 && dbgList.size() != 0){
-
 			if(printCnt >= START_CNT){
-				//System.out.print("\n***StackTrace***\n");
 				System.out.print("\n*** ");
-
 				for (int tmp : dbgList) {
 					Util.printSub(tmp);
-					//System.out.print(" - ");
 				}
 				System.out.print("\n");
-				//System.out.print("\n****************");
 			}
 		}
 	}
@@ -1966,6 +1912,9 @@ public class Cpu {
  			case BVS:
  				printDisasm("bvs", "", getOffsetStr((opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7));
  				break;
+			case CLC:
+ 				printDisasm("clc", "", "");
+ 				break;
  			case CLR:
  				printDisasm("clr", "", getOperandStr((opnum >> 3) & 7,opnum  & 7));
  				break;
@@ -1989,6 +1938,9 @@ public class Cpu {
  				break;
  			case DIV:
  				printDisasm("div", getOperandStr((opnum >> 3) & 7,opnum  & 7), getRegisterName((opnum >> 6) & 7));
+ 				break;
+			case HALT:
+ 				printDisasm("halt", "", "");
  				break;
  			case INC:
  				printDisasm("inc", "", getOperandStr((opnum >> 3) & 7,opnum  & 7));
@@ -2041,6 +1993,9 @@ public class Cpu {
  			case SBC:
  				printDisasm("sbc", "", getOperandStr((opnum >> 3) & 7,opnum  & 7));
  				break;
+			case SCC:
+ 				printDisasm("scc", "", "");
+ 				break;
  			case SETD:
  				printDisasm("setd", "", "");
  				break;
@@ -2084,25 +2039,14 @@ public class Cpu {
  			case WORD:
  				printDisasm(".word", "", getNormalStr((opnum >> 6) & 7,(opnum >> 3) & 7,opnum  & 7));
  				break;
+			default:
+ 				printDisasm("undefined", "", "");
+ 				break;
 			}
 		}
 	}
 	
-	void printDisasm(String mnemonic, String srcOperand, String dstOperand){
-		for(;strnum<3;strnum++) System.out.print("     ");
-
-		System.out.print(" ");
-		System.out.print(mnemonic);
-
-		for(int j=mnemonic.length();j<9;j++) System.out.print(" ");
-
-		System.out.print(srcOperand);
-
-		if(!(srcOperand.equals("")) && !(dstOperand.equals(""))) System.out.print(", ");
-
-		System.out.print(dstOperand + "\n");
-	}
-
+	
 	/*
 	 * フィールド関数
 	 */
@@ -2216,6 +2160,41 @@ public class Cpu {
 			}
 		}
 		return "";
+	}
+	
+	/*
+	 * データ編集
+	 */
+	//出力編集
+	void printDisasm(String mnemonic, String srcOperand, String dstOperand){
+		for(;strnum<3;strnum++) System.out.print("     ");
+
+		System.out.print(" ");
+		System.out.print(mnemonic);
+
+		for(int j=mnemonic.length();j<9;j++) System.out.print(" ");
+
+		System.out.print(srcOperand);
+
+		if(!(srcOperand.equals("")) && !(dstOperand.equals(""))) System.out.print(", ");
+
+		System.out.print(dstOperand + "\n");
+	}
+
+	//8進数から10進数に変換
+	int getDex(int first,int second){
+		return Integer.parseInt(Integer.toString(first * 10 + second), 8);
+	}
+	
+	//レジスタ名称取得
+	String getRegisterName(int no){
+		if(no == 7){
+			return "pc";
+		}else if(no == 6){
+			return "sp";
+		}else{
+			return "r" + no;
+		}
 	}
 }
 

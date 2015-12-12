@@ -56,7 +56,6 @@ public class Kl11{
 	}
 
 	static void setXCSR(int xcsr){
-		int preXCSR = XCSR;
 		XCSR = xcsr;
 	}
 

@@ -30,19 +30,19 @@ public class Mmu {
 
 			if(Util.checkBit(Register.kernelPDR[par],1) == 0 && Util.checkBit(Register.kernelPDR[par],2) == 0) {
 				Util.setBit(SR0, 15);
-				SR2 = Cpu.pc;
+				SR2 = Cpu.instAddr;
 				if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 			}
 			if(Util.checkBit(Register.kernelPDR[par],3) == 1){
 				if(blockcnt > blockno+offset){
 					Util.setBit(SR0, 14);
-					SR2 = Cpu.pc;
+					SR2 = Cpu.instAddr;
 					if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 				}
 			}else{
 				if(blockcnt <= blockno+offset){
 					Util.setBit(SR0, 14);
-					SR2 = Cpu.pc;
+					SR2 = Cpu.instAddr;
 					if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 				}
 			}
@@ -67,19 +67,19 @@ public class Mmu {
 
 			if(Util.checkBit(Register.userPDR[par],1) == 0 && Util.checkBit(Register.userPDR[par],2) == 0) {
 				Util.setBit(SR0, 15);
-				SR2 = Cpu.pc;
+				SR2 = Cpu.instAddr;
 				if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 			}
 			if(Util.checkBit(Register.userPDR[par],3) == 1){
 				if(blockcnt > blockno+offset){
 					Util.setBit(SR0, 14);
-					SR2 = Cpu.pc;
+					SR2 = Cpu.instAddr;
 					if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 				}
 			}else{
 				if(blockcnt <= blockno+offset){
 					Util.setBit(SR0, 14);
-					SR2 = Cpu.pc;
+					SR2 = Cpu.instAddr;
 					if(Pdp11.flgExeMode || Pdp11.flgTapeMode) throw new MemoryException();
 				}
 			}
