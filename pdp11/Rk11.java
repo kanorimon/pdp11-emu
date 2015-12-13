@@ -1,7 +1,5 @@
 package pdp11;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -64,13 +62,6 @@ public class Rk11 {
       0005007                         /* CLR PC */
   };
 
-  /*
-   * ディスクファイル
-   */
-  static RandomAccessFile v6root;
-  static RandomAccessFile v6src;
-  static RandomAccessFile v6doc;
-  
   static void reset(){
     RKDS = 0;
     RKER = 0;
@@ -83,26 +74,6 @@ public class Rk11 {
 
     BR_PRI = 0;
     BR_VEC = 0;
-    
-    try {
-		v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\" + Pdp11.RK0, "rw");
-	    v6src = new RandomAccessFile( System.getProperty("user.dir") + "\\" + Pdp11.RK1, "rw");
-	    v6doc = new RandomAccessFile( System.getProperty("user.dir") + "\\" + Pdp11.RK2, "rw");
-	} catch (FileNotFoundException e) {
-        File rk0 = new File(System.getProperty("user.dir") + "\\" + Pdp11.RK0);
-        File rk1 = new File(System.getProperty("user.dir") + "\\" + Pdp11.RK1);
-        File rk2 = new File(System.getProperty("user.dir") + "\\" + Pdp11.RK2);
-        try {
-          rk0.createNewFile();
-          rk1.createNewFile();
-          rk2.createNewFile();
-  		  v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\" + Pdp11.RK0, "rw");
-	      v6src = new RandomAccessFile( System.getProperty("user.dir") + "\\" + Pdp11.RK1, "rw");
-	      v6doc = new RandomAccessFile( System.getProperty("user.dir") + "\\" + Pdp11.RK2, "rw");
-        } catch (IOException e1) {
-          e1.printStackTrace();
-        }
-	}
   }
   
   static void rk11access(){
@@ -114,41 +85,35 @@ public class Rk11 {
       int datasizeWord = ~((RKWC & 0xFFFF) - 1 - 65535) + 1;
       int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
 
-      int phyAddr = ((RKCS & 0x30) << 12) + (RKBA & 0xFFFF);
-      
       try {
+        String driveName = "";
+        
         switch((RKDA & 0xE000) >>> 13){
         case 0:
-          v6root.seek(tmpRKDA * 512);
-          for(int i=0;i<datasizeWord * 2; i++){
-            try {
-              v6root.write(Memory.getPhyMemory1(phyAddr + i));
-            } catch (MemoryUndefinedException e) {
-              e.printStackTrace();
-            }
-          }
+          driveName = Pdp11.RK0;
           break;
         case 1:
-            v6src.seek(tmpRKDA * 512);
-            for(int i=0;i<datasizeWord * 2; i++){
-              try {
-            	  v6src.write(Memory.getPhyMemory1(phyAddr + i));
-              } catch (MemoryUndefinedException e) {
-                e.printStackTrace();
-              }
-            }
-            break;
+          driveName = Pdp11.RK1;
+          break;
         case 2:
-            v6doc.seek(tmpRKDA * 512);
-            for(int i=0;i<datasizeWord * 2; i++){
-              try {
-            	  v6doc.write(Memory.getPhyMemory1(phyAddr + i));
-              } catch (MemoryUndefinedException e) {
-                e.printStackTrace();
-              }
-            }
-            break;
+          driveName = Pdp11.RK2;
+          break;
         }
+        
+        RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\" + driveName, "rw");
+        v6root.seek(tmpRKDA * 512);
+
+        int phyAddr = ((RKCS & 0x30) << 12) + (RKBA & 0xFFFF);
+        for(int i=0;i<datasizeWord * 2; i++){
+          try {
+            v6root.write(Memory.getPhyMemory1(phyAddr + i));
+          } catch (MemoryUndefinedException e) {
+            e.printStackTrace();
+          }
+        }
+        
+        v6root.close();
+        
       } catch (IOException e) {
       }
 
@@ -161,47 +126,36 @@ public class Rk11 {
       int datasizeWord = ~((RKWC & 0xFFFF) - 1 - 65535) + 1;
       int tmpRKDA = (((((RKDA & 0x1FE0) >>> 5) << 1) | ((RKDA &0x10) >>> 4)) * 12) + (RKDA & 0xF);
 
-      int phyAddr = ((RKCS & 0x30) << 12) + (RKBA & 0xFFFF);
-
       try {
+        String driveName = "";
+        
         switch((RKDA & 0xE000) >>> 13){
         case 0:
-          v6root.seek(tmpRKDA * 512);
-
-          for(int i=0;i<datasizeWord * 2; i++){
-            byte tmp = v6root.readByte();
-            try {
-              Memory.setPhyMemory1(phyAddr + i, tmp);
-            } catch (MemoryUndefinedException e) {
-              e.printStackTrace();
-            }
-          }
+          driveName = Pdp11.RK0;
           break;
         case 1:
-          v6src.seek(tmpRKDA * 512);
-
-          for(int i=0;i<datasizeWord * 2; i++){
-            byte tmp = v6src.readByte();
-            try {
-              Memory.setPhyMemory1(phyAddr + i, tmp);
-            } catch (MemoryUndefinedException e) {
-              e.printStackTrace();
-            }
-          }
+          driveName = Pdp11.RK1;
           break;
         case 2:
-          v6src.seek(tmpRKDA * 512);
-
-          for(int i=0;i<datasizeWord * 2; i++){
-            byte tmp = v6src.readByte();
-            try {
-              Memory.setPhyMemory1(phyAddr + i, tmp);
-            } catch (MemoryUndefinedException e) {
-              e.printStackTrace();
-            }
-          }
+          driveName = Pdp11.RK2;
           break;
         }
+
+        RandomAccessFile v6root = new RandomAccessFile( System.getProperty("user.dir") + "\\" +  driveName, "r");
+        v6root.seek(tmpRKDA * 512);
+
+        int phyAddr = ((RKCS & 0x30) << 12) + (RKBA & 0xFFFF);
+        for(int i=0;i<datasizeWord * 2; i++){
+          byte tmp = v6root.readByte();
+          try {
+            Memory.setPhyMemory1(phyAddr + i, tmp);
+          } catch (MemoryUndefinedException e) {
+            e.printStackTrace();
+          }
+        }
+
+        v6root.close();
+        
       } catch (IOException e) {
       }
 

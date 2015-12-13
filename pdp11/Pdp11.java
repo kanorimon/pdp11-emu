@@ -86,6 +86,18 @@ public class Pdp11{
        * テープから実行
        */
       if(flgTapeMode) {
+        //ディスクファイルを作成
+        File rk0 = new File(System.getProperty("user.dir") + "\\" + RK0);
+        File rk1 = new File(System.getProperty("user.dir") + "\\" + RK1);
+        File rk2 = new File(System.getProperty("user.dir") + "\\" + RK2);
+        try {
+          rk0.createNewFile();
+          rk1.createNewFile();
+          rk2.createNewFile();
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+        
         //TM11のBOOTROMをメモリのBOOT_START番地にロード
         Memory.load(Tm11.boot_rom, Tm11.BOOT_START);
         //BOOT_START番地をPCに設定
