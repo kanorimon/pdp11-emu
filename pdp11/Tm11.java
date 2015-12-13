@@ -1,6 +1,7 @@
 package pdp11;
 
 import java.io.EOFException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -60,6 +61,11 @@ public class Tm11 {
   static int p;
   static int psub;
 
+  /*
+   * テープファイル  
+   */
+  static RandomAccessFile tm0;
+
   static void reset(){
     MTRD = 0;
     MTD = 0;
@@ -73,6 +79,12 @@ public class Tm11 {
 
     p = 0;
     psub = 0;
+    
+    try {
+		tm0 = new RandomAccessFile( System.getProperty("user.dir") + "\\" +  Pdp11.TM0, "r");
+	} catch (FileNotFoundException e) {
+		e.printStackTrace();
+	}
   }
 
   static void tm11access(){
@@ -83,8 +95,6 @@ public class Tm11 {
       int datasizeWord = ~((MTBRC & 0xFFFF) - 1 - 65535) + 1;
 
       try {
-        RandomAccessFile tm0 = new RandomAccessFile( System.getProperty("user.dir") + "\\" +  Pdp11.TM0, "r");
-
         int phyAddr = ((MTC & 0x30) << 12) + (MTCMA & 0xFFFF);
         for(int i=0;i<datasizeWord; i++){
           if(p == 0 && psub == 0) p = p + 4;
@@ -103,8 +113,6 @@ public class Tm11 {
           p++;
           psub++;
         }
-
-        tm0.close();
 
       } catch (EOFException e) {
         MTS = Util.setBit(MTS, MTS_EOF);
