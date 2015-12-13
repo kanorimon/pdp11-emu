@@ -115,6 +115,11 @@ public class Kl11{
       if(reader.ready()){
         RBUF = reader.read();
 
+        //CTRL+Eでエミュレータを終了
+        if(RBUF == 5){
+        	System.exit(0);
+        }
+        
         if(RBUF == 0xa){
           RBUF = 0;
           RCSR = Util.clearBit(RCSR, RCSR_BUSY);
